@@ -3,6 +3,7 @@ import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  sendPasswordResetEmail,
   signOut,
   onAuthStateChanged,
   User
@@ -22,13 +23,21 @@ export const createAccountWithEmail = async (email: string, password: string) =>
       throw error;
     }
   };
-  
 
 // Função para fazer login
 export const loginWithEmail = async (email: string, password: string) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return userCredential.user;
+  } catch (error) {
+    throw error;
+  }
+};
+
+  // Função para resetar a senha
+export const resetPasswordWithEmail = async (email: string) => {
+  try {
+    await sendPasswordResetEmail(auth, email);
   } catch (error) {
     throw error;
   }
