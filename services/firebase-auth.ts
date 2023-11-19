@@ -10,6 +10,11 @@ import {
 } from "firebase/auth";
 import {firebaseConfig} from "../shared/firebaseConfig"
 
+
+
+import {
+  Alert,
+} from "react-native";
 // Inicializa o Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);

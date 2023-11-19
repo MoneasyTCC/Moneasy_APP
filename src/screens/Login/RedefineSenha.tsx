@@ -15,11 +15,11 @@ import { SvgXml } from "react-native-svg";
 
 type RedefineSenhaScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
-  "Redefine"
+  "RedefineSenha"
 >;
 
 type Props = {
-  navigation: RedefineScreenNavigationProp;
+  navigation: RedefineSenhaScreenNavigationProp;
 };
 
 const xmlImg =
@@ -44,7 +44,11 @@ export default function RedefineSenhaScreen({ navigation }: Props) {
         style={styles.icon}
         onPress={() => navigation.navigate("Inicio")}
       ></SvgXml>
+    
       <View style={styles.menu}>
+      <Text style={styles.frase}>
+         Insira seu email cadastrado para enviarmos um link de redefinição de senha!
+        </Text>
         <TextInput
           placeholderTextColor={"#000000"}
           style={styles.input}
@@ -54,6 +58,7 @@ export default function RedefineSenhaScreen({ navigation }: Props) {
           keyboardType="email-address"
           autoCapitalize="none"
         />
+      
         <View style={styles.spacer} />
         <View style={styles.spacer} />
         <TouchableOpacity style={styles.buttonLogin} onPress={handleForgotPassword}>
@@ -64,7 +69,7 @@ export default function RedefineSenhaScreen({ navigation }: Props) {
           style={styles.textRedirect}
           onPress={() => navigation.navigate("Login")}
         >
-        <TouchableOpacity style={styles.textRedirect} onPress={() => navigation.navigate("Login")}>
+        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
                    <Text style={styles.textRedirect}>Voltar</Text >
                  </TouchableOpacity>
         </Text>
@@ -131,4 +136,11 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     textDecorationLine: "underline",
   },
+  frase: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    textAlign: "center",
+    width: "70%",
+    marginBottom: `6%`,
+  }
 });
