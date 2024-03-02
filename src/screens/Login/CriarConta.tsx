@@ -43,7 +43,7 @@ export default function CriarContaScreen({ navigation }: Props) {
           onPress: () => {
             setTimeout(() => {
               navigation.replace("Login");
-            }, 1500); // Aguarda 1,5 segundo antes de executar a navegação
+            }, 1000); // Aguarda 1 segundo antes de executar a navegação
           },
         },
       ]);

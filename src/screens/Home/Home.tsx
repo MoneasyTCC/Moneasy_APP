@@ -3,6 +3,8 @@ import { View, Text, Button, StyleSheet, Image } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
 import { Shadow } from "react-native-shadow-2";
+import { adicionarNovaMeta } from '../../../services/testeBanco';
+import { adicionarNovaTransacao } from '../../../services/testeBanco';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -13,12 +15,23 @@ type Props = {
   navigation: HomeScreenNavigationProp;
 };
 
+const adicionarMeta = async () => {
+  await adicionarNovaMeta();
+};
+
+const adicionarTran = async () => {
+  await adicionarNovaTransacao();
+};
+
 // Use as props na definição do seu componente
 export default function HomeScreen({ navigation }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.menuHeader}>
         <Button title="Sair" onPress={() => navigation.replace("Inicio")} />
+        <Button title="AdicionarMeta" onPress={adicionarMeta} />
+        <Button title="AdicionarTransacao" onPress={adicionarTran} />
+
       </View>
       <View style={styles.menuBody}>
         <View style={styles.content}></View>
