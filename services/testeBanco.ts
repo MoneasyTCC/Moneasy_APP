@@ -25,9 +25,9 @@ try {
       id:"",
       usuarioId: "",
       tipo:"entrada",
-      valor:200,
+      valor:300,
       data:new Date(Date.now()),
-      descricao:"TESTE",
+      descricao:"TESTE VIDEO SOCORRO",
       moeda:"BRL"
     };
     
