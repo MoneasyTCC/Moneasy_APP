@@ -49,12 +49,12 @@ import {
   
     // Função para recuperar todas as transações de um usuário
       buscarTransacoes: async () => {
-      const usuarioId = await getCurrentUserId();
-      if (!usuarioId) throw new Error("Usuário não autenticado.");
+      const usuarioIdatual = await getCurrentUserId();
+      if (!usuarioIdatual) throw new Error("Usuário não autenticado.");
   
-      console.log(usuarioId);
+      console.log(usuarioIdatual);
       try {
-        const q = query(collection(db, 'transacoes'), where("usuarioId", "==", usuarioId));
+        const q = query(collection(db, 'transacoes'), where("usuarioId", "==", usuarioIdatual));
         const querySnapshot = await getDocs(q);
         const transacoes = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         console.log(transacoes);

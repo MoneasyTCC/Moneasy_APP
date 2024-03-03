@@ -16,7 +16,7 @@ export class  Meta {
       valorAtual: number,
       dataInicio: Date,
       dataFimPrevista: Date,
-      status: string
+      status: string,
     ) {
       this.id = id;
       this.usuarioId = usuarioId;
@@ -26,6 +26,7 @@ export class  Meta {
       this.dataInicio = dataInicio;
       this.dataFimPrevista = dataFimPrevista;
       this.status = status;
+
     }
   }
   

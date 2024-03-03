@@ -24,3 +24,8 @@ Em resumo, o Model define o que será armazenado, o Controller define como os da
 Na pasta Service ficam serviços que nosso sistema esta usando. O firebase não é nosso, estamos nos concecatando nele e usando os recursos dele, por isso service.
 
 Shared são recursos que são/podem ser compartilhados ao longo do projeto, em várias classes ou componentes.
+
+
+M - Model
+V - View - Eventos - atraves dos eventos são realizadas funcionalides/funções
+C - Controller
