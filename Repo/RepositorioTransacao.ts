@@ -36,7 +36,7 @@ import {
         id: transacaoId,
     });
 
-    console.log("Categoria adicionada com ID: ", transacaoId);
+    console.log("Transação adicionada com ID: ", transacaoId);
     return transacaoId;
       } catch (error: unknown) {
         if (error instanceof Error) {
