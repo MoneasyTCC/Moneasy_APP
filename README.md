@@ -29,3 +29,8 @@ Shared são recursos que são/podem ser compartilhados ao longo do projeto, em v
 M - Model
 V - View - Eventos - atraves dos eventos são realizadas funcionalides/funções
 C - Controller
+__________________________________________________________________
+Bibliotecas:
+
+@types/react-native-datepicker
+`npm i @types/react-native-datepicker`
