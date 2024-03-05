@@ -1,13 +1,26 @@
 import React, { useState } from "react";
-import { View, Text, Button, StyleSheet, Image, Modal, TextInput, Alert } from "react-native";
+import {
+  View,
+  Text,
+  Button,
+  StyleSheet,
+  Image,
+  Modal,
+  TextInput,
+  Alert,
+  Platform,
+} from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
 import { Shadow } from "react-native-shadow-2";
-import { adicionarNovaMeta } from '../../../services/testeBanco';
-import { adicionarNovaTransacao } from '../../../services/testeBanco';
-import DatePicker from "react-native-datepicker";
+import { adicionarNovaMeta } from "../../../services/testeBanco";
+import { adicionarNovaTransacao } from "../../../services/testeBanco";
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
 import { Transacao } from "../../../Model/Transacao";
 import { TransacaoDAL } from "../../../Repo/RepositorioTransacao";
+import RNDateTimePicker from "@react-native-community/datetimepicker";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -18,109 +31,131 @@ type Props = {
   navigation: HomeScreenNavigationProp;
 };
 
+type DateTimePickerMode = "date" | "time" | "datetime";
 
 // Use as props na definição do seu componente
 export default function HomeScreen({ navigation }: Props) {
-
   var [isModalVisible, setModalVisible] = useState(false);
-  const [valor, setValor] = useState('');
+  const [valor, setValor] = useState("");
+  const [descricao, setDescricao] = useState("");
   const [data, setData] = useState(new Date());
-  const [descricao, setDescricao] = useState('');
+  const [modo, setModo] = useState<DateTimePickerMode | undefined>(undefined);
+  const [show, setShow] = useState(false);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
   const novosDados: Transacao = {
-    id:"",
+    id: "",
     usuarioId: "",
-    tipo:"entrada",
+    tipo: "entrada",
     valor: parseFloat(valor),
-    data:(data),
-    descricao:(descricao),
-    moeda:"BRL"
+    data: data,
+    descricao: descricao,
+    moeda: "BRL",
   };
   const handleTransacao = async () => {
-    try{
-      TransacaoDAL.adicionarTransacao(novosDados)
+    try {
+      TransacaoDAL.adicionarTransacao(novosDados);
       Alert.alert("Transação adicionada com Sucesso!");
+    } catch (err) {
+      Alert.alert("Erro ao adicionar transação");
+    }
+  };
 
+  const onChange = (
+    evento: DateTimePickerEvent,
+    dataSelecionada?: Date | undefined
+  ) => {
+    if (evento.type === "set" && dataSelecionada) {
+      const dataAtual = dataSelecionada || data;
+      setShow(Platform.OS === "ios");
+      setData(dataAtual);
+
+      let tempData = new Date(dataAtual);
+      let fData =
+        tempData.getDate() +
+        "/" +
+        (tempData.getMonth() + 1) +
+        "/" +
+        tempData.getFullYear();
+      console.log(fData);
     }
-    catch(err){
-    Alert.alert("Erro ao adicionar transação");
-    }
+  };
+
+  const showMode = (modoAtual: DateTimePickerMode) => {
+    setShow(true);
+    setModo(modoAtual);
   };
 
   return (
     <View style={styles.container}>
-    <View style={styles.menuHeader}>
-      <Button title="Sair" onPress={() => navigation.replace("Inicio")} />
-      <Button title="Adicionar Transação" onPress={toggleModal} />
+      <View style={styles.menuHeader}>
+        <Button title="Sair" onPress={() => navigation.replace("Inicio")} />
+        <Button title="Adicionar Transação" onPress={toggleModal} />
 
-<Modal visible={isModalVisible}>
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <TextInput
-      placeholder="Valor"
-      keyboardType="numeric"
-      value={valor}
-      onChangeText={setValor}
-    />
-    <DatePicker
-      style={{ width: 200 }}
-      date={data}
-      mode="date"
-      placeholder="Selecione a data"
-      format="YYYY-MM-DD"
-      confirmBtnText="Confirmar"
-      cancelBtnText="Cancelar"
-      customStyles={{
-        dateIcon: {
-          position: 'absolute',
-          left: 0,
-          top: 4,
-          marginLeft: 0,
-        },
-        dateInput: {
-          marginLeft: 36,
-        },
-      }}
-      onDateChange={(dateStr, date) => setData(new Date(dateStr))}
-    />
-    <TextInput
-      placeholder="Descrição"
-      value={descricao}
-      onChangeText={setDescricao}
-    />
-    <Button title="Adicionar" onPress={handleTransacao} />
-    <Button title="Cancelar" onPress={toggleModal} />
-  </View>
-</Modal>
-    </View>
-    <View style={styles.menuBody}>
-      <View style={styles.content}></View>
-    </View>
-    <View style={styles.menuFooter}>
-      <View style={styles.menuNavegation}>
-        <Text></Text>
-        <Image
-          style={styles.img}
-          source={require("../../../assets/menu/homeActive.png")}
-        />
-        <Image
-          style={styles.img}
-          source={require("../../../assets/menu/menu.png")}
-        />
-        <Image
-          style={styles.img}
-          source={require("../../../assets/menu/transactions.png")}
-        />
-        <Image
-          style={styles.img}
-          source={require("../../../assets/menu/more.png")}
-        />
-        <Text></Text>
+        <Modal visible={isModalVisible}>
+          <View
+            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          >
+            <TextInput
+              placeholder="Valor"
+              keyboardType="numeric"
+              value={valor}
+              onChangeText={setValor}
+            />
+            <Button
+              title="datepicker"
+              onPress={() => showMode("date")}
+            ></Button>
+            <TextInput
+              placeholder="Descrição"
+              value={descricao}
+              onChangeText={setDescricao}
+            />
+            <Button title="Adicionar" onPress={handleTransacao} />
+            <Button title="Cancelar" onPress={toggleModal} />
+
+            {show && (
+              <DateTimePicker
+                testID="dateTimePicker"
+                value={data}
+                mode={modo}
+                is24Hour={true}
+                display="default"
+                onChange={onChange}
+                {...(Platform.OS === "android" && { is24Hour: true })}
+              />
+            )}
+          </View>
+        </Modal>
+      </View>
+      <View style={styles.menuBody}>
+        <View style={styles.content}></View>
+      </View>
+      <View style={styles.menuFooter}>
+        <View style={styles.menuNavegation}>
+          <Text></Text>
+          <Image
+            style={styles.img}
+            source={require("../../../assets/menu/homeActive.png")}
+          />
+          <Image
+            style={styles.img}
+            source={require("../../../assets/menu/menu.png")}
+          />
+          <Image
+            style={styles.img}
+            source={require("../../../assets/menu/transactions.png")}
+          />
+          <Image
+            style={styles.img}
+            source={require("../../../assets/menu/more.png")}
+          />
+          <Text></Text>
+        </View>
       </View>
     </View>
-  </View>
   );
 }
 
@@ -178,5 +213,3 @@ const styles = StyleSheet.create({
   },
   img: {},
 });
-
-
