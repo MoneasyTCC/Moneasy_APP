@@ -27,17 +27,17 @@ export default function InicioScreen({ navigation }: Props) {
         <View style={styles.spacer2} />
         <TouchableOpacity
           style={styles.buttonLogin}
-          onPress={() => navigation.navigate("CriarConta")}
-        >
-          <Text style={styles.txtLogin}>Começar agora</Text>
-        </TouchableOpacity>
-        <View style={styles.spacer} />
-        <Text
-          style={styles.textRedirect}
           onPress={() => navigation.navigate("Login")}
         >
-          Já tenho cadastro!
-        </Text>
+          <Text style={styles.txtLogin}>Entrar</Text>
+        </TouchableOpacity>
+        <View style={styles.spacer} />
+        <TouchableOpacity
+          style={styles.buttonLogin}
+          onPress={() => navigation.navigate("CriarConta")}
+        >
+          <Text style={styles.txtLogin}>Cadastre-se</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -76,8 +76,8 @@ const styles = StyleSheet.create({
   textRedirect: {
     color: "#FFFFFF",
     textDecorationLine: "underline",
-  }, 
-  
+  },
+
   buttonLogin: {
     backgroundColor: "#0FEC32",
     padding: 10,
@@ -85,12 +85,12 @@ const styles = StyleSheet.create({
     height: 60,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 10,    
-    shadowColor: '#52006A'
+    borderRadius: 10,
+    shadowColor: "#52006A",
   },
   txtLogin: {
     textAlign: "center",
-    color: "#000000",
+    color: "#ffffff",
     fontSize: 24,
     fontWeight: "bold",
   },
