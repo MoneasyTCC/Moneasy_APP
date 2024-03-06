@@ -1,9 +1,12 @@
 import React from "react";
-import { View, Text, Image, StyleSheet } from "react-native";
-import { useRoute } from "@react-navigation/native";
+import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import MenuScreen from "../../src/screens/Menu/Menu";
 
 const NavigationBar = () => {
   const route = useRoute();
+  const navigation = useNavigation();
+
   return (
     <View style={styles.menuNavegation}>
       <Text></Text>
@@ -56,7 +59,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     alignItems: "center",
     flexDirection: "row",
-  }
+  },
 });
 
 export default NavigationBar;
