@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   },
   txtLogin: {
     textAlign: "center",
-    color: "#000000",
+    color: "#ffffff",
     fontSize: 24,
     fontWeight: "bold",
   },
