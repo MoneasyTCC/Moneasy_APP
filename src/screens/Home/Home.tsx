@@ -9,6 +9,7 @@ import {
   TextInput,
   Alert,
   Platform,
+  TouchableOpacity,
 } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
@@ -20,7 +21,6 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 import { Transacao } from "../../../Model/Transacao";
 import { TransacaoDAL } from "../../../Repo/RepositorioTransacao";
-import RNDateTimePicker from "@react-native-community/datetimepicker";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -41,6 +41,7 @@ export default function HomeScreen({ navigation }: Props) {
   const [data, setData] = useState(new Date());
   const [modo, setModo] = useState<DateTimePickerMode | undefined>(undefined);
   const [show, setShow] = useState(false);
+  const [tipoTransacao, setTipoTransacao] = useState("");
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
@@ -48,7 +49,7 @@ export default function HomeScreen({ navigation }: Props) {
   const novosDados: Transacao = {
     id: "",
     usuarioId: "",
-    tipo: "entrada",
+    tipo: tipoTransacao,
     valor: parseFloat(valor),
     data: data,
     descricao: descricao,
@@ -57,6 +58,7 @@ export default function HomeScreen({ navigation }: Props) {
   const handleTransacao = async () => {
     try {
       TransacaoDAL.adicionarTransacao(novosDados);
+      setTipoTransacao("");
       Alert.alert("Transação adicionada com Sucesso!");
     } catch (err) {
       Alert.alert("Erro ao adicionar transação");
@@ -88,11 +90,43 @@ export default function HomeScreen({ navigation }: Props) {
     setModo(modoAtual);
   };
 
+  const handleTipoTransacaoEntrada = () => {
+    setTipoTransacao("entrada");
+    toggleModal();
+  };
+
+  const handleTipoTransacaoSaida = () => {
+    setTipoTransacao("saida");
+    toggleModal();
+  };
+
+  const handleCancelarTransacao = () => {
+    setTipoTransacao("");
+    toggleModal();
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.menuHeader}>
         <Button title="Sair" onPress={() => navigation.replace("Inicio")} />
-        <Button title="Adicionar Transação" onPress={toggleModal} />
+        <View style={styles.buttons}>
+          <TouchableOpacity
+            style={styles.entradaBtn}
+            onPress={handleTipoTransacaoEntrada}
+          >
+            <Text style={{ fontSize: 50, textAlign: "center", lineHeight: 55 }}>
+              +
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.saidaBtn}
+            onPress={handleTipoTransacaoSaida}
+          >
+            <Text style={{ fontSize: 50, textAlign: "center", lineHeight: 55 }}>
+              -
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         <Modal visible={isModalVisible}>
           <View
@@ -114,7 +148,7 @@ export default function HomeScreen({ navigation }: Props) {
               onChangeText={setDescricao}
             />
             <Button title="Adicionar" onPress={handleTransacao} />
-            <Button title="Cancelar" onPress={toggleModal} />
+            <Button title="Cancelar" onPress={handleCancelarTransacao} />
 
             {show && (
               <DateTimePicker
@@ -212,4 +246,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   img: {},
+  entradaBtn: {
+    width: 50,
+    height: 50,
+    backgroundColor: "#17fc3d",
+    borderRadius: 50,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  saidaBtn: {
+    width: 50,
+    height: 50,
+    backgroundColor: "#ff0f00",
+    borderRadius: 50,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  buttons: {
+    flexDirection: "row",
+    gap: 30,
+  },
 });
