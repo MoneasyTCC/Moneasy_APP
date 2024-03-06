@@ -8,6 +8,7 @@ import { adicionarNovaTransacao } from '../../../services/testeBanco';
 import DatePicker from "react-native-datepicker";
 import { Transacao } from "../../../Model/Transacao";
 import { TransacaoDAL } from "../../../Repo/RepositorioTransacao";
+import NavigationBar from "../menuNavegation";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -98,27 +99,8 @@ export default function HomeScreen({ navigation }: Props) {
     <View style={styles.menuBody}>
       <View style={styles.content}></View>
     </View>
-    <View style={styles.menuFooter}>
-      <View style={styles.menuNavegation}>
-        <Text></Text>
-        <Image
-          style={styles.img}
-          source={require("../../../assets/menu/homeActive.png")}
-        />
-        <Image
-          style={styles.img}
-          source={require("../../../assets/menu/menu.png")}
-        />
-        <Image
-          style={styles.img}
-          source={require("../../../assets/menu/transactions.png")}
-        />
-        <Image
-          style={styles.img}
-          source={require("../../../assets/menu/more.png")}
-        />
-        <Text></Text>
-      </View>
+    <View style={styles.menuFooter}>      
+      <NavigationBar></NavigationBar>
     </View>
   </View>
   );
