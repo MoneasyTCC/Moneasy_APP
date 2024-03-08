@@ -73,7 +73,6 @@ export default function HomeScreen({ navigation }: Props) {
       const dataAtual = dataSelecionada || data;
       setShow(Platform.OS === "ios");
       setData(dataAtual);
-
       let tempData = new Date(dataAtual);
       let fData =
         tempData.getDate() +
@@ -82,11 +81,16 @@ export default function HomeScreen({ navigation }: Props) {
         "/" +
         tempData.getFullYear();
       console.log(fData);
+      setShow(false);
+    } else if (evento.type === "dismissed") {
+      setShow(false);
     }
   };
 
   const showMode = (modoAtual: DateTimePickerMode) => {
-    setShow(true);
+    if (modoAtual === "date") {
+      setShow(true);
+    }
     setModo(modoAtual);
   };
 
