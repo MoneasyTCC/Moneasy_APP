@@ -6,6 +6,7 @@ export class  Transacao {
     data: Date;
     descricao: string;
     moeda: string;
+    static valor: number;
   
     constructor(id:string,usuarioId: string, tipo: string, valor: number, data: Date, descricao: string, moeda: string) {
       this.id = id;

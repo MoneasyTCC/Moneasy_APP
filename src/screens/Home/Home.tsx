@@ -13,15 +13,13 @@ import {
 } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
-import { Shadow } from "react-native-shadow-2";
-import { adicionarNovaMeta } from "../../../services/testeBanco";
-import { adicionarNovaTransacao } from "../../../services/testeBanco";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { Transacao } from "../../../Model/Transacao";
 import { TransacaoDAL } from "../../../Repo/RepositorioTransacao";
-
+import { calcularSaldo } from "../../../Controller/TransacaoController";
+import RNPickerSelect from 'react-native-picker-select';
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   "Home"
@@ -42,6 +40,11 @@ export default function HomeScreen({ navigation }: Props) {
   const [modo, setModo] = useState<DateTimePickerMode | undefined>(undefined);
   const [show, setShow] = useState(false);
   const [tipoTransacao, setTipoTransacao] = useState("");
+
+  //felipe
+  const [mesSelecionado, setMesSelecionado] = useState(new Date().getMonth().toString());
+  const [saldo, setSaldo] = useState({ totalEntradas: 0, totalSaidas: 0, saldo: 0 });
+  const [showPicker, setShowPicker] = useState(false);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
@@ -64,7 +67,19 @@ export default function HomeScreen({ navigation }: Props) {
       Alert.alert("Erro ao adicionar transação");
     }
   };
-
+  const atualizarSaldoComMesSelecionado = async (mes: any) => {
+    const anoAtual = new Date().getFullYear();
+    const dataSelecionada = new Date(anoAtual, parseInt(mes+1), 1);
+  
+    try {
+      const resultadoSaldo = await calcularSaldo(dataSelecionada);
+      setSaldo(resultadoSaldo);
+    } catch (error) {
+      console.error("Não foi possível atualizar o saldo: ", error);
+    }
+  };
+  
+  
   const onChange = (
     evento: DateTimePickerEvent,
     dataSelecionada?: Date | undefined
@@ -106,8 +121,14 @@ export default function HomeScreen({ navigation }: Props) {
   };
 
   return (
+    
     <View style={styles.container}>
+      
       <View style={styles.menuHeader}>
+      <View >
+      <Text>R$ {saldo.saldo.toFixed(2)}</Text> 
+    </View>
+ 
         <Button title="Sair" onPress={() => navigation.replace("Inicio")} />
         <View style={styles.buttons}>
           <TouchableOpacity
@@ -163,6 +184,31 @@ export default function HomeScreen({ navigation }: Props) {
             )}
           </View>
         </Modal>
+
+        <RNPickerSelect
+      onValueChange={(mes) => {
+        setMesSelecionado(mes);
+        console.log(mes);
+        atualizarSaldoComMesSelecionado(mes);
+      }}
+      items={[
+        { label: 'Janeiro', value: '0' },
+        { label: 'Fevereiro', value: '1' },
+        { label: 'Março', value: '2' },
+        { label: 'Abril', value: '3' },
+        { label: 'Maio', value: '4' },
+        { label: 'Junho', value: '5' },
+        { label: 'Julho', value: '6' },
+        { label: 'Agosto', value: '7' },
+        { label: 'Setembro', value: '8' },
+        { label: 'Outubro', value: '9' },
+        { label: 'Novembro', value: '10' },
+        { label: 'Dezembro', value: '11' },
+      ]}
+      placeholder={{ label: "Selecione o mês...", value: null }}
+    />
+
+    <Text >Saldo: R$ {saldo.saldo.toFixed(2)}</Text>
       </View>
       <View style={styles.menuBody}>
         <View style={styles.content}></View>

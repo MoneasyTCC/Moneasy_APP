@@ -56,8 +56,19 @@ import {
       try {
         const q = query(collection(db, 'transacoes'), where("usuarioId", "==", usuarioIdatual));
         const querySnapshot = await getDocs(q);
-        const transacoes = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        console.log(transacoes);
+        const transacoes: Transacao[] = querySnapshot.docs.map(doc => {
+          const data = doc.data();
+          return new Transacao(
+            doc.id,
+            data.usuarioId,
+            data.tipo,
+            data.valor,
+            new Date(data.data), 
+            data.descricao,
+            data.moeda
+          );
+        });        
+        // console.log(transacoes);
         return transacoes;
     
 
