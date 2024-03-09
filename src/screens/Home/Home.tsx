@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Button, StyleSheet, Image, Modal, TextInput, Alert, FlatList, FlatListProps, useRef } from "react-native";
+import { View, Text, Button, StyleSheet, Image, Modal, TextInput, Alert, FlatList, FlatListProps } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
 import { Shadow } from "react-native-shadow-2";
@@ -8,8 +8,7 @@ import { adicionarNovaTransacao } from '../../../services/testeBanco';
 import DatePicker from "react-native-datepicker";
 import { Transacao } from "../../../Model/Transacao";
 import { TransacaoDAL } from "../../../Repo/RepositorioTransacao";
-import { exibirTransacoesNaTela } from "../../../Controller/TransacaoController";
-
+ import ListaDeTransacoes from "../../../Components/listaTransacao";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -29,23 +28,13 @@ export default function HomeScreen({ navigation }: Props) {
   const [data, setData] = useState(new Date());
   const [descricao, setDescricao] = useState('');
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
+  const [dataSelecionada, setDataSelecionada] = useState(new Date());
 
-
-    useEffect(() => {
-            async function fetchTransacoes() {
-              try {
-                const transacoesData = await TransacaoDAL.buscarTransacoes();
-                setTransacoes(transacoesData);
-              } catch (error) {
-                console.error("Erro ao buscar transações:", error.message);
-              }
-            }
-            fetchTransacoes();
-            }, []);
-
-  const toggleModal = () => {
-    setModalVisible(!isModalVisible);
-  };
+  const dataParaTestes = new Date('2024-03-09T00:00:00Z');
+    
+    const toggleModal = () => {
+      setModalVisible(!isModalVisible);
+    };
 
   const novosDados: Transacao = {
     id:"",
@@ -82,6 +71,7 @@ export default function HomeScreen({ navigation }: Props) {
     <View style={styles.container}>
     <View style={styles.menuHeader}>
       <Button title="Sair" onPress={() => navigation.replace("Inicio")} />
+
       <Button title="Adicionar Transação" onPress={toggleModal} />
 
 <Modal visible={isModalVisible}>
@@ -122,18 +112,15 @@ export default function HomeScreen({ navigation }: Props) {
     <Button title="Cancelar" onPress={toggleModal} />
   </View>
 </Modal>
+
     </View>
     <View style={styles.menuBody}>
-    <FlatList
-            data={transacoes}
-            renderItem={({ item }) => (
-              <View>
-                <Text>{item.descricao}</Text>
-                <Text>{item.valor}</Text>
-              </View>
-            )}
-            keyExtractor={(item) => item.id}
-          />
+      <View style={styles.content}>
+
+      <View style={{ flex: 1 }}>
+      <ListaDeTransacoes dataSelecionada={dataParaTestes} />
+    </View>
+      </View>
     </View>
     <View style={styles.menuFooter}>
       <View style={styles.menuNavegation}>

@@ -1,27 +1,21 @@
+import { FlatList, View } from "react-native";
 import { Transacao } from "../Model/Transacao";
 import { TransacaoDAL } from "../Repo/RepositorioTransacao";
-import { RecyclerView, LinearLayoutManager } from "android.support.v7.widget";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
-function exibirTransacoesNaTela(transacoes: Transacao[], usuarioId: string) {
-  const transacoesDoUsuario = transacoes.filter(transacao => transacao.usuarioId === usuarioId);
 
-  const flatListRef = useRef<FlatList | null>(null);
-
-  return (
-    <FlatList
-      ref={flatListRef}
-      data={transacoesDoUsuario}
-      renderItem={({ item }) => (
-        <View>
-          <Text>{item.descricao}</Text>
-          <Text>{item.valor}</Text>
-        </View>
-      )}
-      keyExtractor={(item) => item.id}
-    />
-  );
+async function obterTransacoesPorData(dataSelecionada: Date) {
+    const dataFormatada = dataSelecionada.toISOString().split('T')[0];
+    try {
+        var lista = await  TransacaoDAL.buscarTransacoesPorData(dataFormatada);
+        
+        return lista
+    } catch (error) {
+        console.error("Erro ao buscar transações: ", error);
+        throw new Error("Erro ao buscar transações");
+    }
 }
-
+export default obterTransacoesPorData;
+  
 
 
