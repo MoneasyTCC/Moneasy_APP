@@ -192,7 +192,11 @@ export default function HomeScreen({ navigation }: Props) {
         </Modal>
       </View>
       <View style={styles.menuBody}>
-        <View style={styles.content}></View>
+        <View style={styles.content}>
+          <View style={{ flex: 1 }}>
+            <ListaDeTransacoes dataSelecionada={dataParaTestes} />
+          </View>
+        </View>
       </View>
       <View style={styles.menuFooter}>
         <View style={styles.menuNavegation}>
