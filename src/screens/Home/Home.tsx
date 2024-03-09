@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, Text, Button, StyleSheet, Image, Modal, TextInput, Alert } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, Button, StyleSheet, Image, Modal, TextInput, Alert, FlatList, FlatListProps, useRef } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
 import { Shadow } from "react-native-shadow-2";
@@ -8,6 +8,8 @@ import { adicionarNovaTransacao } from '../../../services/testeBanco';
 import DatePicker from "react-native-datepicker";
 import { Transacao } from "../../../Model/Transacao";
 import { TransacaoDAL } from "../../../Repo/RepositorioTransacao";
+import { exibirTransacoesNaTela } from "../../../Controller/TransacaoController";
+
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -26,10 +28,25 @@ export default function HomeScreen({ navigation }: Props) {
   const [valor, setValor] = useState('');
   const [data, setData] = useState(new Date());
   const [descricao, setDescricao] = useState('');
+  const [transacoes, setTransacoes] = useState<Transacao[]>([]);
+
+
+    useEffect(() => {
+            async function fetchTransacoes() {
+              try {
+                const transacoesData = await TransacaoDAL.buscarTransacoes();
+                setTransacoes(transacoesData);
+              } catch (error) {
+                console.error("Erro ao buscar transações:", error.message);
+              }
+            }
+            fetchTransacoes();
+            }, []);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
+
   const novosDados: Transacao = {
     id:"",
     usuarioId: "",
@@ -40,15 +57,26 @@ export default function HomeScreen({ navigation }: Props) {
     moeda:"BRL"
   };
   const handleTransacao = async () => {
-    try{
-      TransacaoDAL.adicionarTransacao(novosDados)
+    try {
+      const valorFloat = isNaN(parseFloat(valor)) ? 0 : parseFloat(valor); // Validação adicionada aqui
+      const novosDados: Transacao = {
+        id: "",
+        usuarioId: "",
+        tipo: "entrada",
+        valor: valorFloat,
+        data: data,
+        descricao: descricao,
+        moeda: "BRL"
+      };
+      await TransacaoDAL.adicionarTransacao(novosDados);
       Alert.alert("Transação adicionada com Sucesso!");
-
-    }
-    catch(err){
-    Alert.alert("Erro ao adicionar transação");
+    } catch (err) {
+      Alert.alert("Erro ao adicionar transação");
     }
   };
+
+
+
 
   return (
     <View style={styles.container}>
@@ -96,7 +124,16 @@ export default function HomeScreen({ navigation }: Props) {
 </Modal>
     </View>
     <View style={styles.menuBody}>
-      <View style={styles.content}></View>
+    <FlatList
+            data={transacoes}
+            renderItem={({ item }) => (
+              <View>
+                <Text>{item.descricao}</Text>
+                <Text>{item.valor}</Text>
+              </View>
+            )}
+            keyExtractor={(item) => item.id}
+          />
     </View>
     <View style={styles.menuFooter}>
       <View style={styles.menuNavegation}>
