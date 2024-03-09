@@ -42,6 +42,7 @@ export default function HomeScreen({ navigation }: Props) {
   const [modo, setModo] = useState<DateTimePickerMode | undefined>(undefined);
   const [show, setShow] = useState(false);
   const [tipoTransacao, setTipoTransacao] = useState("");
+  const [dataTextInput, setDataTextInput] = useState("");
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
@@ -59,6 +60,7 @@ export default function HomeScreen({ navigation }: Props) {
     try {
       TransacaoDAL.adicionarTransacao(novosDados);
       setTipoTransacao("");
+      setDataTextInput("");
       Alert.alert("Transação adicionada com Sucesso!");
     } catch (err) {
       Alert.alert("Erro ao adicionar transação");
@@ -73,6 +75,7 @@ export default function HomeScreen({ navigation }: Props) {
       const dataAtual = dataSelecionada || data;
       setShow(Platform.OS === "ios");
       setData(dataAtual);
+      setDataTextInput(data.toLocaleDateString("pt-BR"));
       let tempData = new Date(dataAtual);
       let fData =
         tempData.getDate() +
@@ -106,6 +109,7 @@ export default function HomeScreen({ navigation }: Props) {
 
   const handleCancelarTransacao = () => {
     setTipoTransacao("");
+    setDataTextInput("");
     toggleModal();
   };
 
@@ -142,10 +146,13 @@ export default function HomeScreen({ navigation }: Props) {
               value={valor}
               onChangeText={setValor}
             />
-            <Button
-              title="datepicker"
-              onPress={() => showMode("date")}
-            ></Button>
+            <TextInput
+              placeholder="dd/mm/yyyy"
+              onPressIn={() => showMode("date")}
+              showSoftInputOnFocus={false}
+              caretHidden={true}
+              value={dataTextInput}
+            ></TextInput>
             <TextInput
               placeholder="Descrição"
               value={descricao}
