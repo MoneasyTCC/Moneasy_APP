@@ -70,6 +70,40 @@ import {
       }
     },
   
+
+
+    buscarTransacoesPorData: async (dataSelecionada : string) => {
+      const usuarioIdatual = await getCurrentUserId();
+      if (!usuarioIdatual) throw new Error("Usuário não autenticado.");
+    
+      try {
+        const q = query(collection(db, 'transacoes'), where("usuarioId", "==", usuarioIdatual));
+        const querySnapshot = await getDocs(q);
+        let transacoes: any[] = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+    
+        const dateSelected = new Date(dataSelecionada);
+    
+      transacoes = transacoes.filter(transacao => {
+  const dataTransacao = transacao.data.toDate();
+  return dataTransacao.getFullYear() === dateSelected.getFullYear() &&
+         dataTransacao.getMonth() === dateSelected.getMonth();
+});
+    
+        console.log(transacoes);
+        return transacoes;
+    
+      } catch (error) {
+        if (error instanceof Error) {
+          throw new Error(`Erro ao buscar transações por data: ${error.message}`);
+        } else {
+          throw new Error('Ocorreu um erro desconhecido ao buscar transações por data.');
+        }
+      }
+    },
+    
     // Função para deletar uma transação
     deletarTransacao: async (transacaoId: string) => {
       try {

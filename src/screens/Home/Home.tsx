@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,8 @@ import {
   Alert,
   Platform,
   TouchableOpacity,
+  FlatList,
+  FlatListProps,
 } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
@@ -21,6 +23,7 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 import { Transacao } from "../../../Model/Transacao";
 import { TransacaoDAL } from "../../../Repo/RepositorioTransacao";
+import ListaDeTransacoes from "../../../Components/listaTransacao";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -43,10 +46,15 @@ export default function HomeScreen({ navigation }: Props) {
   const [show, setShow] = useState(false);
   const [tipoTransacao, setTipoTransacao] = useState("");
   const [dataTextInput, setDataTextInput] = useState("");
+  const [transacoes, setTransacoes] = useState<Transacao[]>([]);
+  const [dataSelecionada, setDataSelecionada] = useState(new Date());
+
+  const dataParaTestes = new Date("2024-03-09T00:00:00Z");
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
+
   const novosDados: Transacao = {
     id: "",
     usuarioId: "",
@@ -58,9 +66,17 @@ export default function HomeScreen({ navigation }: Props) {
   };
   const handleTransacao = async () => {
     try {
-      TransacaoDAL.adicionarTransacao(novosDados);
-      setTipoTransacao("");
-      setDataTextInput("");
+      const valorFloat = isNaN(parseFloat(valor)) ? 0 : parseFloat(valor); // Validação adicionada aqui
+      const novosDados: Transacao = {
+        id: "",
+        usuarioId: "",
+        tipo: tipoTransacao,
+        valor: valorFloat,
+        data: data,
+        descricao: descricao,
+        moeda: "BRL",
+      };
+      await TransacaoDAL.adicionarTransacao(novosDados);
       Alert.alert("Transação adicionada com Sucesso!");
     } catch (err) {
       Alert.alert("Erro ao adicionar transação");
