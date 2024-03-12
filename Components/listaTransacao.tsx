@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Alert } from 'react-native';
+import { View, Text, FlatList, Alert,StyleSheet  } from 'react-native';
 import { Transacao } from "../Model/Transacao";
 import obterTransacoesPorData from '../Controller/TransacaoController';
  
@@ -28,12 +28,17 @@ interface ListaDeTransacoesProps {
   }, [dataSelecionada]);
 
 const renderItem = ({ item }: { item: Transacao }) => (
-    <View style={{ padding: 10, borderBottomWidth: 1, borderBottomColor: '#ccc' }}>
-        <Text>ID: {item.id}</Text>
-        <Text>Valor: {item.valor}</Text>
-        <Text>Descricao: {item.descricao}</Text>
-        <Text>Data: {item.data ? new Date(item.data).toLocaleDateString() : 'Sem data'}</Text>
+  <View style={styles.container}>
+    <View style={styles.icon}>
+      {/* Inserir ícone aqui */}
     </View>
+    <Text style={styles.text}>{item.tipo}</Text>
+    <Text style={[styles.text, styles.value]}>R${item.valor.toFixed(2)}</Text>
+ 
+    <Text style={styles.checkmark}>
+      {/* Inserir ícone de verificação aqui */}
+    </Text>
+  </View>
 );
 
   
@@ -46,5 +51,31 @@ const renderItem = ({ item }: { item: Transacao }) => (
     />
   );
 };
-
+const styles = StyleSheet.create({
+  container: {
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    backgroundColor: '#000', 
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  text: {
+    color: '#fff', 
+    fontSize: 16, 
+  },
+  value: {
+    fontWeight: 'bold', 
+  },
+  icon: {
+    width: 20, 
+    height: 20, 
+    marginRight: 10, 
+  },
+  checkmark: {
+    color: 'green', 
+    
+  },
+});
 export default ListaDeTransacoes;
