@@ -24,6 +24,7 @@ import DateTimePicker, {
 import { Transacao } from "../../../Model/Transacao";
 import { TransacaoDAL } from "../../../Repo/RepositorioTransacao";
 import ListaDeTransacoes from "../../../Components/listaTransacao";
+import { obterSaldoPorMes } from "../../../Controller/TransacaoController";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -48,11 +49,39 @@ export default function HomeScreen({ navigation }: Props) {
   const [dataTextInput, setDataTextInput] = useState("");
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [dataSelecionada, setDataSelecionada] = useState(new Date());
+  const [checkNovaTransacao, setcheckNovaTransacao] = useState(true);
 
   const dataParaTestes = new Date("2024-03-09T00:00:00Z");
 
+  const [valuesObject, setValuesObject] = useState<{
+    totalEntradas?: number;
+    totalSaidas?: number;
+    saldo?: number;
+  }>({});
+
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
+  };
+
+  const handleObterSaldoPorMes = async () => {
+    try {
+      const dataSelecionada = dataParaTestes;
+      const result = await obterSaldoPorMes(dataSelecionada);
+      setValuesObject(result);
+    } catch (error) {
+      console.error("Erro ao obter saldo: ", error);
+    }
+  };
+
+  useEffect(() => {
+    if (checkNovaTransacao) {
+      handleObterSaldoPorMes();
+      setcheckNovaTransacao(false);
+    }
+  }, [checkNovaTransacao]);
+
+  const handleNovoCalculo = () => {
+    setcheckNovaTransacao(true);
   };
 
   const novosDados: Transacao = {
@@ -64,6 +93,7 @@ export default function HomeScreen({ navigation }: Props) {
     descricao: descricao,
     moeda: "BRL",
   };
+
   const handleTransacao = async () => {
     try {
       const valorFloat = isNaN(parseFloat(valor)) ? 0 : parseFloat(valor); // Validação adicionada aqui
@@ -78,6 +108,7 @@ export default function HomeScreen({ navigation }: Props) {
       };
       await TransacaoDAL.adicionarTransacao(novosDados);
       Alert.alert("Transação adicionada com Sucesso!");
+      handleNovoCalculo();
     } catch (err) {
       Alert.alert("Erro ao adicionar transação");
     }
@@ -133,23 +164,41 @@ export default function HomeScreen({ navigation }: Props) {
     <View style={styles.container}>
       <View style={styles.menuHeader}>
         <Button title="Sair" onPress={() => navigation.replace("Inicio")} />
+        <View>
+          <Text style={{ color: "#ffffff", textAlign: "center" }}>Saldo</Text>
+          <Text style={{ color: "#ffffff" }}>{String(valuesObject.saldo)}</Text>
+        </View>
         <View style={styles.buttons}>
-          <TouchableOpacity
-            style={styles.entradaBtn}
-            onPress={handleTipoTransacaoEntrada}
-          >
-            <Text style={{ fontSize: 50, textAlign: "center", lineHeight: 55 }}>
-              +
+          <View style={styles.rendas}>
+            <TouchableOpacity
+              style={styles.entradaBtn}
+              onPress={handleTipoTransacaoEntrada}
+            >
+              <Text
+                style={{ fontSize: 50, textAlign: "center", lineHeight: 55 }}
+              >
+                +
+              </Text>
+            </TouchableOpacity>
+            <Text style={{ color: "#ffffff" }}>
+              {String(valuesObject?.totalEntradas)}
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.saidaBtn}
-            onPress={handleTipoTransacaoSaida}
-          >
-            <Text style={{ fontSize: 50, textAlign: "center", lineHeight: 55 }}>
-              -
+          </View>
+          <View style={styles.despesas}>
+            <TouchableOpacity
+              style={styles.saidaBtn}
+              onPress={handleTipoTransacaoSaida}
+            >
+              <Text
+                style={{ fontSize: 50, textAlign: "center", lineHeight: 55 }}
+              >
+                -
+              </Text>
+            </TouchableOpacity>
+            <Text style={{ color: "#ffffff" }}>
+              {String(valuesObject?.totalSaidas)}
             </Text>
-          </TouchableOpacity>
+          </View>
         </View>
 
         <Modal visible={isModalVisible}>
@@ -285,6 +334,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  rendas: {
+    flexDirection: "row",
+  },
   saidaBtn: {
     width: 50,
     height: 50,
@@ -293,8 +345,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  despesas: {
+    flexDirection: "row",
+  },
   buttons: {
     flexDirection: "row",
-    gap: 30,
+    top: 70,
+    left: 4,
+    width: 368,
+    height: 55,
+    gap: 140,
+    justifyContent: "flex-start",
   },
 });
