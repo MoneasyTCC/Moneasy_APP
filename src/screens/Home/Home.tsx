@@ -25,6 +25,7 @@ import { Transacao } from "../../../Model/Transacao";
 import { TransacaoDAL } from "../../../Repo/RepositorioTransacao";
 import ListaDeTransacoes from "../../../Components/listaTransacao";
 import { obterSaldoPorMes } from "../../../Controller/TransacaoController";
+import DropDownPicker from "react-native-dropdown-picker";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -50,6 +51,21 @@ export default function HomeScreen({ navigation }: Props) {
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [dataSelecionada, setDataSelecionada] = useState(new Date());
   const [checkNovaTransacao, setcheckNovaTransacao] = useState(true);
+  const [openDropdown, setOpenDropdown] = useState(false);
+  const [items, setItems] = useState([
+    { label: "Janeiro", value: "1" },
+    { label: "Fevereiro", value: "2" },
+    { label: "Março", value: "3" },
+    { label: "Abril", value: "4" },
+    { label: "Maio", value: "5" },
+    { label: "Junho", value: "6" },
+    { label: "Julio", value: "7" },
+    { label: "Agosto", value: "8" },
+    { label: "Setembro", value: "9" },
+    { label: "Outubro", value: "10" },
+    { label: "Novembro", value: "11" },
+    { label: "Dezembro", value: "12" },
+  ]);
 
   const dataParaTestes = new Date("2024-03-09T00:00:00Z");
 
@@ -65,20 +81,49 @@ export default function HomeScreen({ navigation }: Props) {
 
   const handleObterSaldoPorMes = async () => {
     try {
-      const dataSelecionada = dataParaTestes;
       const result = await obterSaldoPorMes(dataSelecionada);
       setValuesObject(result);
+      console.log(result);
     } catch (error) {
       console.error("Erro ao obter saldo: ", error);
     }
   };
 
+  const getCurrentMonth = () => {
+    const monthNames = [
+      "Janeiro",
+      "Fevereiro",
+      "Março",
+      "Abril",
+      "Maio",
+      "Junho",
+      "Julho",
+      "Agosto",
+      "Setembro",
+      "Outubro",
+      "Novembro",
+      "Dezembro",
+    ];
+    const currentDate = new Date();
+    return monthNames[currentDate.getMonth()];
+  };
+
+  const [dropdownValue, setdropdownValue] = useState(getCurrentMonth());
+
+  const converterDataParaFirebase = () => {
+    let mes = dropdownValue;
+    const dataFirebase = new Date(
+      `2024-${mes}-${new Date().getDate()}T${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}Z`
+    );
+    console.log(dataFirebase);
+    setDataSelecionada(dataFirebase);
+    return dataFirebase;
+  };
+
   useEffect(() => {
-    if (checkNovaTransacao) {
-      handleObterSaldoPorMes();
-      setcheckNovaTransacao(false);
-    }
-  }, [checkNovaTransacao]);
+    handleObterSaldoPorMes();
+    setcheckNovaTransacao(false);
+  }, [dataSelecionada, checkNovaTransacao]);
 
   const handleNovoCalculo = () => {
     setcheckNovaTransacao(true);
@@ -165,6 +210,21 @@ export default function HomeScreen({ navigation }: Props) {
       <View style={styles.menuHeader}>
         <Button title="Sair" onPress={() => navigation.replace("Inicio")} />
         <View>
+          <DropDownPicker
+            open={openDropdown}
+            value={dropdownValue}
+            placeholder={getCurrentMonth()}
+            items={items}
+            setOpen={setOpenDropdown}
+            setValue={setdropdownValue}
+            setItems={setItems}
+            style={styles.dropdown}
+            dropDownContainerStyle={styles.dropdownContainer}
+            textStyle={{ color: "#ffffff" }}
+            onChangeValue={converterDataParaFirebase}
+          />
+        </View>
+        <View>
           <Text style={{ color: "#ffffff", textAlign: "center" }}>Saldo</Text>
           <Text style={{ color: "#ffffff" }}>{String(valuesObject.saldo)}</Text>
         </View>
@@ -200,7 +260,7 @@ export default function HomeScreen({ navigation }: Props) {
             </Text>
           </View>
         </View>
-
+        <Button title="teste" onPress={converterDataParaFirebase} />
         <Modal visible={isModalVisible}>
           <View
             style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
@@ -243,7 +303,7 @@ export default function HomeScreen({ navigation }: Props) {
       <View style={styles.menuBody}>
         <View style={styles.content}>
           <View style={{ flex: 1 }}>
-            <ListaDeTransacoes dataSelecionada={dataParaTestes} />
+            <ListaDeTransacoes dataSelecionada={dataSelecionada} />
           </View>
         </View>
       </View>
@@ -356,5 +416,14 @@ const styles = StyleSheet.create({
     height: 55,
     gap: 140,
     justifyContent: "flex-start",
+  },
+  dropdown: {
+    backgroundColor: "transparent",
+    borderWidth: 0,
+    width: 120,
+  },
+  dropdownContainer: {
+    backgroundColor: "#2b2b2b",
+    width: 120,
   },
 });
