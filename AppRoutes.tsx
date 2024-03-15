@@ -5,9 +5,9 @@ import { NavigationContainer } from "@react-navigation/native";
 import LoginScreen from "./src/screens/Login/Login";
 import HomeScreen from "./src/screens/Home/Home";
 import MenuScreen from "./src/screens/Menu/Menu";
-import TransacaoScreen from "./src/screens/Menu/Menu";
-import MetasScreen from "./src/screens/Menu/Menu";
-import MoreScreen from "./src/screens/Menu/Menu";
+import TransacaoScreen from "./src/screens/Transacoes/Transacoes";
+import MetasScreen from "./src/screens/Metas/Metas";
+import MoreScreen from "./src/screens/More/More";
 import CriarConta from "./src/screens/Login/CriarConta";
 import InicioScreen from "./src/screens/Login/Inicio";
 import RedefineSenhaScreen from "./src/screens/Login/RedefineSenha";
@@ -49,17 +49,17 @@ function AppRoutes() {
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="Menu"
+          name="Transacao"
           component={TransacaoScreen}
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="Menu"
+          name="Metas"
           component={MetasScreen}
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="Menu"
+          name="More"
           component={MoreScreen}
           options={{ headerShown: false }}
         />

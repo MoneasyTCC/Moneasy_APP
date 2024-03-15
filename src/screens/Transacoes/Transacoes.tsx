@@ -10,18 +10,18 @@ import { Transacao } from "../../../Model/Transacao";
 import { TransacaoDAL } from "../../../Repo/RepositorioTransacao";
 import NavigationBar from "../menuNavegation";
 
-type MenuScreenNavigationProp = NativeStackNavigationProp<
+type TransacaoScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
-  "Menu"
+  "Transacao"
 >;
 
 type Props = {
-  navigation: MenuScreenNavigationProp;
+  navigation: TransacaoScreenNavigationProp;
 };
 
 
 // Use as props na definição do seu componente
-export default function MenuScreen({ navigation }: Props) {
+export default function TransacaoScreen({ navigation }: Props) {
 
   var [isModalVisible, setModalVisible] = useState(false);
   const [valor, setValor] = useState('');
@@ -100,7 +100,7 @@ export default function MenuScreen({ navigation }: Props) {
       <View style={styles.content}></View>
     </View>
     <View style={styles.menuFooter}>      
-      <NavigationBar/>
+      <NavigationBar></NavigationBar>
     </View>
   </View>
   );
@@ -148,7 +148,8 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 60,
     marginBottom: 20,
-  }
+  },
+  img: {},
 });
 
 
