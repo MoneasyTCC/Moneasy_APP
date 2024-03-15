@@ -24,6 +24,8 @@ import DateTimePicker, {
 import { Transacao } from "../../../Model/Transacao";
 import { TransacaoDAL } from "../../../Repo/RepositorioTransacao";
 import ListaDeTransacoes from "../../../Components/listaTransacao";
+import { obterSaldoPorMes } from "../../../Controller/TransacaoController";
+import DropDownPicker from "react-native-dropdown-picker";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -48,11 +50,83 @@ export default function HomeScreen({ navigation }: Props) {
   const [dataTextInput, setDataTextInput] = useState("");
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [dataSelecionada, setDataSelecionada] = useState(new Date());
+  const [checkNovaTransacao, setcheckNovaTransacao] = useState(true);
+  const [openDropdown, setOpenDropdown] = useState(false);
+  const [items, setItems] = useState([
+    { label: "Janeiro", value: "1" },
+    { label: "Fevereiro", value: "2" },
+    { label: "Março", value: "3" },
+    { label: "Abril", value: "4" },
+    { label: "Maio", value: "5" },
+    { label: "Junho", value: "6" },
+    { label: "Julio", value: "7" },
+    { label: "Agosto", value: "8" },
+    { label: "Setembro", value: "9" },
+    { label: "Outubro", value: "10" },
+    { label: "Novembro", value: "11" },
+    { label: "Dezembro", value: "12" },
+  ]);
 
   const dataParaTestes = new Date("2024-03-09T00:00:00Z");
 
+  const [valuesObject, setValuesObject] = useState<{
+    totalEntradas?: number;
+    totalSaidas?: number;
+    saldo?: number;
+  }>({});
+
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
+  };
+
+  const handleObterSaldoPorMes = async () => {
+    try {
+      const result = await obterSaldoPorMes(dataSelecionada);
+      setValuesObject(result);
+      console.log(result);
+    } catch (error) {
+      console.error("Erro ao obter saldo: ", error);
+    }
+  };
+
+  const getCurrentMonth = () => {
+    const monthNames = [
+      "Janeiro",
+      "Fevereiro",
+      "Março",
+      "Abril",
+      "Maio",
+      "Junho",
+      "Julho",
+      "Agosto",
+      "Setembro",
+      "Outubro",
+      "Novembro",
+      "Dezembro",
+    ];
+    const currentDate = new Date();
+    return monthNames[currentDate.getMonth()];
+  };
+
+  const [dropdownValue, setdropdownValue] = useState(getCurrentMonth());
+
+  const converterDataParaFirebase = () => {
+    let mes = dropdownValue;
+    const dataFirebase = new Date(
+      `2024-${mes}-${new Date().getDate()}T${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}Z`
+    );
+    console.log(dataFirebase);
+    setDataSelecionada(dataFirebase);
+    return dataFirebase;
+  };
+
+  useEffect(() => {
+    handleObterSaldoPorMes();
+    setcheckNovaTransacao(false);
+  }, [dataSelecionada, checkNovaTransacao]);
+
+  const handleNovoCalculo = () => {
+    setcheckNovaTransacao(true);
   };
 
   const novosDados: Transacao = {
@@ -64,6 +138,7 @@ export default function HomeScreen({ navigation }: Props) {
     descricao: descricao,
     moeda: "BRL",
   };
+
   const handleTransacao = async () => {
     try {
       const valorFloat = isNaN(parseFloat(valor)) ? 0 : parseFloat(valor); // Validação adicionada aqui
@@ -78,6 +153,7 @@ export default function HomeScreen({ navigation }: Props) {
       };
       await TransacaoDAL.adicionarTransacao(novosDados);
       Alert.alert("Transação adicionada com Sucesso!");
+      handleNovoCalculo();
     } catch (err) {
       Alert.alert("Erro ao adicionar transação");
     }
@@ -133,25 +209,58 @@ export default function HomeScreen({ navigation }: Props) {
     <View style={styles.container}>
       <View style={styles.menuHeader}>
         <Button title="Sair" onPress={() => navigation.replace("Inicio")} />
-        <View style={styles.buttons}>
-          <TouchableOpacity
-            style={styles.entradaBtn}
-            onPress={handleTipoTransacaoEntrada}
-          >
-            <Text style={{ fontSize: 50, textAlign: "center", lineHeight: 55 }}>
-              +
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.saidaBtn}
-            onPress={handleTipoTransacaoSaida}
-          >
-            <Text style={{ fontSize: 50, textAlign: "center", lineHeight: 55 }}>
-              -
-            </Text>
-          </TouchableOpacity>
+        <View>
+          <DropDownPicker
+            open={openDropdown}
+            value={dropdownValue}
+            placeholder={getCurrentMonth()}
+            items={items}
+            setOpen={setOpenDropdown}
+            setValue={setdropdownValue}
+            setItems={setItems}
+            style={styles.dropdown}
+            dropDownContainerStyle={styles.dropdownContainer}
+            textStyle={{ color: "#ffffff" }}
+            onChangeValue={converterDataParaFirebase}
+          />
         </View>
-
+        <View>
+          <Text style={{ color: "#ffffff", textAlign: "center" }}>Saldo</Text>
+          <Text style={{ color: "#ffffff" }}>{String(valuesObject.saldo)}</Text>
+        </View>
+        <View style={styles.buttons}>
+          <View style={styles.rendas}>
+            <TouchableOpacity
+              style={styles.entradaBtn}
+              onPress={handleTipoTransacaoEntrada}
+            >
+              <Text
+                style={{ fontSize: 50, textAlign: "center", lineHeight: 55 }}
+              >
+                +
+              </Text>
+            </TouchableOpacity>
+            <Text style={{ color: "#ffffff" }}>
+              {String(valuesObject?.totalEntradas)}
+            </Text>
+          </View>
+          <View style={styles.despesas}>
+            <TouchableOpacity
+              style={styles.saidaBtn}
+              onPress={handleTipoTransacaoSaida}
+            >
+              <Text
+                style={{ fontSize: 50, textAlign: "center", lineHeight: 55 }}
+              >
+                -
+              </Text>
+            </TouchableOpacity>
+            <Text style={{ color: "#ffffff" }}>
+              {String(valuesObject?.totalSaidas)}
+            </Text>
+          </View>
+        </View>
+        <Button title="teste" onPress={converterDataParaFirebase} />
         <Modal visible={isModalVisible}>
           <View
             style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
@@ -194,7 +303,7 @@ export default function HomeScreen({ navigation }: Props) {
       <View style={styles.menuBody}>
         <View style={styles.content}>
           <View style={{ flex: 1 }}>
-            <ListaDeTransacoes dataSelecionada={dataParaTestes} />
+            <ListaDeTransacoes dataSelecionada={dataSelecionada} />
           </View>
         </View>
       </View>
@@ -285,6 +394,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  rendas: {
+    flexDirection: "row",
+  },
   saidaBtn: {
     width: 50,
     height: 50,
@@ -293,8 +405,25 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  despesas: {
+    flexDirection: "row",
+  },
   buttons: {
     flexDirection: "row",
-    gap: 30,
+    top: 70,
+    left: 4,
+    width: 368,
+    height: 55,
+    gap: 140,
+    justifyContent: "flex-start",
+  },
+  dropdown: {
+    backgroundColor: "transparent",
+    borderWidth: 0,
+    width: 120,
+  },
+  dropdownContainer: {
+    backgroundColor: "#2b2b2b",
+    width: 120,
   },
 });
