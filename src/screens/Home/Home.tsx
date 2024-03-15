@@ -26,6 +26,7 @@ import { TransacaoDAL } from "../../../Repo/RepositorioTransacao";
 import ListaDeTransacoes from "../../../Components/listaTransacao";
 import { obterSaldoPorMes } from "../../../Controller/TransacaoController";
 import DropDownPicker from "react-native-dropdown-picker";
+import NavigationBar from "../menuNavegation";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -310,22 +311,7 @@ export default function HomeScreen({ navigation }: Props) {
       <View style={styles.menuFooter}>
         <View style={styles.menuNavegation}>
           <Text></Text>
-          <Image
-            style={styles.img}
-            source={require("../../../assets/menu/homeActive.png")}
-          />
-          <Image
-            style={styles.img}
-            source={require("../../../assets/menu/menu.png")}
-          />
-          <Image
-            style={styles.img}
-            source={require("../../../assets/menu/transactions.png")}
-          />
-          <Image
-            style={styles.img}
-            source={require("../../../assets/menu/more.png")}
-          />
+          <NavigationBar></NavigationBar>
           <Text></Text>
         </View>
       </View>
