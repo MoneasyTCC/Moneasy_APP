@@ -10,13 +10,13 @@ import { Transacao } from "../../../Model/Transacao";
 import { TransacaoDAL } from "../../../Repo/RepositorioTransacao";
 import NavigationBar from "../menuNavegation";
 
-type MenuScreenNavigationProp = NativeStackNavigationProp<
+type OrcamentoScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
-  "Menu"
+  "Orcamento"
 >;
 
 type Props = {
-  navigation: MenuScreenNavigationProp;
+  navigation: OrcamentoScreenNavigationProp;
 };
 
 

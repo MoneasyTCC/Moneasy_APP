@@ -209,7 +209,6 @@ export default function HomeScreen({ navigation }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.menuHeader}>
-        <Button title="Sair" onPress={() => navigation.replace("Inicio")} />
         <View>
           <DropDownPicker
             open={openDropdown}
@@ -261,50 +260,56 @@ export default function HomeScreen({ navigation }: Props) {
             </Text>
           </View>
         </View>
-        <Button title="teste" onPress={converterDataParaFirebase} />
-        <Modal visible={isModalVisible}>
-          <View
-            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-          >
-            <TextInput
-              placeholder="Valor"
-              keyboardType="numeric"
-              value={valor}
-              onChangeText={setValor}
-            />
-            <TextInput
-              placeholder="dd/mm/yyyy"
-              onPressIn={() => showMode("date")}
-              showSoftInputOnFocus={false}
-              caretHidden={true}
-              value={dataTextInput}
-            ></TextInput>
-            <TextInput
-              placeholder="Descrição"
-              value={descricao}
-              onChangeText={setDescricao}
-            />
-            <Button title="Adicionar" onPress={handleTransacao} />
-            <Button title="Cancelar" onPress={handleCancelarTransacao} />
+        <Modal visible={isModalVisible} animationType="slide" transparent={true}>
+  <View style={styles.centeredView}>
+    <View style={styles.modalView}>
+      <TextInput
+        style={styles.input}
+        placeholder="Valor"
+        keyboardType="numeric"
+        value={valor}
+        onChangeText={setValor}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="dd/mm/yyyy"
+        onPressIn={() => showMode("date")}
+        showSoftInputOnFocus={false}
+        caretHidden={true}
+        value={dataTextInput}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Descrição"
+        value={descricao}
+        onChangeText={setDescricao}
+      />
+      <View style={styles.buttonGroup}>
+        <Button title="Adicionar" onPress={handleTransacao} color="#4CAF50" />
+        <Button title="Cancelar" onPress={handleCancelarTransacao} color="#757575" />
+      </View>
 
-            {show && (
-              <DateTimePicker
-                testID="dateTimePicker"
-                value={data}
-                mode={modo}
-                is24Hour={true}
-                display="default"
-                onChange={onChange}
-                {...(Platform.OS === "android" && { is24Hour: true })}
-              />
-            )}
-          </View>
-        </Modal>
+      {show && (
+        <DateTimePicker
+          testID="dateTimePicker"
+          value={data}
+          mode={modo}
+          is24Hour={true}
+          display="default"
+          onChange={onChange}
+          {...(Platform.OS === "android" && { is24Hour: true })}
+        />
+      )}
+    </View>
+  </View>
+</Modal>
+
       </View>
       <View style={styles.menuBody}>
         <View style={styles.content}>
           <View style={{ flex: 1 }}>
-            <ListaDeTransacoes dataSelecionada={dataSelecionada} />
+          <Button title="Sair" onPress={() => navigation.replace("Inicio")} />
+
           </View>
         </View>
       </View>
@@ -320,6 +325,42 @@ export default function HomeScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.8)", 
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "#424242", 
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 5.25,
+    shadowRadius: 3.84,
+    elevation: 5
+  },
+  input: {
+    width: "100%", 
+    padding: 10,
+    marginVertical: 10,
+    backgroundColor: "#616161", 
+    borderRadius: 10,
+    color: "white",
+  },
+  buttonGroup: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    borderRadius: 20,
+    width: "100%",
+  },
+
   container: {
     flex: 1,
     justifyContent: "center",

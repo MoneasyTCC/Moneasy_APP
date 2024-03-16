@@ -9,6 +9,8 @@ import DatePicker from "react-native-datepicker";
 import { Transacao } from "../../../Model/Transacao";
 import { TransacaoDAL } from "../../../Repo/RepositorioTransacao";
 import NavigationBar from "../menuNavegation";
+import ListaDeTransacoes from "../../../Components/listaTransacao";
+import DropDownPicker from "react-native-dropdown-picker";
 
 type TransacaoScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -23,81 +25,75 @@ type Props = {
 // Use as props na definição do seu componente
 export default function TransacaoScreen({ navigation }: Props) {
 
-  var [isModalVisible, setModalVisible] = useState(false);
-  const [valor, setValor] = useState('');
-  const [data, setData] = useState(new Date());
-  const [descricao, setDescricao] = useState('');
-
-  const toggleModal = () => {
-    setModalVisible(!isModalVisible);
+  const [dataSelecionada, setDataSelecionada] = useState(new Date());
+  const [openDropdown, setOpenDropdown] = useState(false);
+  const [items, setItems] = useState([
+    { label: "Janeiro", value: "1" },
+    { label: "Fevereiro", value: "2" },
+    { label: "Março", value: "3" },
+    { label: "Abril", value: "4" },
+    { label: "Maio", value: "5" },
+    { label: "Junho", value: "6" },
+    { label: "Julio", value: "7" },
+    { label: "Agosto", value: "8" },
+    { label: "Setembro", value: "9" },
+    { label: "Outubro", value: "10" },
+    { label: "Novembro", value: "11" },
+    { label: "Dezembro", value: "12" },
+  ]);
+  const getCurrentMonth = () => {
+    const monthNames = [
+      "Janeiro",
+      "Fevereiro",
+      "Março",
+      "Abril",
+      "Maio",
+      "Junho",
+      "Julho",
+      "Agosto",
+      "Setembro",
+      "Outubro",
+      "Novembro",
+      "Dezembro",
+    ];
+    const currentDate = new Date();
+    return monthNames[currentDate.getMonth()];
   };
-  const novosDados: Transacao = {
-    id:"",
-    usuarioId: "",
-    tipo:"entrada",
-    valor: parseFloat(valor),
-    data:(data),
-    descricao:(descricao),
-    moeda:"BRL"
+  const [dropdownValue, setdropdownValue] = useState(getCurrentMonth());
+  const converterDataParaFirebase = () => {
+    let mes = dropdownValue;
+    const dataFirebase = new Date(
+      `2024-${mes}-${new Date().getDate()}T${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}Z`
+    );
+    console.log(dataFirebase);
+    setDataSelecionada(dataFirebase);
+    return dataFirebase;
   };
-  const handleTransacao = async () => {
-    try{
-      TransacaoDAL.adicionarTransacao(novosDados)
-      Alert.alert("Transação adicionada com Sucesso!");
-
-    }
-    catch(err){
-    Alert.alert("Erro ao adicionar transação");
-    }
-  };
-
   return (
     <View style={styles.container}>
+   
     <View style={styles.menuHeader}>
-      <Button title="Sair" onPress={() => navigation.replace("Inicio")} />
-      <Button title="Adicionar Transação" onPress={toggleModal} />
-
-<Modal visible={isModalVisible}>
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <TextInput
-      placeholder="Valor"
-      keyboardType="numeric"
-      value={valor}
-      onChangeText={setValor}
-    />
-    <DatePicker
-      style={{ width: 200 }}
-      date={data}
-      mode="date"
-      placeholder="Selecione a data"
-      format="YYYY-MM-DD"
-      confirmBtnText="Confirmar"
-      cancelBtnText="Cancelar"
-      customStyles={{
-        dateIcon: {
-          position: 'absolute',
-          left: 0,
-          top: 4,
-          marginLeft: 0,
-        },
-        dateInput: {
-          marginLeft: 36,
-        },
-      }}
-      onDateChange={(dateStr, date) => setData(new Date(dateStr))}
-    />
-    <TextInput
-      placeholder="Descrição"
-      value={descricao}
-      onChangeText={setDescricao}
-    />
-    <Button title="Adicionar" onPress={handleTransacao} />
-    <Button title="Cancelar" onPress={toggleModal} />
-  </View>
-</Modal>
+    <DropDownPicker
+            open={openDropdown}
+            value={dropdownValue}
+            placeholder={getCurrentMonth()}
+            items={items}
+            setOpen={setOpenDropdown}
+            setValue={setdropdownValue}
+            setItems={setItems}
+            style={styles.dropdown}
+            dropDownContainerStyle={styles.dropdownContainer}
+            textStyle={{ color: "#ffffff" }}
+            onChangeValue={converterDataParaFirebase}
+          />
     </View>
     <View style={styles.menuBody}>
-      <View style={styles.content}></View>
+      
+      <View style={styles.content}>
+      <ListaDeTransacoes dataSelecionada={dataSelecionada} />
+
+      </View>
+
     </View>
     <View style={styles.menuFooter}>      
       <NavigationBar></NavigationBar>
@@ -124,7 +120,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#3A3E3A",
   },
   menuBody: {
-    width: "80%",
+    width: "100%",
     height: "50%",
     alignItems: "center",
     justifyContent: "center",
@@ -145,11 +141,16 @@ const styles = StyleSheet.create({
     height: "15%",
     backgroundColor: "#3A3E3A",
   },
-  text: {
-    fontSize: 60,
-    marginBottom: 20,
+  dropdown: {
+    backgroundColor: "transparent",
+    borderWidth: 0,
+    width: 120,
+    height: "10%",
   },
-  img: {},
+  dropdownContainer: {
+    backgroundColor: "#2b2b2b",
+    width: 120,
+  },
 });
 
 

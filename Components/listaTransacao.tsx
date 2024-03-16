@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, FlatList, Alert, StyleSheet } from "react-native";
 import { Transacao } from "../Model/Transacao";
 import { obterTransacoesPorData } from "../Controller/TransacaoController";
+// import Money from "../assets/transacoes/money.png";
 
 interface ListaDeTransacoesProps {
   dataSelecionada: Date;
@@ -28,15 +29,17 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
 
     buscarTransacoes();
   }, [dataSelecionada]);
-
+  
+  const getValueStyle = (tipo: string) => {
+    return tipo === 'entrada' ? styles.valueEntrada : styles.valueSaida;
+  };
   const renderItem = ({ item }: { item: Transacao }) => (
     <View style={styles.container}>
-      <View style={styles.icon}>{/* Inserir ícone aqui */}</View>
+      <View style={styles.icon}>{}</View>
       <Text style={styles.text}>{item.tipo}</Text>
-      <Text style={[styles.text, styles.value]}>R${item.valor.toFixed(2)}</Text>
-
+      <Text style={[styles.text, getValueStyle(item.tipo)]}>R${item.valor.toFixed(2)}</Text>
       <Text style={styles.checkmark}>
-        {/* Inserir ícone de verificação aqui */}
+        {}
       </Text>
     </View>
   );
@@ -50,11 +53,15 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
   );
 };
 const styles = StyleSheet.create({
+  valueEntrada: {
+    color: '#0FEC32',
+  },
+  valueSaida: {
+    color: '#B22222'
+  },
   container: {
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
-    backgroundColor: "#000",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",

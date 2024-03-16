@@ -20,7 +20,7 @@ const NavigationBar = () => {
         navigation.navigate("Home");
         break;
       case "Menu":
-        navigation.navigate("Menu");
+        navigation.navigate("Orcamento");
         break;
       case "Transacao":
         navigation.navigate("Transacao");
@@ -46,19 +46,19 @@ const NavigationBar = () => {
           }
         />
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => handlePress("Menu")}>
+      <TouchableOpacity onPress={() => handlePress("Transacao")}>
         <Image
           source={
-            route.name == "Menu"
+            route.name == "Transacao"
               ? require("../../assets/menu/menuActive.png")
               : require("../../assets/menu/menu.png")
           }
         />
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => handlePress("Transacao")}>
+      <TouchableOpacity onPress={() => handlePress("Orcamento")}>
         <Image
           source={
-            route.name == "Transacao"
+            route.name == "Orcamento"
               ? require("../../assets/menu/transactionsActive.png")
               : require("../../assets/menu/transactions.png")
           }
