@@ -116,7 +116,7 @@ export default function HomeScreen({ navigation }: Props) {
     const dataFirebase = new Date(
       `2024-${mes}-${new Date().getDate()}T${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}Z`
     );
-    console.log(dataFirebase);
+    // console.log(dataFirebase);
     setDataSelecionada(dataFirebase);
     return dataFirebase;
   };
@@ -176,7 +176,7 @@ export default function HomeScreen({ navigation }: Props) {
         (tempData.getMonth() + 1) +
         "/" +
         tempData.getFullYear();
-      console.log(fData);
+      // console.log(fData);
       setShow(false);
     } else if (evento.type === "dismissed") {
       setShow(false);
@@ -225,8 +225,8 @@ export default function HomeScreen({ navigation }: Props) {
           />
         </View>
         <View>
-          <Text style={{ color: "#ffffff", textAlign: "center" }}>Saldo</Text>
-          <Text style={{ color: "#ffffff" }}>{String(valuesObject.saldo)}</Text>
+          
+          <Text style={{ color: "#ffffff",fontSize:20, fontWeight:`bold`,paddingTop:5}}>R$ {String(valuesObject.saldo)}</Text>
         </View>
         <View style={styles.buttons}>
           <View style={styles.rendas}>
@@ -240,8 +240,8 @@ export default function HomeScreen({ navigation }: Props) {
                 +
               </Text>
             </TouchableOpacity>
-            <Text style={{ color: "#ffffff" }}>
-              {String(valuesObject?.totalEntradas)}
+            <Text style={{ color: "#ffffff",fontWeight:"bold" }}>
+              R$ {String(valuesObject?.totalEntradas)}
             </Text>
           </View>
           <View style={styles.despesas}>
@@ -255,8 +255,8 @@ export default function HomeScreen({ navigation }: Props) {
                 -
               </Text>
             </TouchableOpacity>
-            <Text style={{ color: "#ffffff" }}>
-              {String(valuesObject?.totalSaidas)}
+            <Text style={{ color: "#ffffff",fontWeight:"bold" }}>
+            R$ {String(valuesObject?.totalSaidas)}
             </Text>
           </View>
         </View>
@@ -418,8 +418,8 @@ const styles = StyleSheet.create({
     height: 50,
     backgroundColor: "#17fc3d",
     borderRadius: 50,
-    justifyContent: "center",
-    alignItems: "center",
+
+
   },
   rendas: {
     flexDirection: "row",
@@ -429,8 +429,7 @@ const styles = StyleSheet.create({
     height: 50,
     backgroundColor: "#ff0f00",
     borderRadius: 50,
-    justifyContent: "center",
-    alignItems: "center",
+
   },
   despesas: {
     flexDirection: "row",
@@ -448,6 +447,7 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     borderWidth: 0,
     width: 120,
+    paddingBottom: 40,
   },
   dropdownContainer: {
     backgroundColor: "#2b2b2b",

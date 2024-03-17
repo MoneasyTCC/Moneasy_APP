@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, Button, StyleSheet, Image, Modal, TextInput, Alert } from "react-native";
+import { View, Text, Button, StyleSheet, Image, Modal, TextInput, Alert, SafeAreaView } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
 import { Shadow } from "react-native-shadow-2";
@@ -73,19 +73,26 @@ export default function TransacaoScreen({ navigation }: Props) {
     <View style={styles.container}>
    
     <View style={styles.menuHeader}>
-    <DropDownPicker
-            open={openDropdown}
-            value={dropdownValue}
-            placeholder={getCurrentMonth()}
-            items={items}
-            setOpen={setOpenDropdown}
-            setValue={setdropdownValue}
-            setItems={setItems}
-            style={styles.dropdown}
-            dropDownContainerStyle={styles.dropdownContainer}
-            textStyle={{ color: "#ffffff" }}
-            onChangeValue={converterDataParaFirebase}
-          />
+    <View style={styles.container}>
+      <View style={styles.menuHeader}>
+        <DropDownPicker
+          open={openDropdown}
+          value={dropdownValue}
+          placeholder={getCurrentMonth()}
+          items={items}
+          setOpen={setOpenDropdown}
+          setValue={setdropdownValue}
+          setItems={setItems}
+          style={styles.dropdown}
+          dropDownContainerStyle={styles.dropdownContainer}
+          textStyle={{ color: "#ffffff" }}
+          onChangeValue={converterDataParaFirebase}
+        />
+      </View>
+      {/* Restante do componente */}
+    </View>
+
+
     </View>
     <View style={styles.menuBody}>
       
@@ -109,6 +116,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#2B2B2B",
   },
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#2B2B2B", 
+  },
   menuHeader: {
     borderBottomLeftRadius: 50,
     borderBottomRightRadius: 50,
@@ -116,8 +127,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
-    height: "35%",
-    backgroundColor: "#3A3E3A",
+    height: "20%",
+    backgroundColor: "#2B2B2B",
+    paddingBottom: 110, 
   },
   menuBody: {
     width: "100%",

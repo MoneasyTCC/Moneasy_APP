@@ -57,7 +57,7 @@ import {
         const q = query(collection(db, 'transacoes'), where("usuarioId", "==", usuarioIdatual));
         const querySnapshot = await getDocs(q);
         const transacoes = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        console.log(transacoes);
+        // console.log(transacoes);
         return transacoes;
     
 
@@ -92,7 +92,7 @@ import {
          dataTransacao.getMonth() === dateSelected.getMonth();
 });
     
-        console.log(transacoes);
+        // console.log(transacoes);
         return transacoes;
     
       } catch (error) {
