@@ -4,7 +4,7 @@ import { NavigationContainer } from "@react-navigation/native";
 
 import LoginScreen from "./src/screens/Login/Login";
 import HomeScreen from "./src/screens/Home/Home";
-import MenuScreen from "./src/screens/Menu/Menu";
+import OrcamentoScreen from "./src/screens/Menu/Menu";
 import TransacaoScreen from "./src/screens/Transacoes/Transacoes";
 import MetasScreen from "./src/screens/Metas/Metas";
 import MoreScreen from "./src/screens/More/More";
@@ -44,8 +44,8 @@ function AppRoutes() {
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="Menu"
-          component={MenuScreen}
+          name="Orcamento"
+          component={OrcamentoScreen}
           options={{ headerShown: false }}
         />
         <Stack.Screen
