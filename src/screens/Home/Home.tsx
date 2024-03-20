@@ -50,7 +50,6 @@ export default function HomeScreen({ navigation }: Props) {
   const [tipoTransacao, setTipoTransacao] = useState("");
   const [dataTextInput, setDataTextInput] = useState("");
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
-  const [dataSelecionada, setDataSelecionada] = useState(new Date());
   const [checkNovaTransacao, setcheckNovaTransacao] = useState(true);
   const [openDropdown, setOpenDropdown] = useState(false);
   const [items, setItems] = useState([
@@ -109,9 +108,9 @@ export default function HomeScreen({ navigation }: Props) {
     return monthNames[currentDate.getMonth()];
   };
 
-  const [dropdownValue, setdropdownValue] = useState(getCurrentMonth());
+  /* const [dropdownValue, setdropdownValue] = useState(getCurrentMonth()); */
 
-  const converterDataParaFirebase = () => {
+  /* const converterDataParaFirebase = () => {
     let mes = dropdownValue;
     const dataFirebase = new Date(
       `2024-${mes}-${new Date().getDate()}T${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}Z`
@@ -119,12 +118,67 @@ export default function HomeScreen({ navigation }: Props) {
     // console.log(dataFirebase);
     setDataSelecionada(dataFirebase);
     return dataFirebase;
+  }; */
+
+  /* useEffect(() => {
+    handleObterSaldoPorMes();
+    setcheckNovaTransacao(false);
+  }, [dataSelecionada, checkNovaTransacao]); */
+
+  const [dataSelecionada, setDataSelecionada] = useState(new Date());
+  const [saldo, setSaldo] = useState<number | null>(null);
+
+  const monthNames = [
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro",
+  ];
+
+  const [monthIndex, setMonthIndex] = useState(dataSelecionada.getMonth());
+
+  const updateMonth = (newMonthIndex: number) => {
+    setMonthIndex(newMonthIndex);
+    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex, 1);
+    setDataSelecionada(newData);
+    updateSaldo(newData);
+  };
+
+  const handlePreviousMonth = () => {
+    const newMonthIndex = monthIndex > 0 ? monthIndex - 1 : 11;
+    updateMonth(newMonthIndex);
+  };
+
+  const handleNextMonth = () => {
+    const newMonthIndex = monthIndex < 11 ? monthIndex + 1 : 0;
+    updateMonth(newMonthIndex);
+  };
+
+  const updateSaldo = async (date: Date) => {
+    try {
+      const resultadoSaldo = await obterSaldoPorMes(date);
+      if (resultadoSaldo && typeof resultadoSaldo.saldo === "number") {
+        setSaldo(resultadoSaldo.saldo);
+      } else {
+        setSaldo(null); // ou um valor padrão que você desejar
+        console.warn("Saldo não encontrado ou o valor não é um número.");
+      }
+    } catch (error) {
+      console.error("Erro ao obter saldo:", error);
+    }
   };
 
   useEffect(() => {
-    handleObterSaldoPorMes();
-    setcheckNovaTransacao(false);
-  }, [dataSelecionada, checkNovaTransacao]);
+    updateSaldo(dataSelecionada);
+  }, [dataSelecionada]);
 
   const handleNovoCalculo = () => {
     setcheckNovaTransacao(true);
@@ -209,24 +263,25 @@ export default function HomeScreen({ navigation }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.menuHeader}>
-        <View>
-          <DropDownPicker
-            open={openDropdown}
-            value={dropdownValue}
-            placeholder={getCurrentMonth()}
-            items={items}
-            setOpen={setOpenDropdown}
-            setValue={setdropdownValue}
-            setItems={setItems}
-            style={styles.dropdown}
-            dropDownContainerStyle={styles.dropdownContainer}
-            textStyle={{ color: "#ffffff" }}
-            onChangeValue={converterDataParaFirebase}
-          />
+        <View style={styles.mesHeader}>
+          <TouchableOpacity
+            onPress={handlePreviousMonth}
+            style={styles.arrowButton}
+          >
+            <Text style={styles.arrowText}>&lt;</Text>
+          </TouchableOpacity>
+          <Text style={styles.mesLabel}>{monthNames[monthIndex]}</Text>
+          <TouchableOpacity
+            onPress={handleNextMonth}
+            style={styles.arrowButton}
+          >
+            <Text style={styles.arrowText}>&gt;</Text>
+          </TouchableOpacity>
         </View>
         <View>
-          
-          <Text style={{ color: "#ffffff",fontSize:20, fontWeight:`bold`,paddingTop:5}}>R$ {String(valuesObject.saldo)}</Text>
+          <Text style={styles.saldoAtual}>
+            R$ {saldo ? saldo.toFixed(2) : "0.00"}
+          </Text>
         </View>
         <View style={styles.buttons}>
           <View style={styles.rendas}>
@@ -240,11 +295,14 @@ export default function HomeScreen({ navigation }: Props) {
                 +
               </Text>
             </TouchableOpacity>
-            <Text style={{ color: "#ffffff",fontWeight:"bold" }}>
+            <Text style={{ color: "#ffffff", fontWeight: "bold" }}>
               R$ {String(valuesObject?.totalEntradas)}
             </Text>
           </View>
           <View style={styles.despesas}>
+            <Text style={{ color: "#ffffff", fontWeight: "bold" }}>
+              R$ {String(valuesObject?.totalSaidas)}
+            </Text>
             <TouchableOpacity
               style={styles.saidaBtn}
               onPress={handleTipoTransacaoSaida}
@@ -255,70 +313,69 @@ export default function HomeScreen({ navigation }: Props) {
                 -
               </Text>
             </TouchableOpacity>
-            <Text style={{ color: "#ffffff",fontWeight:"bold" }}>
-            R$ {String(valuesObject?.totalSaidas)}
-            </Text>
           </View>
         </View>
-        <Modal visible={isModalVisible} animationType="slide" transparent={true}>
-  <View style={styles.centeredView}>
-    <View style={styles.modalView}>
-      <TextInput
-        style={styles.input}
-        placeholder="Valor"
-        keyboardType="numeric"
-        value={valor}
-        onChangeText={setValor}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="dd/mm/yyyy"
-        onPressIn={() => showMode("date")}
-        showSoftInputOnFocus={false}
-        caretHidden={true}
-        value={dataTextInput}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Descrição"
-        value={descricao}
-        onChangeText={setDescricao}
-      />
-      <View style={styles.buttonGroup}>
-        <Button title="Adicionar" onPress={handleTransacao} color="#4CAF50" />
-        <Button title="Cancelar" onPress={handleCancelarTransacao} color="#757575" />
-      </View>
+        <Modal
+          visible={isModalVisible}
+          animationType="slide"
+          transparent={true}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <TextInput
+                style={styles.input}
+                placeholder="Valor"
+                keyboardType="numeric"
+                value={valor}
+                onChangeText={setValor}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="dd/mm/yyyy"
+                onPressIn={() => showMode("date")}
+                showSoftInputOnFocus={false}
+                caretHidden={true}
+                value={dataTextInput}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Descrição"
+                value={descricao}
+                onChangeText={setDescricao}
+              />
+              <View style={styles.buttonGroup}>
+                <Button
+                  title="Adicionar"
+                  onPress={handleTransacao}
+                  color="#4CAF50"
+                />
+                <Button
+                  title="Cancelar"
+                  onPress={handleCancelarTransacao}
+                  color="#757575"
+                />
+              </View>
 
-      {show && (
-        <DateTimePicker
-          testID="dateTimePicker"
-          value={data}
-          mode={modo}
-          is24Hour={true}
-          display="default"
-          onChange={onChange}
-          {...(Platform.OS === "android" && { is24Hour: true })}
-        />
-      )}
-    </View>
-  </View>
-</Modal>
-
+              {show && (
+                <DateTimePicker
+                  testID="dateTimePicker"
+                  value={data}
+                  mode={modo}
+                  is24Hour={true}
+                  display="default"
+                  onChange={onChange}
+                  {...(Platform.OS === "android" && { is24Hour: true })}
+                />
+              )}
+            </View>
+          </View>
+        </Modal>
       </View>
       <View style={styles.menuBody}>
-        <View style={styles.content}>
-          <View style={{ flex: 1 }}>
-          <Button title="Sair" onPress={() => navigation.replace("Inicio")} />
-
-          </View>
-        </View>
+        <View style={styles.content}>{/* Body */}</View>
       </View>
       <View style={styles.menuFooter}>
-        <View style={styles.menuNavegation}>
-          <Text></Text>
-          <NavigationBar></NavigationBar>
-          <Text></Text>
-        </View>
+        <NavigationBar/>
       </View>
     </View>
   );
@@ -329,28 +386,28 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.8)", 
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
   },
   modalView: {
     margin: 20,
-    backgroundColor: "#424242", 
+    backgroundColor: "#424242",
     borderRadius: 20,
     padding: 35,
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 2
+      height: 2,
     },
     shadowOpacity: 5.25,
     shadowRadius: 3.84,
-    elevation: 5
+    elevation: 5,
   },
   input: {
-    width: "100%", 
+    width: "100%",
     padding: 10,
     marginVertical: 10,
-    backgroundColor: "#616161", 
+    backgroundColor: "#616161",
     borderRadius: 10,
     color: "white",
   },
@@ -377,24 +434,29 @@ const styles = StyleSheet.create({
     height: "35%",
     backgroundColor: "#3A3E3A",
   },
+  mesHeader: {
+    flexDirection: "row",
+  },
   menuBody: {
-    width: "80%",
-    height: "50%",
+    width: "100%",
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    paddingVertical: 20,
   },
   content: {
-    borderRadius: 50,
-    width: "100%",
-    height: "80%",
+    borderRadius: 40,
+    width: "90%",
+    flex: 1,
     backgroundColor: "#3A3E3A",
+    padding: 20,
   },
   menuFooter: {
     borderTopLeftRadius: 50,
     borderTopRightRadius: 50,
-    flexDirection: "column",
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "space-around",
     width: "100%",
     height: "15%",
     backgroundColor: "#3A3E3A",
@@ -403,54 +465,59 @@ const styles = StyleSheet.create({
     fontSize: 60,
     marginBottom: 20,
   },
-  menuNavegation: {
-    borderRadius: 50,
-    backgroundColor: "#2B2B2B",
-    width: "80%",
-    height: "50%",
-    justifyContent: "space-around",
-    alignItems: "center",
-    flexDirection: "row",
-  },
-  img: {},
   entradaBtn: {
     width: 50,
     height: 50,
     backgroundColor: "#17fc3d",
     borderRadius: 50,
-
-
-  },
-  rendas: {
-    flexDirection: "row",
+    alignItems: "center",
   },
   saidaBtn: {
     width: 50,
     height: 50,
     backgroundColor: "#ff0f00",
     borderRadius: 50,
-
+    alignItems: "center",
+  },
+  rendas: {
+    alignItems: "center",
+    flexDirection: "row",
+    width:"40%",
   },
   despesas: {
+    alignItems: "center",
     flexDirection: "row",
+    width:"40%",
   },
   buttons: {
+    alignItems: "center",
     flexDirection: "row",
-    top: 70,
-    left: 4,
-    width: 368,
-    height: 55,
-    gap: 140,
-    justifyContent: "flex-start",
+    justifyContent: "space-between",
   },
-  dropdown: {
-    backgroundColor: "transparent",
-    borderWidth: 0,
-    width: 120,
-    paddingBottom: 40,
+  arrowButton: { padding: 5 , paddingBottom:15},
+  arrowText: {
+    color: "#ffffff",
+    fontSize: 30,
+    fontWeight: "bold",
+    lineHeight: 30,
   },
-  dropdownContainer: {
-    backgroundColor: "#2b2b2b",
-    width: 120,
+  saldoBody: {
+    alignItems: "center",
+  },
+  mesLabel: {
+    color: "#ffffff",
+    width: "35%",
+    textAlign: "center",
+    fontSize: 26,
+  },
+  saldoText: {
+    fontWeight: "bold",
+    fontSize: 18,
+    color: "#ffffff",
+  },
+  saldoAtual: {
+    fontWeight: "bold",
+    fontSize: 22,
+    color: "#ffffff",
   },
 });

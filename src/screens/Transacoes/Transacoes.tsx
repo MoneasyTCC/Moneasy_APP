@@ -91,7 +91,7 @@ export default function TransacaoScreen({ navigation }: Props) {
           <View style={styles.saldoBody}>
             <Text style={styles.saldoText}>Saldo Atual</Text>
             <Text style={styles.saldoAtual}>
-              R$ {saldo ? saldo.toFixed(2) : "Carregando..."}
+              R$ {saldo ? saldo.toFixed(2) : "0.00"}
             </Text>
           </View>
           <Text></Text>
@@ -99,7 +99,7 @@ export default function TransacaoScreen({ navigation }: Props) {
         </View>
       </View>
       <View style={styles.menuFooter}>
-        <NavigationBar></NavigationBar>
+        <NavigationBar />
       </View>
     </View>
   );
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   content: {
-    borderRadius: 20,
+    borderRadius: 40,
     width: "90%",
     flex: 1,
     backgroundColor: "#3A3E3A",
