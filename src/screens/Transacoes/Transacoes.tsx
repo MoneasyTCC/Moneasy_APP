@@ -72,9 +72,8 @@ export default function TransacaoScreen({ navigation }: Props) {
   return (
     <View style={styles.container}>
    
-    <View style={styles.menuHeader}>
     <View style={styles.container}>
-      <View style={styles.menuHeader}>
+    <View style={styles.menuHeader}>
         <DropDownPicker
           open={openDropdown}
           value={dropdownValue}
@@ -88,11 +87,6 @@ export default function TransacaoScreen({ navigation }: Props) {
           textStyle={{ color: "#ffffff" }}
           onChangeValue={converterDataParaFirebase}
         />
-      </View>
-      {/* Restante do componente */}
-    </View>
-
-
     </View>
     <View style={styles.menuBody}>
       
@@ -106,10 +100,68 @@ export default function TransacaoScreen({ navigation }: Props) {
       <NavigationBar></NavigationBar>
     </View>
   </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#2B2B2B",
+  },
+  menuHeader: {
+    overflow: "scroll",
+    borderBottomLeftRadius: 50,
+    borderBottomRightRadius: 50,
+    flexDirection: "column",
+    alignItems:"center",
+    justifyContent: 'center',
+    width: "100%",
+    height: "20%",
+    backgroundColor: "#3A3E3A",
+  },
+  menuBody: {
+    width: "100%",
+    flex: 1, // Use o restante do espaço
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 20, // Adiciona um espaçamento interno vertical
+  },
+  content: {
+    borderRadius: 20, // Ajuste o raio da borda conforme necessário
+    width: "90%", // Ajuste a largura conforme necessário
+    flex: 1, // Use o restante do espaço
+    backgroundColor: "#3A3E3A",
+    padding: 20, // Adiciona um espaçamento interno
+  },
+  menuFooter: {
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
+    flexDirection: "row", // Altera para row para disposição horizontal dos ícones
+    alignItems: "center",
+    justifyContent: "space-around", // Espaço entre os ícones
+    width: "100%",
+    height: "15%", // Ajuste a altura conforme necessário
+    backgroundColor: "#3A3E3A",
+  },
+  dropdown: {
+    backgroundColor:"transparent",
+    alignSelf:"center",
+    borderWidth: 0,
+    width: "30%",
+  },
+  dropdownContainer: {
+    backgroundColor:"transparent",
+    borderWidth: 0,
+    alignSelf:"center",
+    width: "30%", 
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  }, 
+});
+
+
+/* const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
@@ -121,6 +173,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#2B2B2B", 
   },
   menuHeader: {
+    flex: 0.35,
     borderBottomLeftRadius: 50,
     borderBottomRightRadius: 50,
     flexDirection: "column",
@@ -129,9 +182,9 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "20%",
     backgroundColor: "#2B2B2B",
-    paddingBottom: 110, 
   },
   menuBody: {
+    flex: 0.5,
     width: "100%",
     height: "50%",
     alignItems: "center",
@@ -144,6 +197,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#3A3E3A",
   },
   menuFooter: {
+    flex: 0.15,
     borderTopLeftRadius: 50,
     borderTopRightRadius: 50,
     flexDirection: "column",
@@ -153,16 +207,6 @@ const styles = StyleSheet.create({
     height: "15%",
     backgroundColor: "#3A3E3A",
   },
-  dropdown: {
-    backgroundColor: "transparent",
-    borderWidth: 0,
-    width: 120,
-    height: "10%",
-  },
-  dropdownContainer: {
-    backgroundColor: "#2b2b2b",
-    width: 120,
-  },
-});
+}); */
 
 
