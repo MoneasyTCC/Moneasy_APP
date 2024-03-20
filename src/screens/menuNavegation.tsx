@@ -19,7 +19,7 @@ const NavigationBar = () => {
       case "Home":
         navigation.navigate("Home");
         break;
-      case "Menu":
+      case "Orcamento":
         navigation.navigate("Orcamento");
         break;
       case "Transacao":
