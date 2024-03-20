@@ -35,12 +35,12 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
   };
   const renderItem = ({ item }: { item: Transacao }) => (
     <View style={styles.container}>
-      <View style={styles.icon}>{}</View>
+      {/* <View style={styles.icon}>{}</View> */}
       <Text style={styles.text}>{item.tipo}</Text>
       <Text style={[styles.text, getValueStyle(item.tipo)]}>R${item.valor.toFixed(2)}</Text>
-      <Text style={styles.checkmark}>
+      {/* <Text style={styles.checkmark}>
         {}
-      </Text>
+      </Text> */}
     </View>
   );
 
@@ -61,14 +61,14 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 20,
-    borderBottomWidth: 1,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
   text: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: "bold",
   },
   value: {
     fontWeight: "bold",
