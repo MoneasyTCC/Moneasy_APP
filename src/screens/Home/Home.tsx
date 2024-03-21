@@ -313,7 +313,7 @@ export default function HomeScreen({ navigation }: Props) {
             >
               <Image
                 source={require("../../../assets/setaCima.png")} // Ajuste o caminho conforme necessário
-                style={{ width: 32, height: 32 }} // Ajuste o tamanho conforme necessário
+                style={{ width: 32, height: 32, transform: [{ rotate: '180deg' }]}} // Ajuste o tamanho conforme necessário
               />
             </TouchableOpacity>
             <Text style={styles.saldosText}>Despesas</Text>
