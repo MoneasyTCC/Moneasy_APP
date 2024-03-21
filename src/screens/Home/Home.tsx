@@ -279,44 +279,51 @@ export default function HomeScreen({ navigation }: Props) {
             </Text>
           )}
         </View>
+        <View style={styles.spacer}></View>
         <View style={styles.buttons}>
           <View style={styles.rendas}>
             <TouchableOpacity
               style={styles.entradaBtn}
               onPress={handleTipoTransacaoEntrada}
             >
-              <Text
-                style={{ fontSize: 50, textAlign: "center", lineHeight: 55 }}
-              >
-                +
-              </Text>
+              <Image
+                source={require("../../../assets/setaCima.png")} // Ajuste o caminho conforme necessário
+                style={{ width: 32, height: 32 }} // Ajuste o tamanho conforme necessário
+              />
             </TouchableOpacity>
+            <Text style={styles.saldosText}>Rendas</Text>
             {isLoading ? (
               <ActivityIndicator size="large" color="#ffffff" />
             ) : (
-              <Text style={{ color: "#ffffff", fontWeight: "bold" }}>
+              <Text style={styles.saldosText}>
                 R$ {String(valuesObject?.totalEntradas)}
               </Text>
             )}
           </View>
+          <View>
+            <Image
+              source={require("../../../assets/eye.png")} // Ajuste o caminho conforme necessário
+              style={{ width: 32, height: 32 }} // Ajuste o tamanho conforme necessário
+            />
+          </View>
           <View style={styles.despesas}>
-            {isLoading ? (
-              <ActivityIndicator size="large" color="#ffffff" />
-            ) : (
-              <Text style={{ color: "#ffffff", fontWeight: "bold" }}>
-                R$ {String(valuesObject?.totalSaidas)}
-              </Text>
-            )}
             <TouchableOpacity
               style={styles.saidaBtn}
               onPress={handleTipoTransacaoSaida}
             >
-              <Text
-                style={{ fontSize: 50, textAlign: "center", lineHeight: 55 }}
-              >
-                -
-              </Text>
+              <Image
+                source={require("../../../assets/setaCima.png")} // Ajuste o caminho conforme necessário
+                style={{ width: 32, height: 32 }} // Ajuste o tamanho conforme necessário
+              />
             </TouchableOpacity>
+            <Text style={styles.saldosText}>Despesas</Text>
+            {isLoading ? (
+              <ActivityIndicator size="large" color="#ffffff" />
+            ) : (
+              <Text style={styles.saldosText}>
+                R$ {String(valuesObject?.totalSaidas)}
+              </Text>
+            )}
           </View>
         </View>
         <Modal
@@ -439,6 +446,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#3A3E3A",
   },
   mesHeader: {
+    marginTop: 15,
     flexDirection: "row",
   },
   menuBody: {
@@ -470,6 +478,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   entradaBtn: {
+    justifyContent: "center",
     width: 50,
     height: 50,
     backgroundColor: "#17fc3d",
@@ -477,6 +486,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   saidaBtn: {
+    justifyContent: "center",
     width: 50,
     height: 50,
     backgroundColor: "#ff0f00",
@@ -485,20 +495,31 @@ const styles = StyleSheet.create({
   },
   rendas: {
     alignItems: "center",
-    flexDirection: "row",
     width: "40%",
   },
   despesas: {
     alignItems: "center",
-    flexDirection: "row",
     width: "40%",
   },
   buttons: {
+    width: "80%",
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  arrowButton: { padding: 5, paddingBottom: 15 },
+  saldosText: {
+    color: "#ffffff",
+    fontWeight: "bold",
+    fontSize: 18,
+    paddingTop: 10,
+  },
+  spacer: {
+    padding: 2,
+  },
+  arrowButton: {
+    padding: 5,
+    paddingBottom: 15,
+  },
   arrowText: {
     color: "#ffffff",
     fontSize: 30,
@@ -521,7 +542,7 @@ const styles = StyleSheet.create({
   },
   saldoAtual: {
     fontWeight: "bold",
-    fontSize: 22,
+    fontSize: 26,
     color: "#ffffff",
   },
 });
