@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, Alert, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  Alert,
+  StyleSheet,
+  TouchableOpacity,
+  Modal,
+  Button,
+} from "react-native";
 import { Transacao } from "../Model/Transacao";
 import { obterTransacoesPorData } from "../Controller/TransacaoController";
 // import Money from "../assets/transacoes/money.png";
@@ -11,6 +20,7 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
   dataSelecionada,
 }) => {
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
+  const [isModalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     const buscarTransacoes = async () => {
@@ -29,19 +39,35 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
 
     buscarTransacoes();
   }, [dataSelecionada]);
-  
+
+  const toggleModal = () => {
+    setModalVisible(!isModalVisible);
+  };
+
   const getValueStyle = (tipo: string) => {
-    return tipo === 'entrada' ? styles.valueEntrada : styles.valueSaida;
+    return tipo === "entrada" ? styles.valueEntrada : styles.valueSaida;
   };
   const renderItem = ({ item }: { item: Transacao }) => (
-    <View style={styles.container}>
-      {/* <View style={styles.icon}>{}</View> */}
-      <Text style={styles.text}>{item.tipo}</Text>
-      <Text style={[styles.text, getValueStyle(item.tipo)]}>R${item.valor.toFixed(2)}</Text>
-      {/* <Text style={styles.checkmark}>
+    <TouchableOpacity onPress={toggleModal}>
+      <Modal visible={isModalVisible} animationType="slide" transparent={true}>
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Button title="fechar" onPress={toggleModal}></Button>
+            <Text>Teste</Text>
+          </View>
+        </View>
+      </Modal>
+      <View style={styles.container}>
+        {/* <View style={styles.icon}>{}</View> */}
+        <Text style={styles.text}>{item.tipo}</Text>
+        <Text style={[styles.text, getValueStyle(item.tipo)]}>
+          R${item.valor.toFixed(2)}
+        </Text>
+        {/* <Text style={styles.checkmark}>
         {}
       </Text> */}
-    </View>
+      </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -54,10 +80,10 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
 };
 const styles = StyleSheet.create({
   valueEntrada: {
-    color: '#0FEC32',
+    color: "#0FEC32",
   },
   valueSaida: {
-    color: '#B22222'
+    color: "#B22222",
   },
   container: {
     padding: 20,
@@ -80,6 +106,27 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     color: "green",
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "#424242",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 5.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
 });
 export default ListaDeTransacoes;
