@@ -1,16 +1,11 @@
-import React, { useState } from "react";
-import { View, Text, Button, StyleSheet, Image, Modal, TextInput, Alert, SafeAreaView } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
-import { Shadow } from "react-native-shadow-2";
-import { adicionarNovaMeta } from '../../../services/testeBanco';
-import { adicionarNovaTransacao } from '../../../services/testeBanco';
-import DatePicker from "react-native-datepicker";
-import { Transacao } from "../../../Model/Transacao";
-import { TransacaoDAL } from "../../../Repo/RepositorioTransacao";
-import NavigationBar from "../menuNavegation";
 import ListaDeTransacoes from "../../../Components/listaTransacao";
-import DropDownPicker from "react-native-dropdown-picker";
+import { Transacao } from "../../../Model/Transacao";
+import { obterSaldoPorMes } from "../../../Controller/TransacaoController";
+import NavigationBar from "../menuNavegation";
 
 type TransacaoScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -21,148 +16,159 @@ type Props = {
   navigation: TransacaoScreenNavigationProp;
 };
 
-
-// Use as props na definição do seu componente
 export default function TransacaoScreen({ navigation }: Props) {
-
   const [dataSelecionada, setDataSelecionada] = useState(new Date());
-  const [openDropdown, setOpenDropdown] = useState(false);
-  const [items, setItems] = useState([
-    { label: "Janeiro", value: "1" },
-    { label: "Fevereiro", value: "2" },
-    { label: "Março", value: "3" },
-    { label: "Abril", value: "4" },
-    { label: "Maio", value: "5" },
-    { label: "Junho", value: "6" },
-    { label: "Julio", value: "7" },
-    { label: "Agosto", value: "8" },
-    { label: "Setembro", value: "9" },
-    { label: "Outubro", value: "10" },
-    { label: "Novembro", value: "11" },
-    { label: "Dezembro", value: "12" },
-  ]);
-  const getCurrentMonth = () => {
-    const monthNames = [
-      "Janeiro",
-      "Fevereiro",
-      "Março",
-      "Abril",
-      "Maio",
-      "Junho",
-      "Julho",
-      "Agosto",
-      "Setembro",
-      "Outubro",
-      "Novembro",
-      "Dezembro",
-    ];
-    const currentDate = new Date();
-    return monthNames[currentDate.getMonth()];
+  const [saldo, setSaldo] = useState<number | null>(null);
+
+  const monthNames = [
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro",
+  ];
+
+  const [monthIndex, setMonthIndex] = useState(dataSelecionada.getMonth());
+
+  const updateMonth = (newMonthIndex: number) => {
+    setMonthIndex(newMonthIndex);
+    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex, 1);
+    setDataSelecionada(newData);
+    updateSaldo(newData);
   };
-  const [dropdownValue, setdropdownValue] = useState(getCurrentMonth());
-  const converterDataParaFirebase = () => {
-    let mes = dropdownValue;
-    const dataFirebase = new Date(
-      `2024-${mes}-${new Date().getDate()}T${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}Z`
-    );
-    console.log(dataFirebase);
-    setDataSelecionada(dataFirebase);
-    return dataFirebase;
+
+  const handlePreviousMonth = () => {
+    const newMonthIndex = monthIndex > 0 ? monthIndex - 1 : 11;
+    updateMonth(newMonthIndex);
   };
+
+  const handleNextMonth = () => {
+    const newMonthIndex = monthIndex < 11 ? monthIndex + 1 : 0;
+    updateMonth(newMonthIndex);
+  };
+
+  const updateSaldo = async (date: Date) => {
+    try {
+      const resultadoSaldo = await obterSaldoPorMes(date);
+      if (resultadoSaldo && typeof resultadoSaldo.saldo === "number") {
+        setSaldo(resultadoSaldo.saldo);
+      } else {
+        setSaldo(null); // ou um valor padrão que você desejar
+        console.warn("Saldo não encontrado ou o valor não é um número.");
+      }
+    } catch (error) {
+      console.error("Erro ao obter saldo:", error);
+    }
+  };
+
+  useEffect(() => {
+    updateSaldo(dataSelecionada);
+  }, [dataSelecionada]);
+
   return (
     <View style={styles.container}>
-   
-    <View style={styles.menuHeader}>
-    <View style={styles.container}>
       <View style={styles.menuHeader}>
-        <DropDownPicker
-          open={openDropdown}
-          value={dropdownValue}
-          placeholder={getCurrentMonth()}
-          items={items}
-          setOpen={setOpenDropdown}
-          setValue={setdropdownValue}
-          setItems={setItems}
-          style={styles.dropdown}
-          dropDownContainerStyle={styles.dropdownContainer}
-          textStyle={{ color: "#ffffff" }}
-          onChangeValue={converterDataParaFirebase}
-        />
+        <TouchableOpacity
+          onPress={handlePreviousMonth}
+          style={styles.arrowButton}
+        >
+          <Text style={styles.arrowText}>&lt;</Text>
+        </TouchableOpacity>
+        <Text style={styles.mesLabel}>{monthNames[monthIndex]}</Text>
+        <TouchableOpacity onPress={handleNextMonth} style={styles.arrowButton}>
+          <Text style={styles.arrowText}>&gt;</Text>
+        </TouchableOpacity>
       </View>
-      {/* Restante do componente */}
-    </View>
-
-
-    </View>
-    <View style={styles.menuBody}>
-      
-      <View style={styles.content}>
-      <ListaDeTransacoes dataSelecionada={dataSelecionada} />
-
+      <View style={styles.menuBody}>
+        <View style={styles.content}>
+          <View style={styles.saldoBody}>
+            <Text style={styles.saldoText}>Saldo Atual</Text>
+            <Text style={styles.saldoAtual}>
+              R$ {saldo ? saldo.toFixed(2) : "0.00"}
+            </Text>
+          </View>
+          <Text></Text>
+          <ListaDeTransacoes dataSelecionada={dataSelecionada} />
+        </View>
       </View>
-
+      <View style={styles.menuFooter}>
+        <NavigationBar />
+      </View>
     </View>
-    <View style={styles.menuFooter}>      
-      <NavigationBar></NavigationBar>
-    </View>
-  </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
     backgroundColor: "#2B2B2B",
   },
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#2B2B2B", 
-  },
   menuHeader: {
+    overflow: "scroll",
     borderBottomLeftRadius: 50,
     borderBottomRightRadius: 50,
-    flexDirection: "column",
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
     height: "20%",
-    backgroundColor: "#2B2B2B",
-    paddingBottom: 110, 
+    backgroundColor: "#3A3E3A",
   },
   menuBody: {
     width: "100%",
-    height: "50%",
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    paddingVertical: 20,
   },
   content: {
-    borderRadius: 50,
-    width: "100%",
-    height: "80%",
+    borderRadius: 40,
+    width: "90%",
+    flex: 1,
     backgroundColor: "#3A3E3A",
+    padding: 20,
   },
   menuFooter: {
     borderTopLeftRadius: 50,
     borderTopRightRadius: 50,
-    flexDirection: "column",
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "space-around",
     width: "100%",
     height: "15%",
     backgroundColor: "#3A3E3A",
   },
-  dropdown: {
-    backgroundColor: "transparent",
-    borderWidth: 0,
-    width: 120,
-    height: "10%",
+  arrowButton: { padding: 10 },
+  arrowText: {
+    color: "#ffffff",
+    fontSize: 30,
+    fontWeight: "bold",
+    lineHeight: 30,
   },
-  dropdownContainer: {
-    backgroundColor: "#2b2b2b",
-    width: 120,
+  saldoBody:{    
+    alignItems: "center",
+  },
+  mesLabel: {
+    color: "#ffffff",
+    width: "35%",
+    textAlign: "center",
+    fontSize: 26,
+  },
+  saldoText: {
+    fontWeight: "bold",
+    fontSize: 18,
+    color: "#ffffff",
+  },
+  saldoAtual: {
+    fontWeight: "bold",
+    fontSize: 22,
+    color: "#ffffff",
   },
 });
-
-
