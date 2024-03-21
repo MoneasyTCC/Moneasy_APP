@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Modal,
   Button,
+  TextInput,
 } from "react-native";
 import { Transacao } from "../Model/Transacao";
 import { obterTransacoesPorData } from "../Controller/TransacaoController";
@@ -21,6 +22,10 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
 }) => {
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
+  const [selectedItemValue, setSelectedItemValue] = useState<number | null>(
+    null
+  );
+  const [selectedItemTipo, setSelectedItemTipo] = useState<string | null>(null);
 
   useEffect(() => {
     const buscarTransacoes = async () => {
@@ -40,7 +45,9 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
     buscarTransacoes();
   }, [dataSelecionada]);
 
-  const toggleModal = () => {
+  const toggleModal = (itemValue: number, itemTipo: string) => {
+    setSelectedItemValue(itemValue);
+    setSelectedItemTipo(itemTipo);
     setModalVisible(!isModalVisible);
   };
 
@@ -48,15 +55,7 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
     return tipo === "entrada" ? styles.valueEntrada : styles.valueSaida;
   };
   const renderItem = ({ item }: { item: Transacao }) => (
-    <TouchableOpacity onPress={toggleModal}>
-      <Modal visible={isModalVisible} animationType="slide" transparent={true}>
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Button title="fechar" onPress={toggleModal}></Button>
-            <Text>Teste</Text>
-          </View>
-        </View>
-      </Modal>
+    <TouchableOpacity onPress={() => toggleModal(item.valor, item.tipo)}>
       <View style={styles.container}>
         {/* <View style={styles.icon}>{}</View> */}
         <Text style={styles.text}>{item.tipo}</Text>
@@ -71,11 +70,25 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
   );
 
   return (
-    <FlatList
-      data={transacoes}
-      keyExtractor={(item) => item.id.toString()}
-      renderItem={renderItem}
-    />
+    <>
+      <FlatList
+        data={transacoes}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderItem}
+      />
+      <Modal visible={isModalVisible} animationType="slide" transparent={true}>
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text>Selected Item Value: {selectedItemValue}</Text>
+            <Text>Selected Item Tipo: {selectedItemTipo}</Text>
+            <Button
+              title="cancelar"
+              onPress={() => setModalVisible(false)}
+            ></Button>
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 };
 const styles = StyleSheet.create({
