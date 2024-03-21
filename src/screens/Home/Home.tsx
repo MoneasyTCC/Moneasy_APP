@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   FlatList,
   FlatListProps,
+  ActivityIndicator,
 } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
@@ -49,83 +50,56 @@ export default function HomeScreen({ navigation }: Props) {
   const [show, setShow] = useState(false);
   const [tipoTransacao, setTipoTransacao] = useState("");
   const [dataTextInput, setDataTextInput] = useState("");
-  const [transacoes, setTransacoes] = useState<Transacao[]>([]);
+  const [dataSelecionada, setDataSelecionada] = useState(new Date());
   const [checkNovaTransacao, setcheckNovaTransacao] = useState(true);
-  const [openDropdown, setOpenDropdown] = useState(false);
-  const [items, setItems] = useState([
-    { label: "Janeiro", value: "1" },
-    { label: "Fevereiro", value: "2" },
-    { label: "Março", value: "3" },
-    { label: "Abril", value: "4" },
-    { label: "Maio", value: "5" },
-    { label: "Junho", value: "6" },
-    { label: "Julio", value: "7" },
-    { label: "Agosto", value: "8" },
-    { label: "Setembro", value: "9" },
-    { label: "Outubro", value: "10" },
-    { label: "Novembro", value: "11" },
-    { label: "Dezembro", value: "12" },
-  ]);
-
-  const dataParaTestes = new Date("2024-03-09T00:00:00Z");
+  const [isLoading, setIsLoading] = useState(false);
+  const saldoCache = useRef<Map<string, SaldoMes>>(new Map());
 
   const [valuesObject, setValuesObject] = useState<{
-    totalEntradas?: number;
-    totalSaidas?: number;
-    saldo?: number;
-  }>({});
+    totalEntradas: number;
+    totalSaidas: number;
+    saldo: number;
+  }>({
+    totalEntradas: 0,
+    totalSaidas: 0,
+    saldo: 0,
+  });
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
 
+  interface SaldoMes {
+    totalEntradas: number;
+    totalSaidas: number;
+    saldo: number;
+  }
+
+  const obterSaldoPorMesComCache = async (data: Date): Promise<SaldoMes> => {
+    const chaveCache = data.toISOString().slice(0, 7); // Formato "AAAA-MM"
+    if (saldoCache.current.has(chaveCache)) {
+      return saldoCache.current.get(chaveCache)!;
+    }
+    // Supondo que obterSaldoPorMes retorne uma Promise<SaldoMes>
+    const resultado = await obterSaldoPorMes(data);
+    saldoCache.current.set(chaveCache, resultado);
+    return resultado;
+  };
+
   const handleObterSaldoPorMes = async () => {
+    setIsLoading(true);
     try {
-      const result = await obterSaldoPorMes(dataSelecionada);
+      // Assegure-se de que obterSaldoPorMesComCache retorne o objeto esperado
+      const result: SaldoMes = await obterSaldoPorMesComCache(dataSelecionada);
       setValuesObject(result);
-      console.log(result);
+      // Não há necessidade de um estado separado para `saldo` se ele já está incluído em `valuesObject`
     } catch (error) {
       console.error("Erro ao obter saldo: ", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const getCurrentMonth = () => {
-    const monthNames = [
-      "Janeiro",
-      "Fevereiro",
-      "Março",
-      "Abril",
-      "Maio",
-      "Junho",
-      "Julho",
-      "Agosto",
-      "Setembro",
-      "Outubro",
-      "Novembro",
-      "Dezembro",
-    ];
-    const currentDate = new Date();
-    return monthNames[currentDate.getMonth()];
-  };
-
-  /* const [dropdownValue, setdropdownValue] = useState(getCurrentMonth()); */
-
-  /* const converterDataParaFirebase = () => {
-    let mes = dropdownValue;
-    const dataFirebase = new Date(
-      `2024-${mes}-${new Date().getDate()}T${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}Z`
-    );
-    // console.log(dataFirebase);
-    setDataSelecionada(dataFirebase);
-    return dataFirebase;
-  }; */
-
-  /* useEffect(() => {
-    handleObterSaldoPorMes();
-    setcheckNovaTransacao(false);
-  }, [dataSelecionada, checkNovaTransacao]); */
-
-  const [dataSelecionada, setDataSelecionada] = useState(new Date());
   const [saldo, setSaldo] = useState<number | null>(null);
 
   const monthNames = [
@@ -176,10 +150,6 @@ export default function HomeScreen({ navigation }: Props) {
     }
   };
 
-  useEffect(() => {
-    updateSaldo(dataSelecionada);
-  }, [dataSelecionada]);
-
   const handleNovoCalculo = () => {
     setcheckNovaTransacao(true);
   };
@@ -196,19 +166,36 @@ export default function HomeScreen({ navigation }: Props) {
 
   const handleTransacao = async () => {
     try {
-      const valorFloat = isNaN(parseFloat(valor)) ? 0 : parseFloat(valor); // Validação adicionada aqui
+      const valorFloat = isNaN(parseFloat(valor)) ? 0 : parseFloat(valor);
+
+      // Cria uma data de transação baseada no mês e ano selecionados, mas mantendo o dia atual,
+      // ou o dia 1 se desejar representar a transação simplesmente no mês selecionado sem um dia específico.
+      // Nota: Ajuste essa lógica conforme necessário para atender ao requisito exato de data da transação.
+      const dataTransacao = new Date(
+        dataSelecionada.getFullYear(),
+        dataSelecionada.getMonth(),
+        dataSelecionada.getDate()
+      );
+
       const novosDados: Transacao = {
         id: "",
         usuarioId: "",
         tipo: tipoTransacao,
         valor: valorFloat,
-        data: data,
+        data: dataTransacao, // Usando a dataTransacao ajustada aqui
         descricao: descricao,
         moeda: "BRL",
       };
+
       await TransacaoDAL.adicionarTransacao(novosDados);
       Alert.alert("Transação adicionada com Sucesso!");
-      handleNovoCalculo();
+
+      // Invalidate o cache do mês específico da nova transação
+      const chaveCache = dataTransacao.toISOString().slice(0, 7);
+      saldoCache.current.delete(chaveCache);
+
+      // Recarrega os dados do saldo para refletir a nova transação
+      await handleObterSaldoPorMes();
     } catch (err) {
       Alert.alert("Erro ao adicionar transação");
     }
@@ -260,6 +247,11 @@ export default function HomeScreen({ navigation }: Props) {
     toggleModal();
   };
 
+  useEffect(() => {
+    updateSaldo(dataSelecionada);
+    handleObterSaldoPorMes();
+  }, [dataSelecionada]);
+
   return (
     <View style={styles.container}>
       <View style={styles.menuHeader}>
@@ -279,9 +271,13 @@ export default function HomeScreen({ navigation }: Props) {
           </TouchableOpacity>
         </View>
         <View>
-          <Text style={styles.saldoAtual}>
-            R$ {saldo ? saldo.toFixed(2) : "0.00"}
-          </Text>
+          {isLoading ? (
+            <ActivityIndicator size="large" color="#ffffff" />
+          ) : (
+            <Text style={styles.saldoAtual}>
+              R$ {valuesObject.saldo ? valuesObject.saldo.toFixed(2) : "0.00"}
+            </Text>
+          )}
         </View>
         <View style={styles.buttons}>
           <View style={styles.rendas}>
@@ -295,14 +291,22 @@ export default function HomeScreen({ navigation }: Props) {
                 +
               </Text>
             </TouchableOpacity>
-            <Text style={{ color: "#ffffff", fontWeight: "bold" }}>
-              R$ {String(valuesObject?.totalEntradas)}
-            </Text>
+            {isLoading ? (
+              <ActivityIndicator size="large" color="#ffffff" />
+            ) : (
+              <Text style={{ color: "#ffffff", fontWeight: "bold" }}>
+                R$ {String(valuesObject?.totalEntradas)}
+              </Text>
+            )}
           </View>
           <View style={styles.despesas}>
-            <Text style={{ color: "#ffffff", fontWeight: "bold" }}>
-              R$ {String(valuesObject?.totalSaidas)}
-            </Text>
+            {isLoading ? (
+              <ActivityIndicator size="large" color="#ffffff" />
+            ) : (
+              <Text style={{ color: "#ffffff", fontWeight: "bold" }}>
+                R$ {String(valuesObject?.totalSaidas)}
+              </Text>
+            )}
             <TouchableOpacity
               style={styles.saidaBtn}
               onPress={handleTipoTransacaoSaida}
@@ -375,7 +379,7 @@ export default function HomeScreen({ navigation }: Props) {
         <View style={styles.content}>{/* Body */}</View>
       </View>
       <View style={styles.menuFooter}>
-        <NavigationBar/>
+        <NavigationBar />
       </View>
     </View>
   );
@@ -482,19 +486,19 @@ const styles = StyleSheet.create({
   rendas: {
     alignItems: "center",
     flexDirection: "row",
-    width:"40%",
+    width: "40%",
   },
   despesas: {
     alignItems: "center",
     flexDirection: "row",
-    width:"40%",
+    width: "40%",
   },
   buttons: {
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  arrowButton: { padding: 5 , paddingBottom:15},
+  arrowButton: { padding: 5, paddingBottom: 15 },
   arrowText: {
     color: "#ffffff",
     fontSize: 30,
