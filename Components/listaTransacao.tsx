@@ -29,6 +29,8 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
   const [selectedItemDescricao, setSelectedItemDescricao] = useState<
     string | null
   >(null);
+  const [selectedItemData, setSelectedItemData] = useState<Date | null>(null);
+  const [dataTextInput, setDataTextInput] = useState("");
   const [isEditable, setIsEditable] = useState(false);
 
   useEffect(() => {
@@ -52,11 +54,26 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
   const toggleModal = (
     itemValue: number,
     itemTipo: string,
-    itemDescricao: string
+    itemDescricao: string,
+    itemData: Date //{ nanoseconds: number; seconds: number }
   ) => {
     setSelectedItemValue(itemValue);
     setSelectedItemTipo(itemTipo);
     setSelectedItemDescricao(itemDescricao);
+    let seconds = 0;
+    let nanoseconds = 0;
+    const matches = itemData.toString().match(/\d+/g);
+    if (matches && matches.length >= 2) {
+      seconds = parseInt(matches[0]);
+      nanoseconds = parseInt(matches[1]);
+    }
+    const timestamp = new Date(seconds * 1000 + nanoseconds / 1000000);
+    const formattedDate = timestamp;
+    setSelectedItemData(formattedDate);
+    setDataTextInput(formattedDate.toLocaleDateString("pt-BR"));
+    console.log(itemData.toString());
+    console.log(`seconds: ${seconds}, nanoseconds: ${nanoseconds}`);
+    //console.log(formattedDate.toLocaleDateString("pt-BR"));
     setModalVisible(!isModalVisible);
   };
 
@@ -65,7 +82,9 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
   };
   const renderItem = ({ item }: { item: Transacao }) => (
     <TouchableOpacity
-      onPress={() => toggleModal(item.valor, item.tipo, item.descricao)}
+      onPress={() =>
+        toggleModal(item.valor, item.tipo, item.descricao, item.data)
+      }
     >
       <View style={styles.container}>
         {/* <View style={styles.icon}>{}</View> */}
@@ -99,9 +118,10 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
             <TextInput
               style={styles.input}
               placeholder="dd/mm/yyyy"
-              showSoftInputOnFocus={false}
+              //showSoftInputOnFocus={false}
+              editable={isEditable}
               caretHidden={true}
-              // value={dataTextInput}
+              value={dataTextInput}
             />
             <TextInput
               style={styles.input}
