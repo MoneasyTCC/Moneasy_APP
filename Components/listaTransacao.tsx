@@ -29,6 +29,7 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
   const [selectedItemDescricao, setSelectedItemDescricao] = useState<
     string | null
   >(null);
+  const [isEditable, setIsEditable] = useState(false);
 
   useEffect(() => {
     const buscarTransacoes = async () => {
@@ -93,7 +94,7 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
               style={styles.input}
               keyboardType="numeric"
               value={selectedItemValue?.toString()}
-              editable={false}
+              editable={isEditable}
             />
             <TextInput
               style={styles.input}
@@ -104,17 +105,35 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
             />
             <TextInput
               style={styles.input}
+              placeholder="Descrição"
               value={selectedItemDescricao?.toString()}
-              editable={false}
+              editable={isEditable}
             />
             <View style={styles.buttonGroup}>
-              <Button title="Editar" color="#4CAF50" />
-              <Button title="Excluir" color="#B22222" />
-              <Button
-                title="Cancelar"
-                onPress={() => setModalVisible(false)}
-                color="#757575"
-              />
+              {isEditable ? (
+                <>
+                  <Button title="Confirmar" color="#4CAF50" />
+                  <Button
+                    title="Cancelar"
+                    color="#B22222"
+                    onPress={() => setIsEditable(false)}
+                  />
+                </>
+              ) : (
+                <>
+                  <Button
+                    title="Editar"
+                    color="#4CAF50"
+                    onPress={() => setIsEditable(true)}
+                  />
+                  <Button title="Excluir" color="#B22222" />
+                  <Button
+                    title="Cancelar"
+                    onPress={() => setModalVisible(false)}
+                    color="#757575"
+                  />
+                </>
+              )}
             </View>
           </View>
         </View>
