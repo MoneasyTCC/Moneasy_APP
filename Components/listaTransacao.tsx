@@ -83,12 +83,12 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
   const renderItem = ({ item }: { item: Transacao }) => (
     <TouchableOpacity
       onPress={() =>
-        toggleModal(item.valor, item.tipo, item.descricao, item.data)
+        toggleModal(item.valor, item.tipo, item.nome, item.data)
       }
     >
       <View style={styles.container}>
         {/* <View style={styles.icon}>{}</View> */}
-        <Text style={styles.text}>{item.tipo}</Text>
+        <Text style={styles.text}>{item.nome.length > 15 ? `${item.nome.substring(0, 15)}...` : item.nome}</Text>
         <Text style={[styles.text, getValueStyle(item.tipo)]}>
           R${item.valor.toFixed(2)}
         </Text>
@@ -109,6 +109,12 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
       <Modal visible={isModalVisible} animationType="slide" transparent={true}>
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
+          <TextInput
+              style={styles.input}
+              placeholder="Nome"
+              value={selectedItemDescricao?.toString()}
+              editable={isEditable}
+            />
             <TextInput
               style={styles.input}
               keyboardType="numeric"
@@ -122,12 +128,6 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
               editable={isEditable}
               caretHidden={true}
               value={dataTextInput}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Descrição"
-              value={selectedItemDescricao?.toString()}
-              editable={isEditable}
             />
             <View style={styles.buttonGroup}>
               {isEditable ? (

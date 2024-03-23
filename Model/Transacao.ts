@@ -4,7 +4,7 @@ export class  Transacao {
     tipo: string;
     valor: number;
     data: Date;
-    descricao: string;
+    nome: string;
     moeda: string;
   
     constructor(id:string,usuarioId: string, tipo: string, valor: number, data: Date, descricao: string, moeda: string) {
@@ -13,7 +13,7 @@ export class  Transacao {
       this.tipo = tipo;
       this.valor = valor;
       this.data = data;
-      this.descricao = descricao;
+      this.nome = descricao;
       this.moeda = moeda;
     }
   }
