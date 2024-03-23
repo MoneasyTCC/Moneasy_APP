@@ -39,7 +39,7 @@ export default function TransacaoScreen({ navigation }: Props) {
 
   const updateMonth = (newMonthIndex: number) => {
     setMonthIndex(newMonthIndex);
-    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex, 1);
+    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex , 1);
     setDataSelecionada(newData);
     updateSaldo(newData);
   };

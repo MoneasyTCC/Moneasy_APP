@@ -28,7 +28,7 @@ import ListaDeTransacoes from "../../../Components/listaTransacao";
 import { obterSaldoPorMes } from "../../../Controller/TransacaoController";
 import DropDownPicker from "react-native-dropdown-picker";
 import NavigationBar from "../menuNavegation";
-
+import CotacaoDolar from "../../../Components/cotacao";
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   "Home"
@@ -44,7 +44,7 @@ type DateTimePickerMode = "date" | "time" | "datetime";
 export default function HomeScreen({ navigation }: Props) {
   var [isModalVisible, setModalVisible] = useState(false);
   const [valor, setValor] = useState("");
-  const [descricao, setDescricao] = useState("");
+  const [nome, setNome] = useState("");
   const [data, setData] = useState(new Date());
   const [modo, setModo] = useState<DateTimePickerMode | undefined>(undefined);
   const [show, setShow] = useState(false);
@@ -160,7 +160,7 @@ export default function HomeScreen({ navigation }: Props) {
     tipo: tipoTransacao,
     valor: parseFloat(valor),
     data: data,
-    descricao: descricao,
+    nome: nome,
     moeda: "BRL",
   };
 
@@ -183,7 +183,7 @@ export default function HomeScreen({ navigation }: Props) {
         tipo: tipoTransacao,
         valor: valorFloat,
         data: dataTransacao, // Usando a dataTransacao ajustada aqui
-        descricao: descricao,
+        nome: nome,
         moeda: "BRL",
       };
 
@@ -333,6 +333,12 @@ export default function HomeScreen({ navigation }: Props) {
         >
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
+            <TextInput
+                style={styles.input}
+                placeholder="Nome"
+                value={nome}
+                onChangeText={setNome}
+              />
               <TextInput
                 style={styles.input}
                 placeholder="Valor"
@@ -348,12 +354,7 @@ export default function HomeScreen({ navigation }: Props) {
                 caretHidden={true}
                 value={dataTextInput}
               />
-              <TextInput
-                style={styles.input}
-                placeholder="Descrição"
-                value={descricao}
-                onChangeText={setDescricao}
-              />
+            
               <View style={styles.buttonGroup}>
                 <Button
                   title="Adicionar"
@@ -383,7 +384,11 @@ export default function HomeScreen({ navigation }: Props) {
         </Modal>
       </View>
       <View style={styles.menuBody}>
-        <View style={styles.content}>{/* Body */}</View>
+        
+        <View style={styles.content}>{
+                  <CotacaoDolar/>
+
+        }</View>
       </View>
       <View style={styles.menuFooter}>
         <NavigationBar />
