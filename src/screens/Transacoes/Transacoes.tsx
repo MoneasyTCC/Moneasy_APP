@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     height: "15%",
     backgroundColor: "#3A3E3A",
   },
-  arrowButton: { padding: 10 },
+  arrowButton: { /* padding: 10 */ },
   arrowText: {
     color: "#ffffff",
     fontSize: 30,
