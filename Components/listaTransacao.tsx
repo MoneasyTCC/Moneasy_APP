@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { Transacao } from "../Model/Transacao";
 import { obterTransacoesPorData } from "../Controller/TransacaoController";
+import { TransacaoDAL } from "../Repo/RepositorioTransacao";
 // import Money from "../assets/transacoes/money.png";
 
 interface ListaDeTransacoesProps {
@@ -26,12 +27,12 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
     null
   );
   const [selectedItemTipo, setSelectedItemTipo] = useState<string | null>(null);
-  const [selectedItemDescricao, setSelectedItemDescricao] = useState<
-    string | null
-  >(null);
+  const [selectedItemNome, setSelectedItemNome] = useState<string | null>(null);
   const [selectedItemData, setSelectedItemData] = useState<Date | null>(null);
   const [dataTextInput, setDataTextInput] = useState("");
+  const [selectedItemId, setSelectedItemId] = useState<string>("");
   const [isEditable, setIsEditable] = useState(false);
+  const [updateLista, setUpdateLista] = useState(false);
 
   useEffect(() => {
     const buscarTransacoes = async () => {
@@ -49,17 +50,20 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
     };
 
     buscarTransacoes();
-  }, [dataSelecionada]);
+    setUpdateLista(false);
+  }, [dataSelecionada, updateLista]);
 
   const toggleModal = (
     itemValue: number,
     itemTipo: string,
-    itemDescricao: string,
-    itemData: Date //{ nanoseconds: number; seconds: number }
+    itemNome: string,
+    itemData: Date,
+    itemId: string
   ) => {
     setSelectedItemValue(itemValue);
     setSelectedItemTipo(itemTipo);
-    setSelectedItemDescricao(itemDescricao);
+    setSelectedItemNome(itemNome);
+    setSelectedItemId(itemId);
     let seconds = 0;
     let nanoseconds = 0;
     const matches = itemData.toString().match(/\d+/g);
@@ -71,10 +75,22 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
     const formattedDate = timestamp;
     setSelectedItemData(formattedDate);
     setDataTextInput(formattedDate.toLocaleDateString("pt-BR"));
-    console.log(itemData.toString());
-    console.log(`seconds: ${seconds}, nanoseconds: ${nanoseconds}`);
+    //console.log(itemData.toString());
+    //console.log(`seconds: ${seconds}, nanoseconds: ${nanoseconds}`);
     //console.log(formattedDate.toLocaleDateString("pt-BR"));
+    console.log(itemId);
     setModalVisible(!isModalVisible);
+  };
+
+  const handleDeletarTransacao = async (transacaoId: string) => {
+    try {
+      TransacaoDAL.deletarTransacao(transacaoId);
+      alert("Transação deletada com sucesso.");
+      console.log("Transação deletada com sucesso.");
+      setUpdateLista(!updateLista);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const getValueStyle = (tipo: string) => {
@@ -83,12 +99,16 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
   const renderItem = ({ item }: { item: Transacao }) => (
     <TouchableOpacity
       onPress={() =>
-        toggleModal(item.valor, item.tipo, item.nome, item.data)
+        toggleModal(item.valor, item.tipo, item.nome, item.data, item.id)
       }
     >
       <View style={styles.container}>
         {/* <View style={styles.icon}>{}</View> */}
-        <Text style={styles.text}>{item.nome.length > 15 ? `${item.nome.substring(0, 15)}...` : item.nome}</Text>
+        <Text style={styles.text}>
+          {item.nome.length > 15
+            ? `${item.nome.substring(0, 15)}...`
+            : item.nome}
+        </Text>
         <Text style={[styles.text, getValueStyle(item.tipo)]}>
           R${item.valor.toFixed(2)}
         </Text>
@@ -109,10 +129,10 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
       <Modal visible={isModalVisible} animationType="slide" transparent={true}>
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-          <TextInput
+            <TextInput
               style={styles.input}
               placeholder="Nome"
-              value={selectedItemDescricao?.toString()}
+              value={selectedItemNome?.toString()}
               editable={isEditable}
             />
             <TextInput
@@ -146,7 +166,11 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
                     color="#4CAF50"
                     onPress={() => setIsEditable(true)}
                   />
-                  <Button title="Excluir" color="#B22222" />
+                  <Button
+                    title="Excluir"
+                    color="#B22222"
+                    onPress={() => handleDeletarTransacao(selectedItemId)}
+                  />
                   <Button
                     title="Cancelar"
                     onPress={() => setModalVisible(false)}
