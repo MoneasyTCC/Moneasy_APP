@@ -54,6 +54,8 @@ export default function HomeScreen({ navigation }: Props) {
   const [checkNovaTransacao, setcheckNovaTransacao] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const saldoCache = useRef<Map<string, SaldoMes>>(new Map());
+  const [fData, setFData] = useState(""); // Adicionado estado para fData
+
 
   const [valuesObject, setValuesObject] = useState<{
     totalEntradas: number;
@@ -164,65 +166,63 @@ export default function HomeScreen({ navigation }: Props) {
     moeda: "BRL",
   };
 
+
   const handleTransacao = async () => {
-    try {
-      const valorFloat = isNaN(parseFloat(valor)) ? 0 : parseFloat(valor);
+      try {
+        const valorFloat = isNaN(parseFloat(valor)) ? 0 : parseFloat(valor);
+        // Cria uma data de transação baseada no mês e ano selecionados, mas mantendo o dia atual,
+        // ou o dia 1 se desejar representar a transação simplesmente no mês selecionado sem um dia específico.
+        // Nota: Ajuste essa lógica conforme necessário para atender ao requisito exato de data da transação.
+        const dataTransacao = setfData;
+        console.log(dataTransacao);
+        const novosDados: Transacao = {
+          id: "",
+          usuarioId: "",
+          tipo: tipoTransacao,
+          valor: valorFloat,
+          data: dataTransacao, // Usando a dataTransacao ajustada aqui
+          nome: nome,
+          moeda: "BRL",
+        };
 
-      // Cria uma data de transação baseada no mês e ano selecionados, mas mantendo o dia atual,
-      // ou o dia 1 se desejar representar a transação simplesmente no mês selecionado sem um dia específico.
-      // Nota: Ajuste essa lógica conforme necessário para atender ao requisito exato de data da transação.
-      const dataTransacao = new Date(
-        dataSelecionada.getFullYear(),
-        dataSelecionada.getMonth(),
-        dataSelecionada.getDate()
-      );
+        await TransacaoDAL.adicionarTransacao(novosDados);
+        Alert.alert("Transação adicionada com Sucesso!");
 
-      const novosDados: Transacao = {
-        id: "",
-        usuarioId: "",
-        tipo: tipoTransacao,
-        valor: valorFloat,
-        data: dataTransacao, // Usando a dataTransacao ajustada aqui
-        nome: nome,
-        moeda: "BRL",
-      };
+        // Invalidate o cache do mês específico da nova transação
+        const chaveCache = dataTransacao.toISOString().slice(0, 7);
+        saldoCache.current.delete(chaveCache);
 
-      await TransacaoDAL.adicionarTransacao(novosDados);
-      Alert.alert("Transação adicionada com Sucesso!");
+        // Recarrega os dados do saldo para refletir a nova transação
+        await handleObterSaldoPorMes();
+      } catch (err) {
+        Alert.alert("Erro ao adicionar transação");
+      }
+    };
 
-      // Invalidate o cache do mês específico da nova transação
-      const chaveCache = dataTransacao.toISOString().slice(0, 7);
-      saldoCache.current.delete(chaveCache);
-
-      // Recarrega os dados do saldo para refletir a nova transação
-      await handleObterSaldoPorMes();
-    } catch (err) {
-      Alert.alert("Erro ao adicionar transação");
-    }
-  };
-
-  const onChange = (
-    evento: DateTimePickerEvent,
-    dataSelecionada?: Date | undefined
-  ) => {
-    if (evento.type === "set" && dataSelecionada) {
-      const dataAtual = dataSelecionada || data;
-      setShow(Platform.OS === "ios");
-      setData(dataAtual);
-      setDataTextInput(data.toLocaleDateString("pt-BR"));
-      let tempData = new Date(dataAtual);
-      let fData =
-        tempData.getDate() +
-        "/" +
-        (tempData.getMonth() + 1) +
-        "/" +
-        tempData.getFullYear();
-      // console.log(fData);
-      setShow(false);
-    } else if (evento.type === "dismissed") {
-      setShow(false);
-    }
-  };
+    const onChange = (
+      evento: DateTimePickerEvent,
+      dataSelecionada?: Date | undefined
+    ) => {
+      if (evento.type === "set" && dataSelecionada) {
+        const dataAtual = dataSelecionada || data;
+        setShow(Platform.OS === "ios");
+        setData(dataAtual);
+        setfData = dataAtual;
+        let tempData = new Date(dataAtual);
+        const dataFormatada =
+              tempData.getDate() +
+              "/" +
+              (tempData.getMonth() + 1) +
+              "/" +
+              tempData.getFullYear();
+        setDataTextInput(dataFormatada);
+        console.log(dataFormatada);
+        updateMonth(tempData.getMonth()); // Chama updateMonth para atualizar o mês na tela
+        setShow(false);
+      } else if (evento.type === "dismissed") {
+        setShow(false);
+      }
+    };
 
   const showMode = (modoAtual: DateTimePickerMode) => {
     if (modoAtual === "date") {
