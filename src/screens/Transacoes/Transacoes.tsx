@@ -1,11 +1,17 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
 import ListaDeTransacoes from "../../../Components/listaTransacao";
 import { Transacao } from "../../../Model/Transacao";
 import { obterSaldoPorMes } from "../../../Controller/TransacaoController";
 import NavigationBar from "../menuNavegation";
+import { useEffect, useRef, useState } from "react";
 
 type TransacaoScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -19,6 +25,8 @@ type Props = {
 export default function TransacaoScreen({ navigation }: Props) {
   const [dataSelecionada, setDataSelecionada] = useState(new Date());
   const [saldo, setSaldo] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const saldoCache = useRef<Map<string, number>>(new Map());
 
   const monthNames = [
     "Janeiro",
@@ -39,7 +47,7 @@ export default function TransacaoScreen({ navigation }: Props) {
 
   const updateMonth = (newMonthIndex: number) => {
     setMonthIndex(newMonthIndex);
-    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex , 1);
+    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex, 1);
     setDataSelecionada(newData);
     updateSaldo(newData);
   };
@@ -55,16 +63,26 @@ export default function TransacaoScreen({ navigation }: Props) {
   };
 
   const updateSaldo = async (date: Date) => {
+    setIsLoading(true); // Inicia o loading
+    const chaveCache = date.toISOString().slice(0, 7);
     try {
-      const resultadoSaldo = await obterSaldoPorMes(date);
-      if (resultadoSaldo && typeof resultadoSaldo.saldo === "number") {
-        setSaldo(resultadoSaldo.saldo);
+      let saldoDoCache = saldoCache.current.get(chaveCache);
+      if (saldoDoCache === undefined) {
+        const resultadoSaldo = await obterSaldoPorMes(date);
+        if (resultadoSaldo && typeof resultadoSaldo.saldo === "number") {
+          saldoCache.current.set(chaveCache, resultadoSaldo.saldo);
+          setSaldo(resultadoSaldo.saldo);
+        } else {
+          setSaldo(null);
+          console.warn("Saldo não encontrado ou o valor não é um número.");
+        }
       } else {
-        setSaldo(null); // ou um valor padrão que você desejar
-        console.warn("Saldo não encontrado ou o valor não é um número.");
+        setSaldo(saldoDoCache);
       }
     } catch (error) {
       console.error("Erro ao obter saldo:", error);
+    } finally {
+      setIsLoading(false); // Finaliza o loading
     }
   };
 
@@ -88,13 +106,16 @@ export default function TransacaoScreen({ navigation }: Props) {
       </View>
       <View style={styles.menuBody}>
         <View style={styles.content}>
-          <View style={styles.saldoBody}>
-            <Text style={styles.saldoText}>Saldo Atual</Text>
-            <Text style={styles.saldoAtual}>
-              R$ {saldo ? saldo.toFixed(2) : "0.00"}
-            </Text>
-          </View>
-          <Text></Text>
+          {isLoading ? (
+            <ActivityIndicator size="large" color="#ffffff" />
+          ) : (
+            <View style={styles.saldoBody}>
+              <Text style={styles.saldoText}>Saldo Atual</Text>
+              <Text style={styles.saldoAtual}>
+                R$ {saldo ? saldo.toFixed(2) : "0.00"}
+              </Text>
+            </View>
+          )}
           <ListaDeTransacoes dataSelecionada={dataSelecionada} />
         </View>
       </View>
@@ -145,14 +166,16 @@ const styles = StyleSheet.create({
     height: "15%",
     backgroundColor: "#3A3E3A",
   },
-  arrowButton: { padding: 10 },
+  arrowButton: {
+    /* padding: 10 */
+  },
   arrowText: {
     color: "#ffffff",
     fontSize: 30,
     fontWeight: "bold",
     lineHeight: 30,
   },
-  saldoBody:{    
+  saldoBody: {
     alignItems: "center",
   },
   mesLabel: {
