@@ -9,15 +9,22 @@ import {
   Modal,
   Button,
   TextInput,
+  Platform,
 } from "react-native";
 import { Transacao } from "../Model/Transacao";
 import { obterTransacoesPorData } from "../Controller/TransacaoController";
 import { TransacaoDAL } from "../Repo/RepositorioTransacao";
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
 // import Money from "../assets/transacoes/money.png";
 
 interface ListaDeTransacoesProps {
   dataSelecionada: Date;
 }
+
+type DateTimePickerMode = "date" | "time" | "datetime";
+
 const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
   dataSelecionada,
 }) => {
@@ -33,6 +40,9 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
   const [updateLista, setUpdateLista] = useState(false);
   const [novoValor, setNovoValor] = useState<string>("");
   const [novoNome, setNovoNome] = useState<string>("");
+  const [modo, setModo] = useState<DateTimePickerMode | undefined>(undefined);
+  const [show, setShow] = useState(false);
+  const [novaData, setNovaData] = useState(new Date());
 
   useEffect(() => {
     const buscarTransacoes = async () => {
@@ -52,6 +62,28 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
     buscarTransacoes();
     setUpdateLista(false);
   }, [dataSelecionada, updateLista]);
+
+  const onChange = (
+    evento: DateTimePickerEvent,
+    dataSelecionada?: Date | undefined
+  ) => {
+    if (evento.type === "set" && dataSelecionada) {
+      const dataAtual = dataSelecionada || novaData;
+      setShow(Platform.OS === "ios");
+      setNovaData(dataAtual);
+      setDataTextInput(dataAtual.toLocaleDateString("pt-BR"));
+      setShow(false);
+    } else if (evento.type === "dismissed") {
+      setShow(false);
+    }
+  };
+
+  const showMode = (modoAtual: DateTimePickerMode) => {
+    if (modoAtual === "date") {
+      setShow(true);
+    }
+    setModo(modoAtual);
+  };
 
   const toggleModal = (
     itemValue: number,
@@ -103,6 +135,7 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
       const novosDados: Partial<Transacao> = {
         valor: novoValorNumber,
         nome: novoNome,
+        data: novaData,
       };
       await TransacaoDAL.alterarTransacao(transacaoId, novosDados);
       alert("Transação alterada com sucesso.");
@@ -170,7 +203,8 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
             <TextInput
               style={styles.input}
               placeholder="dd/mm/yyyy"
-              //showSoftInputOnFocus={false}
+              onPressIn={() => showMode("date")}
+              showSoftInputOnFocus={false}
               editable={isEditable}
               caretHidden={true}
               value={dataTextInput}
@@ -212,6 +246,17 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
                 </>
               )}
             </View>
+            {show && (
+              <DateTimePicker
+                testID="dateTimePicker"
+                value={novaData}
+                mode={modo}
+                is24Hour={true}
+                display="default"
+                onChange={onChange}
+                {...(Platform.OS === "android" && { is24Hour: true })}
+              />
+            )}
           </View>
         </View>
       </Modal>
