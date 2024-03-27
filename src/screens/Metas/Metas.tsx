@@ -8,15 +8,10 @@ import {
   Modal,
   TextInput,
   Alert,
+  TouchableOpacity,
 } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
-import { Shadow } from "react-native-shadow-2";
-import { adicionarNovaMeta } from "../../../services/testeBanco";
-import { adicionarNovaTransacao } from "../../../services/testeBanco";
-import DatePicker from "react-native-datepicker";
-import { Transacao } from "../../../Model/Transacao";
-import { TransacaoDAL } from "../../../Repo/RepositorioTransacao";
 import NavigationBar from "../menuNavegation";
 
 type MetasScreenNavigationProp = NativeStackNavigationProp<
@@ -30,16 +25,57 @@ type Props = {
 
 // Use as props na definição do seu componente
 export default function MetasScreen({ navigation }: Props) {
+  const [dataSelecionada, setDataSelecionada] = useState(new Date());
+  const [monthIndex, setMonthIndex] = useState(dataSelecionada.getMonth());
+  const monthNames = [
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro",
+  ];
+
+  const updateMonth = (newMonthIndex: number) => {
+    setMonthIndex(newMonthIndex);
+    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex, 1);
+    setDataSelecionada(newData);
+    /* updateSaldo(newData); */
+  };
+
+  const handlePreviousMonth = () => {
+    const newMonthIndex = monthIndex > 0 ? monthIndex - 1 : 11;
+    updateMonth(newMonthIndex);
+  };
+
+  const handleNextMonth = () => {
+    const newMonthIndex = monthIndex < 11 ? monthIndex + 1 : 0;
+    updateMonth(newMonthIndex);
+  };
   return (
     <View style={styles.container}>
+      <Text style={styles.textOrcamento}>Metas</Text>
       <View style={styles.menuHeader}>
-        <Button title="Sair" onPress={() => navigation.replace("Inicio")} />
+        <TouchableOpacity
+          onPress={handlePreviousMonth}
+          style={styles.arrowButton}
+        >
+          <Text style={styles.arrowText}>&lt;</Text>
+        </TouchableOpacity>
+        <Text style={styles.mesLabel}>{monthNames[monthIndex]}</Text>
+        <TouchableOpacity onPress={handleNextMonth} style={styles.arrowButton}>
+          <Text style={styles.arrowText}>&gt;</Text>
+        </TouchableOpacity>
       </View>
-      <View style={styles.menuBody}>
-        <View style={styles.content}></View>
-      </View>
+      <View style={styles.menuBody}></View>
       <View style={styles.menuFooter}>
-        <NavigationBar></NavigationBar>
+        <NavigationBar />
       </View>
     </View>
   );
@@ -48,54 +84,56 @@ export default function MetasScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
     backgroundColor: "#2B2B2B",
   },
   menuHeader: {
-    borderBottomLeftRadius: 50,
-    borderBottomRightRadius: 50,
-    flexDirection: "column",
-    alignItems: "center",
+    flexDirection: "row",
+    alignItems: "flex-end",
     justifyContent: "center",
     width: "100%",
-    height: "35%",
-    backgroundColor: "#3A3E3A",
+    height: "16%",
   },
   menuBody: {
-    width: "80%",
-    height: "50%",
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
+    width: "100%",
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-  },
-  content: {
-    borderRadius: 50,
-    width: "100%",
-    height: "80%",
+    paddingVertical: 20,
     backgroundColor: "#3A3E3A",
   },
   menuFooter: {
-    borderTopLeftRadius: 50,
-    borderTopRightRadius: 50,
-    flexDirection: "column",
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "space-around",
     width: "100%",
     height: "15%",
     backgroundColor: "#3A3E3A",
   },
-  text: {
-    fontSize: 60,
-    marginBottom: 20,
+  textOrcamento: {
+    position: "absolute",
+    marginTop: 35,
+    marginLeft: 20,
+    fontSize: 26,
+    color: "#ffffff",
+    fontWeight: "bold",
   },
-  menuNavegation: {
-    borderRadius: 50,
-    backgroundColor: "#2B2B2B",
-    width: "80%",
-    height: "50%",
-    justifyContent: "space-around",
-    alignItems: "center",
-    flexDirection: "row",
+  /* Select dos meses */
+
+  arrowButton: { marginBottom: 10 },
+  arrowText: {
+    color: "#ffffff",
+    fontSize: 30,
+    fontWeight: "bold",
+    lineHeight: 30,
   },
-  img: {},
+  mesLabel: {
+    color: "#ffffff",
+    width: "35%",
+    textAlign: "center",
+    fontSize: 26,
+    marginBottom: 10,
+  },
+  /* Fim Select dos meses */
 });
