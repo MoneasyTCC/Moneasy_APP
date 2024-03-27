@@ -22,17 +22,17 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
   dataSelecionada,
 }) => {
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
-  const [isModalVisible, setModalVisible] = useState(false);
-  const [selectedItemValue, setSelectedItemValue] = useState<number | null>(
-    null
-  );
-  const [selectedItemTipo, setSelectedItemTipo] = useState<string | null>(null);
-  const [selectedItemNome, setSelectedItemNome] = useState<string | null>(null);
-  const [selectedItemData, setSelectedItemData] = useState<Date | null>(null);
-  const [dataTextInput, setDataTextInput] = useState("");
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedItemValue, setSelectedItemValue] = useState<string>("");
+  const [selectedItemTipo, setSelectedItemTipo] = useState<string>("");
+  const [selectedItemNome, setSelectedItemNome] = useState<string>("");
+  const [selectedItemData, setSelectedItemData] = useState<Date>(new Date());
+  const [dataTextInput, setDataTextInput] = useState<string>("");
   const [selectedItemId, setSelectedItemId] = useState<string>("");
   const [isEditable, setIsEditable] = useState(false);
   const [updateLista, setUpdateLista] = useState(false);
+  const [novoValor, setNovoValor] = useState<string>("");
+  const [novoNome, setNovoNome] = useState<string>("");
 
   useEffect(() => {
     const buscarTransacoes = async () => {
@@ -60,10 +60,12 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
     itemData: Date,
     itemId: string
   ) => {
-    setSelectedItemValue(itemValue);
+    setSelectedItemValue(itemValue.toString());
     setSelectedItemTipo(itemTipo);
     setSelectedItemNome(itemNome);
     setSelectedItemId(itemId);
+    setNovoNome(itemNome);
+    setNovoValor(itemValue.toString());
     let seconds = 0;
     let nanoseconds = 0;
     const matches = itemData.toString().match(/\d+/g);
@@ -79,14 +81,32 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
     //console.log(`seconds: ${seconds}, nanoseconds: ${nanoseconds}`);
     //console.log(formattedDate.toLocaleDateString("pt-BR"));
     console.log(itemId);
-    setModalVisible(!isModalVisible);
+    setIsModalVisible(!isModalVisible);
   };
 
   const handleDeletarTransacao = async (transacaoId: string) => {
     try {
-      TransacaoDAL.deletarTransacao(transacaoId);
+      await TransacaoDAL.deletarTransacao(transacaoId);
       alert("Transação deletada com sucesso.");
-      console.log("Transação deletada com sucesso.");
+      setIsModalVisible(false);
+      setUpdateLista(!updateLista);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleAlterarTransacao = async (transacaoId: string) => {
+    const novoValorNumber = isNaN(parseFloat(novoValor))
+      ? 0
+      : parseFloat(novoValor);
+    try {
+      const novosDados: Partial<Transacao> = {
+        valor: novoValorNumber,
+        nome: novoNome,
+      };
+      await TransacaoDAL.alterarTransacao(transacaoId, novosDados);
+      alert("Transação alterada com sucesso.");
+      setIsModalVisible(false);
       setUpdateLista(!updateLista);
     } catch (err) {
       console.error(err);
@@ -132,14 +152,20 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
             <TextInput
               style={styles.input}
               placeholder="Nome"
-              value={selectedItemNome?.toString()}
+              value={isEditable ? novoNome : selectedItemNome?.toString()}
               editable={isEditable}
+              onChangeText={setNovoNome}
             />
             <TextInput
               style={styles.input}
               keyboardType="numeric"
-              value={selectedItemValue?.toString()}
+              value={
+                isEditable
+                  ? novoValor?.toString()
+                  : selectedItemValue?.toString()
+              }
               editable={isEditable}
+              onChangeText={setNovoValor}
             />
             <TextInput
               style={styles.input}
@@ -152,7 +178,14 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
             <View style={styles.buttonGroup}>
               {isEditable ? (
                 <>
-                  <Button title="Confirmar" color="#4CAF50" />
+                  <Button
+                    title="Confirmar"
+                    color="#4CAF50"
+                    onPress={() => {
+                      handleAlterarTransacao(selectedItemId);
+                      setIsEditable(false);
+                    }}
+                  />
                   <Button
                     title="Cancelar"
                     color="#B22222"
@@ -173,7 +206,7 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
                   />
                   <Button
                     title="Cancelar"
-                    onPress={() => setModalVisible(false)}
+                    onPress={() => setIsModalVisible(false)}
                     color="#757575"
                   />
                 </>
