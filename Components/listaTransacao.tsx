@@ -31,9 +31,7 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedItemValue, setSelectedItemValue] = useState<string>("");
-  const [selectedItemTipo, setSelectedItemTipo] = useState<string>("");
   const [selectedItemNome, setSelectedItemNome] = useState<string>("");
-  const [selectedItemData, setSelectedItemData] = useState<Date>(new Date());
   const [dataTextInput, setDataTextInput] = useState<string>("");
   const [selectedItemId, setSelectedItemId] = useState<string>("");
   const [isEditable, setIsEditable] = useState(false);
@@ -87,13 +85,11 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
 
   const toggleModal = (
     itemValue: number,
-    itemTipo: string,
     itemNome: string,
     itemData: Date,
     itemId: string
   ) => {
     setSelectedItemValue(itemValue.toString());
-    setSelectedItemTipo(itemTipo);
     setSelectedItemNome(itemNome);
     setSelectedItemId(itemId);
     setNovoNome(itemNome);
@@ -107,7 +103,6 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
     }
     const timestamp = new Date(seconds * 1000 + nanoseconds / 1000000);
     const formattedDate = timestamp;
-    setSelectedItemData(formattedDate);
     setDataTextInput(formattedDate.toLocaleDateString("pt-BR"));
     //console.log(itemData.toString());
     //console.log(`seconds: ${seconds}, nanoseconds: ${nanoseconds}`);
@@ -151,9 +146,7 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
   };
   const renderItem = ({ item }: { item: Transacao }) => (
     <TouchableOpacity
-      onPress={() =>
-        toggleModal(item.valor, item.tipo, item.nome, item.data, item.id)
-      }
+      onPress={() => toggleModal(item.valor, item.nome, item.data, item.id)}
     >
       <View style={styles.container}>
         {/* <View style={styles.icon}>{}</View> */}
