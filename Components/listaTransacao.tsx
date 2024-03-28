@@ -9,29 +9,38 @@ import {
   Modal,
   Button,
   TextInput,
+  Platform,
 } from "react-native";
 import { Transacao } from "../Model/Transacao";
 import { obterTransacoesPorData } from "../Controller/TransacaoController";
+import { TransacaoDAL } from "../Repo/RepositorioTransacao";
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
 // import Money from "../assets/transacoes/money.png";
 
 interface ListaDeTransacoesProps {
   dataSelecionada: Date;
 }
+
+type DateTimePickerMode = "date" | "time" | "datetime";
+
 const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
   dataSelecionada,
 }) => {
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
-  const [isModalVisible, setModalVisible] = useState(false);
-  const [selectedItemValue, setSelectedItemValue] = useState<number | null>(
-    null
-  );
-  const [selectedItemTipo, setSelectedItemTipo] = useState<string | null>(null);
-  const [selectedItemDescricao, setSelectedItemDescricao] = useState<
-    string | null
-  >(null);
-  const [selectedItemData, setSelectedItemData] = useState<Date | null>(null);
-  const [dataTextInput, setDataTextInput] = useState("");
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedItemValue, setSelectedItemValue] = useState<string>("");
+  const [selectedItemNome, setSelectedItemNome] = useState<string>("");
+  const [dataTextInput, setDataTextInput] = useState<string>("");
+  const [selectedItemId, setSelectedItemId] = useState<string>("");
   const [isEditable, setIsEditable] = useState(false);
+  const [updateLista, setUpdateLista] = useState(false);
+  const [novoValor, setNovoValor] = useState<string>("");
+  const [novoNome, setNovoNome] = useState<string>("");
+  const [modo, setModo] = useState<DateTimePickerMode | undefined>(undefined);
+  const [show, setShow] = useState(false);
+  const [novaData, setNovaData] = useState(new Date());
 
   useEffect(() => {
     const buscarTransacoes = async () => {
@@ -49,17 +58,42 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
     };
 
     buscarTransacoes();
-  }, [dataSelecionada]);
+    setUpdateLista(false);
+  }, [dataSelecionada, updateLista]);
+
+  const onChange = (
+    evento: DateTimePickerEvent,
+    dataSelecionada?: Date | undefined
+  ) => {
+    if (evento.type === "set" && dataSelecionada) {
+      const dataAtual = dataSelecionada || novaData;
+      setShow(Platform.OS === "ios");
+      setNovaData(dataAtual);
+      setDataTextInput(dataAtual.toLocaleDateString("pt-BR"));
+      setShow(false);
+    } else if (evento.type === "dismissed") {
+      setShow(false);
+    }
+  };
+
+  const showMode = (modoAtual: DateTimePickerMode) => {
+    if (modoAtual === "date") {
+      setShow(true);
+    }
+    setModo(modoAtual);
+  };
 
   const toggleModal = (
     itemValue: number,
-    itemTipo: string,
-    itemDescricao: string,
-    itemData: Date //{ nanoseconds: number; seconds: number }
+    itemNome: string,
+    itemData: Date,
+    itemId: string
   ) => {
-    setSelectedItemValue(itemValue);
-    setSelectedItemTipo(itemTipo);
-    setSelectedItemDescricao(itemDescricao);
+    setSelectedItemValue(itemValue.toString());
+    setSelectedItemNome(itemNome);
+    setSelectedItemId(itemId);
+    setNovoNome(itemNome);
+    setNovoValor(itemValue.toString());
     let seconds = 0;
     let nanoseconds = 0;
     const matches = itemData.toString().match(/\d+/g);
@@ -69,12 +103,42 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
     }
     const timestamp = new Date(seconds * 1000 + nanoseconds / 1000000);
     const formattedDate = timestamp;
-    setSelectedItemData(formattedDate);
     setDataTextInput(formattedDate.toLocaleDateString("pt-BR"));
-    console.log(itemData.toString());
-    console.log(`seconds: ${seconds}, nanoseconds: ${nanoseconds}`);
+    //console.log(itemData.toString());
+    //console.log(`seconds: ${seconds}, nanoseconds: ${nanoseconds}`);
     //console.log(formattedDate.toLocaleDateString("pt-BR"));
-    setModalVisible(!isModalVisible);
+    console.log(itemId);
+    setIsModalVisible(!isModalVisible);
+  };
+
+  const handleDeletarTransacao = async (transacaoId: string) => {
+    try {
+      await TransacaoDAL.deletarTransacao(transacaoId);
+      alert("Transação deletada com sucesso.");
+      setIsModalVisible(false);
+      setUpdateLista(!updateLista);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleAlterarTransacao = async (transacaoId: string) => {
+    const novoValorNumber = isNaN(parseFloat(novoValor))
+      ? 0
+      : parseFloat(novoValor);
+    try {
+      const novosDados: Partial<Transacao> = {
+        valor: novoValorNumber,
+        nome: novoNome,
+        data: novaData,
+      };
+      await TransacaoDAL.alterarTransacao(transacaoId, novosDados);
+      alert("Transação alterada com sucesso.");
+      setIsModalVisible(false);
+      setUpdateLista(!updateLista);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const getValueStyle = (tipo: string) => {
@@ -82,13 +146,15 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
   };
   const renderItem = ({ item }: { item: Transacao }) => (
     <TouchableOpacity
-      onPress={() =>
-        toggleModal(item.valor, item.tipo, item.nome, item.data)
-      }
+      onPress={() => toggleModal(item.valor, item.nome, item.data, item.id)}
     >
       <View style={styles.container}>
         {/* <View style={styles.icon}>{}</View> */}
-        <Text style={styles.text}>{item.nome.length > 15 ? `${item.nome.substring(0, 15)}...` : item.nome}</Text>
+        <Text style={styles.text}>
+          {item.nome.length > 15
+            ? `${item.nome.substring(0, 15)}...`
+            : item.nome}
+        </Text>
         <Text style={[styles.text, getValueStyle(item.tipo)]}>
           R${item.valor.toFixed(2)}
         </Text>
@@ -109,22 +175,29 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
       <Modal visible={isModalVisible} animationType="slide" transparent={true}>
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-          <TextInput
+            <TextInput
               style={styles.input}
               placeholder="Nome"
-              value={selectedItemDescricao?.toString()}
+              value={isEditable ? novoNome : selectedItemNome?.toString()}
               editable={isEditable}
+              onChangeText={setNovoNome}
             />
             <TextInput
               style={styles.input}
               keyboardType="numeric"
-              value={selectedItemValue?.toString()}
+              value={
+                isEditable
+                  ? novoValor?.toString()
+                  : selectedItemValue?.toString()
+              }
               editable={isEditable}
+              onChangeText={setNovoValor}
             />
             <TextInput
               style={styles.input}
               placeholder="dd/mm/yyyy"
-              //showSoftInputOnFocus={false}
+              onPressIn={() => showMode("date")}
+              showSoftInputOnFocus={false}
               editable={isEditable}
               caretHidden={true}
               value={dataTextInput}
@@ -132,7 +205,14 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
             <View style={styles.buttonGroup}>
               {isEditable ? (
                 <>
-                  <Button title="Confirmar" color="#4CAF50" />
+                  <Button
+                    title="Confirmar"
+                    color="#4CAF50"
+                    onPress={() => {
+                      handleAlterarTransacao(selectedItemId);
+                      setIsEditable(false);
+                    }}
+                  />
                   <Button
                     title="Cancelar"
                     color="#B22222"
@@ -146,15 +226,30 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
                     color="#4CAF50"
                     onPress={() => setIsEditable(true)}
                   />
-                  <Button title="Excluir" color="#B22222" />
+                  <Button
+                    title="Excluir"
+                    color="#B22222"
+                    onPress={() => handleDeletarTransacao(selectedItemId)}
+                  />
                   <Button
                     title="Cancelar"
-                    onPress={() => setModalVisible(false)}
+                    onPress={() => setIsModalVisible(false)}
                     color="#757575"
                   />
                 </>
               )}
             </View>
+            {show && (
+              <DateTimePicker
+                testID="dateTimePicker"
+                value={novaData}
+                mode={modo}
+                is24Hour={true}
+                display="default"
+                onChange={onChange}
+                {...(Platform.OS === "android" && { is24Hour: true })}
+              />
+            )}
           </View>
         </View>
       </Modal>
