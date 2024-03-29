@@ -34,7 +34,6 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<
   "Home"
 >;
 
-
 type Props = {
   navigation: HomeScreenNavigationProp;
 };
@@ -43,7 +42,6 @@ type DateTimePickerMode = "date" | "time" | "datetime";
 
 // Use as props na definição do seu componente
 export default function HomeScreen({ navigation }: Props) {
-
   var [isModalVisible, setModalVisible] = useState(false);
   const [valor, setValor] = useState("");
   const [nome, setNome] = useState("");
@@ -60,6 +58,11 @@ export default function HomeScreen({ navigation }: Props) {
   const [year, setYear] = useState(dataSelecionada.getFullYear());
 
 
+  const [mostrarValores, setMostrarValores] = useState(true);
+
+  const toggleValoresVisiveis = () => {
+    setMostrarValores(!mostrarValores);
+  };
 
   const [valuesObject, setValuesObject] = useState<{
     totalEntradas: number;
@@ -177,8 +180,6 @@ const updateYear = (newYear: number) => {
         setSaldo(null); // ou um valor padrão que você desejar
         console.warn("Saldo não encontrado ou o valor não é um número.");
       }
-          navigation.navigate("Transacao", { dataSelecionada: date });
-
     } catch (error) {
       console.error("Erro ao obter saldo:", error);
     }
@@ -246,12 +247,11 @@ const updateYear = (newYear: number) => {
               tempData.getDate() +
               "/" +
               (tempData.getMonth() + 1) +
-               "/" +
+              "/" +
               tempData.getFullYear();
 
         console.log(dataFormatada);
         updateMonth(tempData.getMonth()); // Chama updateMonth para atualizar o mês na tela
-        updateYear(tempData.getFullYear());
         setShow(false);
       } else if (evento.type === "dismissed") {
         setShow(false);
@@ -324,7 +324,11 @@ const updateYear = (newYear: number) => {
             <ActivityIndicator size="large" color="#ffffff" />
           ) : (
             <Text style={styles.saldoAtual}>
-              R$ {valuesObject.saldo ? valuesObject.saldo.toFixed(2) : "0.00"}
+              {mostrarValores
+                ? `R$ ${
+                    valuesObject.saldo ? valuesObject.saldo.toFixed(2) : "0.00"
+                  }`
+                : "R$ --"}
             </Text>
           )}
         </View>
@@ -345,15 +349,19 @@ const updateYear = (newYear: number) => {
               <ActivityIndicator size="large" color="#ffffff" />
             ) : (
               <Text style={styles.saldosText}>
-                R$ {String(valuesObject?.totalEntradas)}
+                {mostrarValores
+                  ? `R$ ${String(valuesObject?.totalEntradas)}`
+                  : "R$ --"}
               </Text>
             )}
           </View>
           <View>
-            <Image
-              source={require("../../../assets/eye.png")} // Ajuste o caminho conforme necessário
-              style={{ width: 32, height: 32 }} // Ajuste o tamanho conforme necessário
-            />
+            <TouchableOpacity onPress={toggleValoresVisiveis}>
+              <Image
+                source={require("../../../assets/eye.png")} // Ajuste o caminho conforme necessário
+                style={{ width: 32, height: 32 }} // Ajuste o tamanho conforme necessário
+              />
+            </TouchableOpacity>
           </View>
           <View style={styles.despesas}>
             <TouchableOpacity
@@ -362,7 +370,11 @@ const updateYear = (newYear: number) => {
             >
               <Image
                 source={require("../../../assets/setaCima.png")} // Ajuste o caminho conforme necessário
-                style={{ width: 32, height: 32, transform: [{ rotate: '180deg' }]}} // Ajuste o tamanho conforme necessário
+                style={{
+                  width: 32,
+                  height: 32,
+                  transform: [{ rotate: "180deg" }],
+                }} // Ajuste o tamanho conforme necessário
               />
             </TouchableOpacity>
             <Text style={styles.saldosText}>Despesas</Text>
@@ -370,7 +382,9 @@ const updateYear = (newYear: number) => {
               <ActivityIndicator size="large" color="#ffffff" />
             ) : (
               <Text style={styles.saldosText}>
-                R$ {String(valuesObject?.totalSaidas)}
+                {mostrarValores
+                  ? `R$ ${String(valuesObject?.totalSaidas)}`
+                  : "R$ --"}
               </Text>
             )}
           </View>
@@ -382,7 +396,7 @@ const updateYear = (newYear: number) => {
         >
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
-            <TextInput
+              <TextInput
                 style={styles.input}
                 placeholder="Nome"
                 value={nome}
@@ -403,7 +417,7 @@ const updateYear = (newYear: number) => {
                 caretHidden={true}
                 value={dataTextInput}
               />
-            
+
               <View style={styles.buttonGroup}>
                 <Button
                   title="Adicionar"
@@ -433,11 +447,7 @@ const updateYear = (newYear: number) => {
         </Modal>
       </View>
       <View style={styles.menuBody}>
-        
-        <View style={styles.content}>{
-                  <CotacaoDolar/>
-
-        }</View>
+        <View style={styles.content}>{<CotacaoDolar />}</View>
       </View>
       <View style={styles.menuFooter}>
         <NavigationBar />
