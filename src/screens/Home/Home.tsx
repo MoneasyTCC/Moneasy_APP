@@ -34,6 +34,7 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<
   "Home"
 >;
 
+
 type Props = {
   navigation: HomeScreenNavigationProp;
 };
@@ -42,6 +43,7 @@ type DateTimePickerMode = "date" | "time" | "datetime";
 
 // Use as props na definição do seu componente
 export default function HomeScreen({ navigation }: Props) {
+
   var [isModalVisible, setModalVisible] = useState(false);
   const [valor, setValor] = useState("");
   const [nome, setNome] = useState("");
@@ -55,6 +57,8 @@ export default function HomeScreen({ navigation }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const saldoCache = useRef<Map<string, SaldoMes>>(new Map());
   const [fData, setFData] = useState(""); // Adicionado estado para fData
+  const [year, setYear] = useState(dataSelecionada.getFullYear());
+
 
 
   const [valuesObject, setValuesObject] = useState<{
@@ -121,6 +125,32 @@ export default function HomeScreen({ navigation }: Props) {
 
   const [monthIndex, setMonthIndex] = useState(dataSelecionada.getMonth());
 
+const handlePreviousYear = () => {
+  const newYear = year - 1;
+  setYear(newYear);
+  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
+  setDataSelecionada(newData);
+  updateSaldo(newData);
+  updateYear(newYear);
+};
+
+const handleNextYear = () => {
+  const newYear = year + 1;
+  setYear(newYear);
+  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
+  setDataSelecionada(newData);
+  updateSaldo(newData);
+  updateYear(newYear);
+};
+
+const updateYear = (newYear: number) => {
+  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
+  setDataSelecionada(newData);
+  setYear(newYear);
+  updateSaldo(newData);
+};
+
+
   const updateMonth = (newMonthIndex: number) => {
     setMonthIndex(newMonthIndex);
     const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex, 1);
@@ -147,6 +177,8 @@ export default function HomeScreen({ navigation }: Props) {
         setSaldo(null); // ou um valor padrão que você desejar
         console.warn("Saldo não encontrado ou o valor não é um número.");
       }
+          navigation.navigate("Transacao", { dataSelecionada: date });
+
     } catch (error) {
       console.error("Erro ao obter saldo:", error);
     }
@@ -214,11 +246,12 @@ export default function HomeScreen({ navigation }: Props) {
               tempData.getDate() +
               "/" +
               (tempData.getMonth() + 1) +
-              "/" +
+               "/" +
               tempData.getFullYear();
 
         console.log(dataFormatada);
         updateMonth(tempData.getMonth()); // Chama updateMonth para atualizar o mês na tela
+        updateYear(tempData.getFullYear());
         setShow(false);
       } else if (evento.type === "dismissed") {
         setShow(false);
@@ -256,21 +289,36 @@ export default function HomeScreen({ navigation }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.menuHeader}>
-        <View style={styles.mesHeader}>
-          <TouchableOpacity
-            onPress={handlePreviousMonth}
-            style={styles.arrowButton}
-          >
-            <Text style={styles.arrowText}>&lt;</Text>
-          </TouchableOpacity>
-          <Text style={styles.mesLabel}>{monthNames[monthIndex]}</Text>
-          <TouchableOpacity
-            onPress={handleNextMonth}
-            style={styles.arrowButton}
-          >
-            <Text style={styles.arrowText}>&gt;</Text>
-          </TouchableOpacity>
-        </View>
+          <View style={styles.mesHeader}>
+            <TouchableOpacity
+              onPress={handlePreviousMonth}
+              style={styles.arrowButton}
+            >
+              <Text style={styles.arrowText}>&lt;</Text>
+            </TouchableOpacity>
+            <Text style={styles.mesLabel}>{monthNames[monthIndex]}</Text>
+            <TouchableOpacity
+              onPress={handleNextMonth}
+              style={styles.arrowButton}
+            >
+              <Text style={styles.arrowText}>&gt;</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.yearHeader}>
+            <TouchableOpacity
+              onPress={handlePreviousYear}
+              style={[styles.arrowButton, { marginTop: 5 }]}
+            >
+              <Text style={styles.arrowText}>&lt;</Text>
+            </TouchableOpacity>
+            <Text style={styles.mesLabel}>{year}</Text>
+            <TouchableOpacity
+              onPress={handleNextYear}
+              style={[styles.arrowButton, { marginTop: 5 }]}
+            >
+              <Text style={styles.arrowText}>&gt;</Text>
+            </TouchableOpacity>
+          </View>
         <View>
           {isLoading ? (
             <ActivityIndicator size="large" color="#ffffff" />
@@ -550,5 +598,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 26,
     color: "#ffffff",
+  },
+  yearHeader: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 });
