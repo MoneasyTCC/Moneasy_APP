@@ -5,6 +5,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../shared/config";
 
+
 type MenuNavScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   "Login"
@@ -23,7 +24,7 @@ const NavigationBar = () => {
         navigation.navigate("Orcamento");
         break;
       case "Transacao":
-        navigation.navigate("Transacao");
+      navigation.navigate("Transacao");
         break;
       case "Metas":
         navigation.navigate("Metas");
