@@ -207,6 +207,7 @@ export default function HomeScreen({ navigation }: Props) {
         const dataAtual = dataSelecionada || data;
         setShow(Platform.OS === "ios");
         setData(dataAtual);
+        setDataTextInput(dataAtual.toLocaleDateString("pt-br");
         setfData = dataAtual;
         let tempData = new Date(dataAtual);
         const dataFormatada =
@@ -215,7 +216,7 @@ export default function HomeScreen({ navigation }: Props) {
               (tempData.getMonth() + 1) +
               "/" +
               tempData.getFullYear();
-        setDataTextInput(dataFormatada);
+
         console.log(dataFormatada);
         updateMonth(tempData.getMonth()); // Chama updateMonth para atualizar o mês na tela
         setShow(false);
