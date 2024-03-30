@@ -11,12 +11,7 @@ import {
 } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
-import { Shadow } from "react-native-shadow-2";
-import { adicionarNovaMeta } from "../../../services/testeBanco";
-import { adicionarNovaTransacao } from "../../../services/testeBanco";
-import DatePicker from "react-native-datepicker";
-import { Transacao } from "../../../Model/Transacao";
-import { TransacaoDAL } from "../../../Repo/RepositorioTransacao";
+import ImportTransactions from "../../../Components/documentPicker";
 import NavigationBar from "../menuNavegation";
 
 type MoreScreenNavigationProp = NativeStackNavigationProp<
@@ -37,6 +32,7 @@ export default function MoreScreen({ navigation }: Props) {
       </View>
       <View style={styles.menuBody}>
         <View style={styles.content}></View>
+        <ImportTransactions />
       </View>
       <View style={styles.menuFooter}>
         <NavigationBar></NavigationBar>
