@@ -51,6 +51,27 @@ export default function TransacaoScreen({ navigation }: Props) {
     setDataSelecionada(newData);
     updateSaldo(newData);
   };
+  const onTransacaoAlterada = () => {
+    attSaldoDepoisDeAlterarOuDeletar(dataSelecionada); // Atualiza o saldo
+  };
+
+
+  const attSaldoDepoisDeAlterarOuDeletar = async (date: Date) => {
+    setIsLoading(true); 
+    try {
+      const resultadoSaldo = await obterSaldoPorMes(date);
+      if (resultadoSaldo && typeof resultadoSaldo.saldo === "number") {
+        setSaldo(resultadoSaldo.saldo);
+      } else {
+        setSaldo(0); // Se não encontrar um saldo válido, defina como 0
+      }
+    } catch (error) {
+      console.error("Erro ao obter saldo:", error);
+      setSaldo(0); // Em caso de erro, defina o saldo como 0
+    } finally {
+      setIsLoading(false); // Finaliza o loading
+    }
+  };
 
   const handlePreviousMonth = () => {
     const newMonthIndex = monthIndex > 0 ? monthIndex - 1 : 11;
@@ -116,7 +137,8 @@ export default function TransacaoScreen({ navigation }: Props) {
               </Text>
             </View>
           )}
-          <ListaDeTransacoes dataSelecionada={dataSelecionada} />
+          <ListaDeTransacoes dataSelecionada={dataSelecionada}
+            onTransacaoAlterada={onTransacaoAlterada} />
         </View>
       </View>
       <View style={styles.menuFooter}>
