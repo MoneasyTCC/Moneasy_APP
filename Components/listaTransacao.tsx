@@ -17,16 +17,21 @@ import { TransacaoDAL } from "../Repo/RepositorioTransacao";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import Transacoes from "../src/screens/Transacoes/Transacoes";
+
 // import Money from "../assets/transacoes/money.png";
 
 interface ListaDeTransacoesProps {
   dataSelecionada: Date;
+  onTransacaoAlterada: () => void; // Callback quando a transação é alterada
 }
 
 type DateTimePickerMode = "date" | "time" | "datetime";
 
 const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
   dataSelecionada,
+  onTransacaoAlterada
 }) => {
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -117,6 +122,7 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
       alert("Transação deletada com sucesso.");
       setIsModalVisible(false);
       setUpdateLista(!updateLista);
+      onTransacaoAlterada(); // Callback chamado aqui
     } catch (err) {
       console.error(err);
     }
@@ -136,6 +142,7 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
       alert("Transação alterada com sucesso.");
       setIsModalVisible(false);
       setUpdateLista(!updateLista);
+       onTransacaoAlterada(); // Callback chamado aqui
     } catch (err) {
       console.error(err);
     }
