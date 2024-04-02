@@ -257,6 +257,7 @@ export default function HomeScreen({ navigation }: Props) {
     handleObterSaldoPorMes();
   }, [dataSelecionada]);
 
+  
   return (
     <View style={styles.container}>
       <View style={styles.menuHeader}>
