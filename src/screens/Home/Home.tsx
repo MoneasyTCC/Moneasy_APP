@@ -54,6 +54,10 @@ export default function HomeScreen({ navigation }: Props) {
   const [checkNovaTransacao, setcheckNovaTransacao] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const saldoCache = useRef<Map<string, SaldoMes>>(new Map());
+  const [fData, setFData] = useState(""); // Adicionado estado para fData
+  const [year, setYear] = useState(dataSelecionada.getFullYear());
+
+
   const [mostrarValores, setMostrarValores] = useState(true);
 
   const toggleValoresVisiveis = () => {
@@ -124,6 +128,32 @@ export default function HomeScreen({ navigation }: Props) {
 
   const [monthIndex, setMonthIndex] = useState(dataSelecionada.getMonth());
 
+const handlePreviousYear = () => {
+  const newYear = year - 1;
+  setYear(newYear);
+  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
+  setDataSelecionada(newData);
+  updateSaldo(newData);
+  updateYear(newYear);
+};
+
+const handleNextYear = () => {
+  const newYear = year + 1;
+  setYear(newYear);
+  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
+  setDataSelecionada(newData);
+  updateSaldo(newData);
+  updateYear(newYear);
+};
+
+const updateYear = (newYear: number) => {
+  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
+  setDataSelecionada(newData);
+  setYear(newYear);
+  updateSaldo(newData);
+};
+
+
   const updateMonth = (newMonthIndex: number) => {
     setMonthIndex(newMonthIndex);
     const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex, 1);
@@ -169,65 +199,64 @@ export default function HomeScreen({ navigation }: Props) {
     moeda: "BRL",
   };
 
+
   const handleTransacao = async () => {
-    try {
-      const valorFloat = isNaN(parseFloat(valor)) ? 0 : parseFloat(valor);
+      try {
+        const valorFloat = isNaN(parseFloat(valor)) ? 0 : parseFloat(valor);
+        // Cria uma data de transação baseada no mês e ano selecionados, mas mantendo o dia atual,
+        // ou o dia 1 se desejar representar a transação simplesmente no mês selecionado sem um dia específico.
+        // Nota: Ajuste essa lógica conforme necessário para atender ao requisito exato de data da transação.
+        const dataTransacao = setfData;
+        console.log(dataTransacao);
+        const novosDados: Transacao = {
+          id: "",
+          usuarioId: "",
+          tipo: tipoTransacao,
+          valor: valorFloat,
+          data: dataTransacao, // Usando a dataTransacao ajustada aqui
+          nome: nome,
+          moeda: "BRL",
+        };
 
-      // Cria uma data de transação baseada no mês e ano selecionados, mas mantendo o dia atual,
-      // ou o dia 1 se desejar representar a transação simplesmente no mês selecionado sem um dia específico.
-      // Nota: Ajuste essa lógica conforme necessário para atender ao requisito exato de data da transação.
-      const dataTransacao = new Date(
-        dataSelecionada.getFullYear(),
-        dataSelecionada.getMonth(),
-        dataSelecionada.getDate()
-      );
+        await TransacaoDAL.adicionarTransacao(novosDados);
+        Alert.alert("Transação adicionada com Sucesso!");
 
-      const novosDados: Transacao = {
-        id: "",
-        usuarioId: "",
-        tipo: tipoTransacao,
-        valor: valorFloat,
-        data: dataTransacao, // Usando a dataTransacao ajustada aqui
-        nome: nome,
-        moeda: "BRL",
-      };
+        // Invalidate o cache do mês específico da nova transação
+        const chaveCache = dataTransacao.toISOString().slice(0, 7);
+        saldoCache.current.delete(chaveCache);
 
-      await TransacaoDAL.adicionarTransacao(novosDados);
-      Alert.alert("Transação adicionada com Sucesso!");
+        // Recarrega os dados do saldo para refletir a nova transação
+        await handleObterSaldoPorMes();
+      } catch (err) {
+        Alert.alert("Erro ao adicionar transação");
+      }
+    };
 
-      // Invalidate o cache do mês específico da nova transação
-      const chaveCache = dataTransacao.toISOString().slice(0, 7);
-      saldoCache.current.delete(chaveCache);
+    const onChange = (
+      evento: DateTimePickerEvent,
+      dataSelecionada?: Date | undefined
+    ) => {
+      if (evento.type === "set" && dataSelecionada) {
+        const dataAtual = dataSelecionada || data;
+        setShow(Platform.OS === "ios");
+        setData(dataAtual);
+        setDataTextInput(dataAtual.toLocaleDateString("pt-br"));
+        setfData = dataAtual;
+        let tempData = new Date(dataAtual);
+        const dataFormatada =
+              tempData.getDate() +
+              "/" +
+              (tempData.getMonth() + 1) +
+              "/" +
+              tempData.getFullYear();
 
-      // Recarrega os dados do saldo para refletir a nova transação
-      await handleObterSaldoPorMes();
-    } catch (err) {
-      Alert.alert("Erro ao adicionar transação");
-    }
-  };
-
-  const onChange = (
-    evento: DateTimePickerEvent,
-    dataSelecionada?: Date | undefined
-  ) => {
-    if (evento.type === "set" && dataSelecionada) {
-      const dataAtual = dataSelecionada || data;
-      setShow(Platform.OS === "ios");
-      setData(dataAtual);
-      setDataTextInput(data.toLocaleDateString("pt-BR"));
-      let tempData = new Date(dataAtual);
-      let fData =
-        tempData.getDate() +
-        "/" +
-        (tempData.getMonth() + 1) +
-        "/" +
-        tempData.getFullYear();
-      // console.log(fData);
-      setShow(false);
-    } else if (evento.type === "dismissed") {
-      setShow(false);
-    }
-  };
+        console.log(dataFormatada);
+        updateMonth(tempData.getMonth()); // Chama updateMonth para atualizar o mês na tela
+        setShow(false);
+      } else if (evento.type === "dismissed") {
+        setShow(false);
+      }
+    };
 
   const showMode = (modoAtual: DateTimePickerMode) => {
     if (modoAtual === "date") {
@@ -257,25 +286,39 @@ export default function HomeScreen({ navigation }: Props) {
     handleObterSaldoPorMes();
   }, [dataSelecionada]);
 
-  
   return (
     <View style={styles.container}>
       <View style={styles.menuHeader}>
-        <View style={styles.mesHeader}>
-          <TouchableOpacity
-            onPress={handlePreviousMonth}
-            style={styles.arrowButton}
-          >
-            <Text style={styles.arrowText}>&lt;</Text>
-          </TouchableOpacity>
-          <Text style={styles.mesLabel}>{monthNames[monthIndex]}</Text>
-          <TouchableOpacity
-            onPress={handleNextMonth}
-            style={styles.arrowButton}
-          >
-            <Text style={styles.arrowText}>&gt;</Text>
-          </TouchableOpacity>
-        </View>
+          <View style={styles.mesHeader}>
+            <TouchableOpacity
+              onPress={handlePreviousMonth}
+              style={styles.arrowButton}
+            >
+              <Text style={styles.arrowText}>&lt;</Text>
+            </TouchableOpacity>
+            <Text style={styles.mesLabel}>{monthNames[monthIndex]}</Text>
+            <TouchableOpacity
+              onPress={handleNextMonth}
+              style={styles.arrowButton}
+            >
+              <Text style={styles.arrowText}>&gt;</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.yearHeader}>
+            <TouchableOpacity
+              onPress={handlePreviousYear}
+              style={[styles.arrowButton, { marginTop: 5 }]}
+            >
+              <Text style={styles.arrowText}>&lt;</Text>
+            </TouchableOpacity>
+            <Text style={styles.mesLabel}>{year}</Text>
+            <TouchableOpacity
+              onPress={handleNextYear}
+              style={[styles.arrowButton, { marginTop: 5 }]}
+            >
+              <Text style={styles.arrowText}>&gt;</Text>
+            </TouchableOpacity>
+          </View>
         <View>
           {isLoading ? (
             <ActivityIndicator size="large" color="#ffffff" />
@@ -565,5 +608,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 26,
     color: "#ffffff",
+  },
+  yearHeader: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 });
