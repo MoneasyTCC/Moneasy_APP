@@ -1,13 +1,17 @@
 import React, { useState } from "react";
-import { View, Text, Button, StyleSheet, Image, Modal, TextInput, Alert } from "react-native";
+import {
+  View,
+  Text,
+  Button,
+  StyleSheet,
+  Image,
+  Modal,
+  TextInput,
+  Alert,
+  TouchableOpacity,
+} from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
-import { Shadow } from "react-native-shadow-2";
-import { adicionarNovaMeta } from '../../../services/testeBanco';
-import { adicionarNovaTransacao } from '../../../services/testeBanco';
-import DatePicker from "react-native-datepicker";
-import { Transacao } from "../../../Model/Transacao";
-import { TransacaoDAL } from "../../../Repo/RepositorioTransacao";
 import NavigationBar from "../menuNavegation";
 
 type OrcamentoScreenNavigationProp = NativeStackNavigationProp<
@@ -19,136 +23,117 @@ type Props = {
   navigation: OrcamentoScreenNavigationProp;
 };
 
-
 // Use as props na definição do seu componente
 export default function MenuScreen({ navigation }: Props) {
+  const [dataSelecionada, setDataSelecionada] = useState(new Date());
+  const [monthIndex, setMonthIndex] = useState(dataSelecionada.getMonth());
+  const monthNames = [
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro",
+  ];
 
-  var [isModalVisible, setModalVisible] = useState(false);
-  const [valor, setValor] = useState('');
-  const [data, setData] = useState(new Date());
-  const [descricao, setDescricao] = useState('');
-
-  const toggleModal = () => {
-    setModalVisible(!isModalVisible);
-  };
-  const novosDados: Transacao = {
-    id:"",
-    usuarioId: "",
-    tipo:"entrada",
-    valor: parseFloat(valor),
-    data:(data),
-    descricao:(descricao),
-    moeda:"BRL"
-  };
-  const handleTransacao = async () => {
-    try{
-      TransacaoDAL.adicionarTransacao(novosDados)
-      Alert.alert("Transação adicionada com Sucesso!");
-
-    }
-    catch(err){
-    Alert.alert("Erro ao adicionar transação");
-    }
+  const updateMonth = (newMonthIndex: number) => {
+    setMonthIndex(newMonthIndex);
+    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex, 1);
+    setDataSelecionada(newData);
+    /* updateSaldo(newData); */
   };
 
+  const handlePreviousMonth = () => {
+    const newMonthIndex = monthIndex > 0 ? monthIndex - 1 : 11;
+    updateMonth(newMonthIndex);
+  };
+
+  const handleNextMonth = () => {
+    const newMonthIndex = monthIndex < 11 ? monthIndex + 1 : 0;
+    updateMonth(newMonthIndex);
+  };
   return (
     <View style={styles.container}>
-    <View style={styles.menuHeader}>
-      <Button title="Sair" onPress={() => navigation.replace("Inicio")} />
-      <Button title="Adicionar Transação" onPress={toggleModal} />
-
-<Modal visible={isModalVisible}>
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <TextInput
-      placeholder="Valor"
-      keyboardType="numeric"
-      value={valor}
-      onChangeText={setValor}
-    />
-    <DatePicker
-      style={{ width: 200 }}
-      date={data}
-      mode="date"
-      placeholder="Selecione a data"
-      format="YYYY-MM-DD"
-      confirmBtnText="Confirmar"
-      cancelBtnText="Cancelar"
-      customStyles={{
-        dateIcon: {
-          position: 'absolute',
-          left: 0,
-          top: 4,
-          marginLeft: 0,
-        },
-        dateInput: {
-          marginLeft: 36,
-        },
-      }}
-      onDateChange={(dateStr, date) => setData(new Date(dateStr))}
-    />
-    <TextInput
-      placeholder="Descrição"
-      value={descricao}
-      onChangeText={setDescricao}
-    />
-    <Button title="Adicionar" onPress={handleTransacao} />
-    <Button title="Cancelar" onPress={toggleModal} />
-  </View>
-</Modal>
+      <Text style={styles.textOrcamento}>Orçamento</Text>
+      <View style={styles.menuHeader}>
+        <TouchableOpacity
+          onPress={handlePreviousMonth}
+          style={styles.arrowButton}
+        >
+          <Text style={styles.arrowText}>&lt;</Text>
+        </TouchableOpacity>
+        <Text style={styles.mesLabel}>{monthNames[monthIndex]}</Text>
+        <TouchableOpacity onPress={handleNextMonth} style={styles.arrowButton}>
+          <Text style={styles.arrowText}>&gt;</Text>
+        </TouchableOpacity>
+      </View>
+      <View style={styles.menuBody}></View>
+      <View style={styles.menuFooter}>
+        <NavigationBar />
+      </View>
     </View>
-    <View style={styles.menuBody}>
-      <View style={styles.content}></View>
-    </View>
-    <View style={styles.menuFooter}>      
-      <NavigationBar/>
-    </View>
-  </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
     backgroundColor: "#2B2B2B",
   },
   menuHeader: {
-    borderBottomLeftRadius: 50,
-    borderBottomRightRadius: 50,
-    flexDirection: "column",
-    alignItems: "center",
+    flexDirection: "row",
+    alignItems: "flex-end",
     justifyContent: "center",
     width: "100%",
-    height: "35%",
-    backgroundColor: "#3A3E3A",
+    height: "16%",
   },
   menuBody: {
-    width: "80%",
-    height: "50%",
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
+    width: "100%",
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-  },
-  content: {
-    borderRadius: 50,
-    width: "100%",
-    height: "80%",
+    paddingVertical: 20,
     backgroundColor: "#3A3E3A",
   },
   menuFooter: {
-    borderTopLeftRadius: 50,
-    borderTopRightRadius: 50,
-    flexDirection: "column",
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "space-around",
     width: "100%",
     height: "15%",
     backgroundColor: "#3A3E3A",
   },
-  text: {
-    fontSize: 60,
-    marginBottom: 20,
-  }
+  textOrcamento: {
+    position: "absolute",
+    marginTop:35,
+    marginLeft:20,
+    fontSize: 26,
+    color: "#ffffff",
+    fontWeight: "bold",
+  },
+  /* Select dos meses */
+
+  arrowButton: { marginBottom:10},
+  arrowText: {
+    color: "#ffffff",
+    fontSize: 30,
+    fontWeight: "bold",
+    lineHeight: 30,
+  },
+  mesLabel: {
+    color: "#ffffff",
+    width: "35%",
+    textAlign: "center",
+    fontSize: 26,
+    marginBottom:10
+  },
+  /* Fim Select dos meses */
 });
-
-

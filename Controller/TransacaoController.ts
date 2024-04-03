@@ -35,6 +35,9 @@ async function obterSaldoPorMes(dataSelecionada: Date) {
       throw new Error("Erro ao obter saldo");
     }
   }
+
+
+  
 export { obterTransacoesPorData, obterSaldoPorMes};
   
 
