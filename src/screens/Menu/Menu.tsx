@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -13,6 +13,8 @@ import {
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
 import NavigationBar from "../menuNavegation";
+import { OrcamentoDAL } from "../../../Repo/RepositorioOrcamento";
+import DropDownPicker from "react-native-dropdown-picker";
 
 type OrcamentoScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -27,6 +29,10 @@ type Props = {
 export default function MenuScreen({ navigation }: Props) {
   const [dataSelecionada, setDataSelecionada] = useState(new Date());
   const [monthIndex, setMonthIndex] = useState(dataSelecionada.getMonth());
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [valor, setValor] = useState("");
+  const [categoria, setCategoria] = useState("");
+  const [dataOrcamento, setDataOrcamento] = useState(new Date());
   const monthNames = [
     "Janeiro",
     "Fevereiro",
@@ -41,6 +47,34 @@ export default function MenuScreen({ navigation }: Props) {
     "Novembro",
     "Dezembro",
   ];
+
+  useEffect(() => {
+    console.log(dataOrcamento);
+  }, [dataOrcamento]);
+
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(null);
+  const [items, setItems] = useState([
+    //month names
+    { label: "Janeiro", value: "1" },
+    { label: "Fevereiro", value: "2" },
+    { label: "Março", value: "3" },
+    { label: "Abril", value: "4" },
+    { label: "Maio", value: "5" },
+    { label: "Junho", value: "6" },
+    { label: "Julho", value: "7" },
+    { label: "Agosto", value: "8" },
+    { label: "Setembro", value: "9" },
+    { label: "Outubro", value: "10" },
+    { label: "Novembro", value: "11" },
+    { label: "Dezembro", value: "12" },
+  ]);
+
+  const setMonthData = () => {
+    const newDate = new Date();
+    newDate.setMonth(value ? value - 1 : newDate.getMonth());
+    setDataOrcamento(newDate);
+  };
 
   const updateMonth = (newMonthIndex: number) => {
     setMonthIndex(newMonthIndex);
@@ -58,6 +92,26 @@ export default function MenuScreen({ navigation }: Props) {
     const newMonthIndex = monthIndex < 11 ? monthIndex + 1 : 0;
     updateMonth(newMonthIndex);
   };
+
+  const handleOrcamento = async () => {
+    try {
+      const valorFloat = isNaN(parseFloat(valor)) ? 0 : parseFloat(valor);
+      setMonthData();
+      const novosDados = {
+        id: "",
+        usuarioId: "",
+        categoria: categoria,
+        descricao: "",
+        valor: valorFloat,
+        data: dataOrcamento,
+      };
+      await OrcamentoDAL.adicionarOrcamento(novosDados);
+      alert("Orçamento adicionado com sucesso");
+    } catch (err) {
+      Alert.alert("Erro", "Erro ao adicionar orçamento");
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.textOrcamento}>Orçamento</Text>
@@ -69,11 +123,62 @@ export default function MenuScreen({ navigation }: Props) {
           <Text style={styles.arrowText}>&lt;</Text>
         </TouchableOpacity>
         <Text style={styles.mesLabel}>{monthNames[monthIndex]}</Text>
-        <TouchableOpacity onPress={handleNextMonth} style={styles.arrowButton}>
+        <TouchableOpacity
+          onPress={handleNextMonth}
+          style={styles.arrowButton}
+        >
           <Text style={styles.arrowText}>&gt;</Text>
         </TouchableOpacity>
       </View>
-      <View style={styles.menuBody}></View>
+      <View style={styles.menuBody}>
+        <TouchableOpacity onPress={() => setIsModalVisible(true)}>
+          <Text style={{ color: "#0fec32" }}>Novo Orçamento</Text>
+        </TouchableOpacity>
+      </View>
+      <Modal
+        visible={isModalVisible}
+        transparent={true}
+        animationType="slide"
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <TextInput
+              style={styles.input}
+              placeholder="R$0,00"
+              value={valor}
+              onChangeText={(text) => setValor(text)}
+              keyboardType="numeric"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Categoria"
+              value={categoria}
+              onChangeText={setCategoria}
+            />
+            <DropDownPicker
+              open={open}
+              value={value}
+              items={items}
+              setOpen={setOpen}
+              setValue={setValue}
+              setItems={setItems}
+              onChangeValue={() => setMonthData()}
+            />
+            <Button
+              title="testar"
+              onPress={() => setMonthData()}
+            />
+            <Button
+              title="adicionar"
+              onPress={() => handleOrcamento()}
+            />
+            <Button
+              title="cancelar"
+              onPress={() => setIsModalVisible(false)}
+            />
+          </View>
+        </View>
+      </Modal>
       <View style={styles.menuFooter}>
         <NavigationBar />
       </View>
@@ -113,15 +218,15 @@ const styles = StyleSheet.create({
   },
   textOrcamento: {
     position: "absolute",
-    marginTop:35,
-    marginLeft:20,
+    marginTop: 35,
+    marginLeft: 20,
     fontSize: 26,
     color: "#ffffff",
     fontWeight: "bold",
   },
   /* Select dos meses */
 
-  arrowButton: { marginBottom:10},
+  arrowButton: { marginBottom: 10 },
   arrowText: {
     color: "#ffffff",
     fontSize: 30,
@@ -133,7 +238,36 @@ const styles = StyleSheet.create({
     width: "35%",
     textAlign: "center",
     fontSize: 26,
-    marginBottom:10
+    marginBottom: 10,
   },
   /* Fim Select dos meses */
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "#424242",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 5.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  input: {
+    width: "100%",
+    padding: 10,
+    marginVertical: 10,
+    backgroundColor: "#616161",
+    borderRadius: 10,
+    color: "white",
+  },
 });
