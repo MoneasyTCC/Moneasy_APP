@@ -31,7 +31,17 @@ export default function MenuScreen({ navigation }: Props) {
   const [monthIndex, setMonthIndex] = useState(dataSelecionada.getMonth());
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [valor, setValor] = useState("");
-  const [categoria, setCategoria] = useState("");
+  const [categorias, setCategorias] = useState([
+    { label: "Roupas", value: "Roupas" },
+    { label: "Educação", value: "Educação" },
+    { label: "Eletrodomésticos", value: "Eletrodomésticos" },
+    { label: "Saúde", value: "Saúde" },
+    { label: "Mercado", value: "Mercado" },
+    { label: "Outros", value: "Outros" },
+  ]);
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState(
+    categorias[5].value
+  );
   const [dataOrcamento, setDataOrcamento] = useState(new Date());
   const monthNames = [
     "Janeiro",
@@ -52,7 +62,8 @@ export default function MenuScreen({ navigation }: Props) {
     console.log(dataOrcamento);
   }, [dataOrcamento]);
 
-  const [open, setOpen] = useState(false);
+  const [openMes, setOpenMes] = useState(false);
+  const [openCategoria, setOpenCategoria] = useState(false);
   const [value, setValue] = useState(null);
   const [items, setItems] = useState([
     //month names
@@ -100,7 +111,7 @@ export default function MenuScreen({ navigation }: Props) {
       const novosDados = {
         id: "",
         usuarioId: "",
-        categoria: categoria,
+        categoria: categoriaSelecionada,
         descricao: "",
         valor: valorFloat,
         data: dataOrcamento,
@@ -149,20 +160,26 @@ export default function MenuScreen({ navigation }: Props) {
               onChangeText={(text) => setValor(text)}
               keyboardType="numeric"
             />
-            <TextInput
-              style={styles.input}
-              placeholder="Categoria"
-              value={categoria}
-              onChangeText={setCategoria}
+            <DropDownPicker
+              open={openCategoria}
+              value={categoriaSelecionada}
+              items={categorias}
+              setOpen={setOpenCategoria}
+              setValue={setCategoriaSelecionada}
+              setItems={setCategorias}
+              onChangeValue={() =>
+                setCategoriaSelecionada(categoriaSelecionada)
+              }
             />
             <DropDownPicker
-              open={open}
+              open={openMes}
               value={value}
               items={items}
-              setOpen={setOpen}
+              setOpen={setOpenMes}
               setValue={setValue}
               setItems={setItems}
               onChangeValue={() => setMonthData()}
+              style={{ zIndex: 0 }}
             />
             <Button
               title="testar"
