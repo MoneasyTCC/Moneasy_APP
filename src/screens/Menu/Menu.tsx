@@ -30,7 +30,8 @@ export default function MenuScreen({ navigation }: Props) {
   const [dataSelecionada, setDataSelecionada] = useState(new Date());
   const [monthIndex, setMonthIndex] = useState(dataSelecionada.getMonth());
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [valor, setValor] = useState("");
+  const [valorDefinido, setValorDefinido] = useState("");
+  const [valorAtual, setValorAtual] = useState("");
   const [categorias, setCategorias] = useState([
     { label: "Roupas", value: "Roupas" },
     { label: "Educação", value: "Educação" },
@@ -106,14 +107,20 @@ export default function MenuScreen({ navigation }: Props) {
 
   const handleOrcamento = async () => {
     try {
-      const valorFloat = isNaN(parseFloat(valor)) ? 0 : parseFloat(valor);
+      const valorDefinidoFloat = isNaN(parseFloat(valorDefinido))
+        ? 0
+        : parseFloat(valorDefinido);
+      const valorAtualFloat = isNaN(parseFloat(valorAtual))
+        ? 0
+        : parseFloat(valorAtual);
       setMonthData();
       const novosDados = {
         id: "",
         usuarioId: "",
         categoria: categoriaSelecionada,
         descricao: "",
-        valor: valorFloat,
+        valorDefinido: valorDefinidoFloat,
+        valorAtual: valorAtualFloat,
         data: dataOrcamento,
       };
       await OrcamentoDAL.adicionarOrcamento(novosDados);
@@ -143,7 +150,7 @@ export default function MenuScreen({ navigation }: Props) {
       </View>
       <View style={styles.menuBody}>
         <TouchableOpacity onPress={() => setIsModalVisible(true)}>
-          <Text style={{ color: "#0fec32" }}>Novo Orçamento</Text>
+          <Text style={{ color: "#0fec32", fontSize: 18 }}>Novo Orçamento</Text>
         </TouchableOpacity>
       </View>
       <Modal
@@ -155,9 +162,16 @@ export default function MenuScreen({ navigation }: Props) {
           <View style={styles.modalView}>
             <TextInput
               style={styles.input}
-              placeholder="R$0,00"
-              value={valor}
-              onChangeText={(text) => setValor(text)}
+              placeholder="Valor Definido"
+              value={valorDefinido}
+              onChangeText={(text) => setValorDefinido(text)}
+              keyboardType="numeric"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Valor Atual"
+              value={valorAtual}
+              onChangeText={(text) => setValorAtual(text)}
               keyboardType="numeric"
             />
             <DropDownPicker
@@ -180,10 +194,6 @@ export default function MenuScreen({ navigation }: Props) {
               setItems={setItems}
               onChangeValue={() => setMonthData()}
               style={{ zIndex: 0 }}
-            />
-            <Button
-              title="testar"
-              onPress={() => setMonthData()}
             />
             <Button
               title="adicionar"
