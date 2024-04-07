@@ -3,15 +3,17 @@ export class Orcamento{
   usuarioId: string;
   categoria: string;
   descricao?: string;
-  valor: number;
+  valorDefinido: number;
+  valorAtual: number;
   data: Date;
 
-  constructor(usuarioId: string,id: string, categoria: string, descricao: string, valor: number, data: Date) {
+  constructor(usuarioId: string,id: string, categoria: string, descricao: string, valorDefinido: number, valorATual:number, data: Date) {
     this.id = id; 
     this.usuarioId = usuarioId; 
     this.categoria = categoria;
     this.descricao = descricao; 
-    this.valor = valor; 
+    this.valorDefinido = valorDefinido; 
+    this.valorAtual = valorATual; 
     this.data = data;
   }
 }
