@@ -33,6 +33,36 @@ export const OrcamentoDAL = {
       }
   },
 
+   buscarOrcamentosPorData: async (dataSelecionada: string) => {
+      const usuarioIdAtual = await getCurrentUserId();
+      if (!usuarioIdAtual) throw new Error("Usuário não autenticado.");
+
+      try {
+        const q = query(collection(db, 'orcamento'), where("usuarioId", "==", usuarioIdAtual));
+        const querySnapshot = await getDocs(q);
+        let orcamentos: any[] = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+        const dateSelected = new Date(dataSelecionada);
+
+        orcamentos = orcamentos.filter(orcamento => {
+          const dataOrcamento = orcamento.data.toDate();
+          return dataOrcamento.getFullYear() === dateSelected.getFullYear() &&
+                 dataOrcamento.getMonth() === dateSelected.getMonth();
+        });
+
+        return orcamentos;
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          throw new Error(`Erro ao buscar orçamentos por data: ${error.message}`);
+        } else {
+          throw new Error('Ocorreu um erro ao buscar orçamentos por data.');
+        }
+      }
+    },
+
   buscarOrcamento: async () => {
     const usuarioId = await  getCurrentUserId();
     if (!usuarioId) throw new Error("Usuário não autenticado.");

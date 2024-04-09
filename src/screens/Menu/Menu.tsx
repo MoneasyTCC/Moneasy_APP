@@ -15,6 +15,7 @@ import { RootStackParamList } from "../../../shared/config";
 import NavigationBar from "../menuNavegation";
 import { OrcamentoDAL } from "../../../Repo/RepositorioOrcamento";
 import DropDownPicker from "react-native-dropdown-picker";
+import ListaDeOrcamentos from "../../../Components/ListaOrcamento";
 
 type OrcamentoScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -149,6 +150,7 @@ export default function MenuScreen({ navigation }: Props) {
         </TouchableOpacity>
       </View>
       <View style={styles.menuBody}>
+        <ListaDeOrcamentos dataSelecionada={dataSelecionada} />
         <TouchableOpacity onPress={() => setIsModalVisible(true)}>
           <Text style={{ color: "#0fec32", fontSize: 18 }}>Novo Orçamento</Text>
         </TouchableOpacity>
