@@ -78,6 +78,7 @@ export default function MenuScreen({ navigation }: Props) {
     { label: "Novembro", value: "11" },
     { label: "Dezembro", value: "12" },
   ]);
+  const [updateLista, setUpdateLista] = useState(false);
 
   const setMonthData = () => {
     const newDate = new Date();
@@ -121,6 +122,7 @@ export default function MenuScreen({ navigation }: Props) {
         data: dataOrcamento,
       };
       await OrcamentoDAL.adicionarOrcamento(novosDados);
+      setUpdateLista(!updateLista);
       alert("Orçamento adicionado com sucesso");
     } catch (err) {
       Alert.alert("Erro", "Erro ao adicionar orçamento");
@@ -146,7 +148,10 @@ export default function MenuScreen({ navigation }: Props) {
         </TouchableOpacity>
       </View>
       <View style={styles.menuBody}>
-        <ListaDeOrcamentos dataSelecionada={dataSelecionada} />
+        <ListaDeOrcamentos
+          dataSelecionada={dataSelecionada}
+          novoOrcamento={updateLista}
+        />
         <TouchableOpacity onPress={() => setIsModalVisible(true)}>
           <Text style={{ color: "#0fec32", fontSize: 18 }}>Novo Orçamento</Text>
         </TouchableOpacity>
