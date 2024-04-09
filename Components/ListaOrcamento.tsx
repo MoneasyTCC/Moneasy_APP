@@ -41,7 +41,7 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
       }
     };
     buscarOrcamentos();
-  });
+  }, [dataSelecionada]);
 
   const toggleModal = (
     itemCategoria: string,
@@ -70,17 +70,28 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
     >
       <View style={styles.container}>
         <Text style={styles.text}>{item.categoria}</Text>
-        <Text style={styles.text}>Valor Atual: {item.valorAtual}</Text>
-        <Text style={styles.text}>Valor Definido: {item.valorDefinido}</Text>
+        <View style={styles.valoresContainer}>
+          <View style={{ flexDirection: "column" }}>
+            <Text style={styles.text}>Valor Atual</Text>
+            <Text style={styles.textValor}>R${item.valorAtual},00</Text>
+          </View>
+          <View style={styles.separador}></View>
+          <View style={{ flexDirection: "column" }}>
+            <Text style={styles.text}>Valor Total</Text>
+            <Text style={styles.textValor}>R${item.valorDefinido},00</Text>
+          </View>
+        </View>
       </View>
     </TouchableOpacity>
   );
-
   return (
     <FlatList
       data={orcamentos}
       keyExtractor={(item) => item.id.toString()}
       renderItem={renderItem}
+      ItemSeparatorComponent={() => (
+        <View style={{ borderBottomWidth: 1, borderBottomColor: "#fff" }} />
+      )}
     />
   );
 };
@@ -96,6 +107,21 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  textValor: {
+    color: "#0fec32",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  valoresContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: 280,
+    paddingTop: 10,
+  },
+  separador: {
+    backgroundColor: "#656865",
+    width: 1,
   },
 });
 

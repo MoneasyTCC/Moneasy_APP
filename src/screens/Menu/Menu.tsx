@@ -60,10 +60,6 @@ export default function MenuScreen({ navigation }: Props) {
     "Dezembro",
   ];
 
-  useEffect(() => {
-    console.log(dataOrcamento);
-  }, [dataOrcamento]);
-
   const [openMes, setOpenMes] = useState(false);
   const [openCategoria, setOpenCategoria] = useState(false);
   const [value, setValue] = useState(null);
