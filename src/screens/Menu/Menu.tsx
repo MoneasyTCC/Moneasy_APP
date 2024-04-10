@@ -41,9 +41,7 @@ export default function MenuScreen({ navigation }: Props) {
     { label: "Mercado", value: "Mercado" },
     { label: "Outros", value: "Outros" },
   ]);
-  const [categoriaSelecionada, setCategoriaSelecionada] = useState(
-    categorias[5].value
-  );
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState(categorias[5].value);
   const [dataOrcamento, setDataOrcamento] = useState(new Date());
   const monthNames = [
     "Janeiro",
@@ -88,7 +86,7 @@ export default function MenuScreen({ navigation }: Props) {
 
   const updateMonth = (newMonthIndex: number) => {
     setMonthIndex(newMonthIndex);
-    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex, 1);
+    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex, 31);
     setDataSelecionada(newData);
     /* updateSaldo(newData); */
   };
@@ -108,9 +106,7 @@ export default function MenuScreen({ navigation }: Props) {
       const valorDefinidoFloat = isNaN(parseFloat(valorDefinido))
         ? 0
         : parseFloat(valorDefinido);
-      const valorAtualFloat = isNaN(parseFloat(valorAtual))
-        ? 0
-        : parseFloat(valorAtual);
+      const valorAtualFloat = isNaN(parseFloat(valorAtual)) ? 0 : parseFloat(valorAtual);
       setMonthData();
       const novosDados = {
         id: "",
@@ -123,6 +119,7 @@ export default function MenuScreen({ navigation }: Props) {
       };
       await OrcamentoDAL.adicionarOrcamento(novosDados);
       setUpdateLista(!updateLista);
+      setIsModalVisible(false);
       alert("Orçamento adicionado com sucesso");
     } catch (err) {
       Alert.alert("Erro", "Erro ao adicionar orçamento");
@@ -184,9 +181,7 @@ export default function MenuScreen({ navigation }: Props) {
               setOpen={setOpenCategoria}
               setValue={setCategoriaSelecionada}
               setItems={setCategorias}
-              onChangeValue={() =>
-                setCategoriaSelecionada(categoriaSelecionada)
-              }
+              onChangeValue={() => setCategoriaSelecionada(categoriaSelecionada)}
             />
             <DropDownPicker
               open={openMes}

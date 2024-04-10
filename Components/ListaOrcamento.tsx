@@ -12,6 +12,8 @@ import {
   TextInput,
   Button,
 } from "react-native";
+import DropDownPicker from "react-native-dropdown-picker";
+import { OrcamentoDAL } from "../Repo/RepositorioOrcamento";
 
 interface ListaDeOrcamentosProps {
   dataSelecionada: Date;
@@ -26,11 +28,41 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedItemCategoria, setSelectedItemCategoria] = useState("");
   const [selectedItemValorAtual, setSelectedItemValorAtual] = useState("");
-  const [selectedItemValorDefinido, setSelectedItemValorDefinido] =
-    useState("");
+  const [selectedItemValorDefinido, setSelectedItemValorDefinido] = useState("");
   const [selectedItemId, setSelectedItemId] = useState("");
   const [selectedItemData, setSelectedItemData] = useState(new Date());
+  const [dataOrcamento, setDataOrcamento] = useState(new Date());
   const [updateLista, setUpdateLista] = useState(false);
+  const [categorias, setCategorias] = useState([
+    { label: "Roupas", value: "Roupas" },
+    { label: "Educação", value: "Educação" },
+    { label: "Eletrodomésticos", value: "Eletrodomésticos" },
+    { label: "Saúde", value: "Saúde" },
+    { label: "Mercado", value: "Mercado" },
+    { label: "Outros", value: "Outros" },
+  ]);
+  const [isEditable, setIsEditable] = useState(false);
+  const [novoValorAtual, setNovoValorAtual] = useState("");
+  const [novoValorDefinido, setNovoValorDefinido] = useState("");
+
+  const [openMes, setOpenMes] = useState(false);
+  const [openCategoria, setOpenCategoria] = useState(false);
+  const [value, setValue] = useState(null);
+  const [items, setItems] = useState([
+    //month names
+    { label: "Janeiro", value: "1" },
+    { label: "Fevereiro", value: "2" },
+    { label: "Março", value: "3" },
+    { label: "Abril", value: "4" },
+    { label: "Maio", value: "5" },
+    { label: "Junho", value: "6" },
+    { label: "Julho", value: "7" },
+    { label: "Agosto", value: "8" },
+    { label: "Setembro", value: "9" },
+    { label: "Outubro", value: "10" },
+    { label: "Novembro", value: "11" },
+    { label: "Dezembro", value: "12" },
+  ]);
 
   useEffect(() => {
     const buscarOrcamentos = async () => {
@@ -41,27 +73,102 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
         const orcamentosObtidos = await obterOrcamentosPorData(dataSelecionada);
         setOrcamentos(orcamentosObtidos);
       } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Um erro ocorreu";
+        const errorMessage = error instanceof Error ? error.message : "Um erro ocorreu";
         Alert.alert("Erro", errorMessage);
       }
     };
     buscarOrcamentos();
+    limparEstados();
+    setIsEditable(false);
     setUpdateLista(false);
   }, [dataSelecionada, updateLista, novoOrcamento]);
+
+  const setMonthData = () => {
+    const newDate = new Date();
+    newDate.setMonth(value ? value - 1 : newDate.getMonth());
+    setDataOrcamento(newDate);
+  };
+
+  const handleDeletarOrcamento = async (orcamentoId: string) => {
+    try {
+      await OrcamentoDAL.deletarOrcamento(orcamentoId);
+      alert("Orçamento deletado com sucesso!");
+      setIsModalVisible(false);
+      setUpdateLista(!updateLista);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleAtualizarValorAtual = async (orcamentoId: string) => {
+    const novoValorAtualNumber = isNaN(parseFloat(novoValorAtual))
+      ? 0
+      : parseFloat(novoValorAtual);
+    try {
+      const novosDados: Partial<Orcamento> = {
+        valorAtual: novoValorAtualNumber,
+      };
+      await OrcamentoDAL.alterarOrcamento(orcamentoId, novosDados);
+      alert("Valor atual atualizado com sucesso!");
+      setIsModalVisible(false);
+      setUpdateLista(!updateLista);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleAlterarOrcamento = async (orcamentoId: string) => {
+    const novoValorAtualNumber = isNaN(parseFloat(novoValorAtual))
+      ? 0
+      : parseFloat(novoValorAtual);
+    const novoValorDefinidoNumber = isNaN(parseFloat(novoValorDefinido))
+      ? 0
+      : parseFloat(novoValorDefinido);
+    try {
+      const novosDados: Partial<Orcamento> = {
+        valorAtual: novoValorAtualNumber,
+        valorDefinido: novoValorDefinidoNumber,
+        categoria: selectedItemCategoria,
+        data: dataOrcamento,
+      };
+      await OrcamentoDAL.alterarOrcamento(orcamentoId, novosDados);
+      alert("Orçamento alterado com sucesso!");
+      setIsModalVisible(false);
+      setUpdateLista(!updateLista);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const limparEstados = () => {
+    setNovoValorDefinido("");
+    setNovoValorAtual("");
+  };
 
   const toggleModal = (
     itemCategoria: string,
     itemId: string,
     itemValorAtual: number,
-    itemValorDefinido: number
+    itemValorDefinido: number,
+    itemData: Date
   ) => {
     setSelectedItemCategoria(itemCategoria);
     setSelectedItemId(itemId);
     setSelectedItemValorAtual(itemValorAtual.toString());
     setSelectedItemValorDefinido(itemValorDefinido.toString());
+    let seconds = 0;
+    let nanoseconds = 0;
+    const matches = itemData.toString().match(/\d+/g);
+    if (matches && matches.length >= 2) {
+      seconds = parseInt(matches[0]);
+      nanoseconds = parseInt(matches[1]);
+    }
+    const timestamp = new Date(seconds * 1000 + nanoseconds / 1000000);
+    const formattedDate = timestamp;
+    setSelectedItemData(formattedDate);
+    console.log(itemId);
+    console.log(selectedItemData.getMonth());
     setIsModalVisible(!isModalVisible);
-    console.log("modal aberto");
   };
 
   const renderItem = ({ item }: { item: Orcamento }) => (
@@ -71,7 +178,8 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
           item.categoria,
           item.id,
           item.valorAtual,
-          item.valorDefinido
+          item.valorDefinido,
+          item.data
         )
       }
     >
@@ -108,46 +216,88 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
       >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <TextInput
-              style={styles.input}
-              placeholder="Valor Definido"
-              // value={valorDefinido}
-              // onChangeText={(text) => setValorDefinido(text)}
-              keyboardType="numeric"
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Valor Atual"
-              // value={valorAtual}
-              // onChangeText={(text) => setValorAtual(text)}
-              keyboardType="numeric"
-            />
-            {/* <DropDownPicker
-              open={openCategoria}
-              value={categoriaSelecionada}
-              items={categorias}
-              setOpen={setOpenCategoria}
-              setValue={setCategoriaSelecionada}
-              setItems={setCategorias}
-              onChangeValue={() =>
-                setCategoriaSelecionada(categoriaSelecionada)
-              }
-            />
-            <DropDownPicker
-              open={openMes}
-              value={value}
-              items={items}
-              setOpen={setOpenMes}
-              setValue={setValue}
-              setItems={setItems}
-              onChangeValue={() => setMonthData()}
-              style={{ zIndex: 0 }}
-            /> */}
-            <Button title="adicionar" />
-            <Button
-              title="cancelar"
-              onPress={() => setIsModalVisible(false)}
-            />
+            {isEditable ? (
+              <>
+                <TextInput
+                  style={styles.input}
+                  placeholder={`Valor Definido\nR$${selectedItemValorDefinido},00`}
+                  value={novoValorDefinido}
+                  onChangeText={setNovoValorDefinido}
+                  keyboardType="numeric"
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder={`Valor Atual\nR$${selectedItemValorAtual},00`}
+                  value={novoValorAtual}
+                  onChangeText={setNovoValorAtual}
+                  keyboardType="numeric"
+                />
+                <DropDownPicker
+                  open={openCategoria}
+                  value={selectedItemCategoria}
+                  items={categorias}
+                  setOpen={setOpenCategoria}
+                  setValue={setSelectedItemCategoria}
+                  setItems={setCategorias}
+                  onChangeValue={() => setSelectedItemCategoria(selectedItemCategoria)}
+                />
+                <DropDownPicker
+                  open={openMes}
+                  value={value}
+                  items={items}
+                  setOpen={setOpenMes}
+                  setValue={setValue}
+                  setItems={setItems}
+                  onChangeValue={() => setMonthData()}
+                  style={{ zIndex: 0 }}
+                />
+                <View style={{ flexDirection: "row", gap: 5, paddingTop: 5 }}>
+                  <Button
+                    title="Atualizar"
+                    onPress={() => handleAlterarOrcamento(selectedItemId)}
+                  />
+                  <Button
+                    title="cancelar"
+                    onPress={() => {
+                      setIsModalVisible(false);
+                      setIsEditable(false);
+                    }}
+                  />
+                </View>
+              </>
+            ) : (
+              <>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Valor Atual"
+                  value={novoValorAtual}
+                  onChangeText={setNovoValorAtual}
+                  keyboardType="numeric"
+                />
+                <View style={{ flexDirection: "row", gap: 5 }}>
+                  <View style={{ flexDirection: "column", gap: 5 }}>
+                    <Button
+                      title="Atualizar"
+                      onPress={() => handleAtualizarValorAtual(selectedItemId)}
+                    />
+                    <Button
+                      title="editar"
+                      onPress={() => setIsEditable(true)}
+                    />
+                  </View>
+                  <View style={{ flexDirection: "column", gap: 5 }}>
+                    <Button
+                      title="excluir"
+                      onPress={() => handleDeletarOrcamento(selectedItemId)}
+                    />
+                    <Button
+                      title="cancelar"
+                      onPress={() => setIsModalVisible(false)}
+                    />
+                  </View>
+                </View>
+              </>
+            )}
           </View>
         </View>
       </Modal>
