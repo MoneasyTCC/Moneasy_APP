@@ -18,11 +18,13 @@ import { OrcamentoDAL } from "../Repo/RepositorioOrcamento";
 interface ListaDeOrcamentosProps {
   dataSelecionada: Date;
   novoOrcamento: boolean;
+  onInteraction: () => void;
 }
 
 const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
   dataSelecionada,
   novoOrcamento,
+  onInteraction,
 }) => {
   const [orcamentos, setOrcamentos] = useState<Orcamento[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -64,6 +66,10 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
     { label: "Dezembro", value: "12" },
   ]);
 
+  const handleInteraction = () => {
+    onInteraction();
+  };
+
   useEffect(() => {
     const buscarOrcamentos = async () => {
       try {
@@ -95,6 +101,7 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
       alert("Orçamento deletado com sucesso!");
       setIsModalVisible(false);
       setUpdateLista(!updateLista);
+      handleInteraction();
     } catch (err) {
       console.error(err);
     }
@@ -112,6 +119,7 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
       alert("Valor atual atualizado com sucesso!");
       setIsModalVisible(false);
       setUpdateLista(!updateLista);
+      handleInteraction();
     } catch (err) {
       console.error(err);
     }
@@ -135,6 +143,7 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
       alert("Orçamento alterado com sucesso!");
       setIsModalVisible(false);
       setUpdateLista(!updateLista);
+      handleInteraction();
     } catch (err) {
       console.error(err);
     }
@@ -143,6 +152,11 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
   const limparEstados = () => {
     setNovoValorDefinido("");
     setNovoValorAtual("");
+  };
+
+  const orcamentoPorcentagem = (valorAtual: number, valorDefinido: number) => {
+    const porcentagem = (valorAtual / valorDefinido) * 100;
+    return porcentagem.toFixed(2);
   };
 
   const toggleModal = (
@@ -185,6 +199,9 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
     >
       <View style={styles.container}>
         <Text style={styles.text}>{item.categoria}</Text>
+        <Text style={{ color: "#fff", fontSize: 15 }}>
+          Orcamento {orcamentoPorcentagem(item.valorAtual, item.valorDefinido)}% concluido
+        </Text>
         <View style={styles.valoresContainer}>
           <View style={{ flexDirection: "column" }}>
             <Text style={styles.text}>Valor Atual</Text>

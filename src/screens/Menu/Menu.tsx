@@ -16,6 +16,7 @@ import NavigationBar from "../menuNavegation";
 import { OrcamentoDAL } from "../../../Repo/RepositorioOrcamento";
 import DropDownPicker from "react-native-dropdown-picker";
 import ListaDeOrcamentos from "../../../Components/ListaOrcamento";
+import { obterTotalERestantePorMes } from "../../../Controller/OrcamentoController";
 
 type OrcamentoScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -25,6 +26,11 @@ type OrcamentoScreenNavigationProp = NativeStackNavigationProp<
 type Props = {
   navigation: OrcamentoScreenNavigationProp;
 };
+
+interface TotalERestanteMes {
+  valorDefinidoTotal: number;
+  valorAtualTotal: number;
+}
 
 // Use as props na definição do seu componente
 export default function MenuScreen({ navigation }: Props) {
@@ -77,6 +83,10 @@ export default function MenuScreen({ navigation }: Props) {
     { label: "Dezembro", value: "12" },
   ]);
   const [updateLista, setUpdateLista] = useState(false);
+  const [valuesObject, setValuesObject] = useState<{
+    valorDefinidoTotal: number;
+    valorAtualTotal: number;
+  }>({ valorDefinidoTotal: 0, valorAtualTotal: 0 });
 
   const setMonthData = () => {
     const newDate = new Date();
@@ -126,6 +136,33 @@ export default function MenuScreen({ navigation }: Props) {
     }
   };
 
+  const handleObterTotalERestantePorMes = async () => {
+    try {
+      const result: TotalERestanteMes = await obterTotalERestantePorMes(dataSelecionada);
+      setValuesObject(result);
+    } catch (err) {
+      console.error("Erro ao obter total e restante por mês: ", err);
+    }
+  };
+
+  const handleInteractionInListaDeOrcamentos = () => {
+    attTotalERestanteDepoisDeAlterarOuDeletar(dataSelecionada);
+    //console.log("Interagiu com a lista de orçamentos");
+  };
+
+  const attTotalERestanteDepoisDeAlterarOuDeletar = async (date: Date) => {
+    try {
+      const result = await obterTotalERestantePorMes(date);
+      setValuesObject(result);
+    } catch (err) {
+      console.error("Erro ao obter total e restante por mês: ", err);
+    }
+  };
+
+  useEffect(() => {
+    handleObterTotalERestantePorMes();
+  }, [updateLista, dataSelecionada]);
+
   return (
     <View style={styles.container}>
       <Text style={styles.textOrcamento}>Orçamento</Text>
@@ -145,9 +182,24 @@ export default function MenuScreen({ navigation }: Props) {
         </TouchableOpacity>
       </View>
       <View style={styles.menuBody}>
+        <View style={styles.totalERestanteGroup}>
+          <View>
+            <Text style={styles.totalERestanteText}>Total</Text>
+            <Text style={styles.totalERestanteValor}>
+              R${valuesObject.valorDefinidoTotal},00
+            </Text>
+          </View>
+          <View>
+            <Text style={styles.totalERestanteText}>Restante</Text>
+            <Text style={styles.totalERestanteValor}>
+              R${valuesObject.valorAtualTotal},00
+            </Text>
+          </View>
+        </View>
         <ListaDeOrcamentos
           dataSelecionada={dataSelecionada}
           novoOrcamento={updateLista}
+          onInteraction={handleInteractionInListaDeOrcamentos}
         />
         <TouchableOpacity onPress={() => setIsModalVisible(true)}>
           <Text style={{ color: "#0fec32", fontSize: 18 }}>Novo Orçamento</Text>
@@ -294,5 +346,19 @@ const styles = StyleSheet.create({
     backgroundColor: "#616161",
     borderRadius: 10,
     color: "white",
+  },
+  totalERestanteText: {
+    color: "#fff",
+    fontSize: 18,
+  },
+  totalERestanteValor: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  totalERestanteGroup: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: 320,
   },
 });
