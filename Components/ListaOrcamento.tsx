@@ -156,7 +156,7 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
 
   const orcamentoPorcentagem = (valorAtual: number, valorDefinido: number) => {
     const porcentagem = (valorAtual / valorDefinido) * 100;
-    return porcentagem.toFixed(2);
+    return porcentagem.toFixed();
   };
 
   const toggleModal = (
