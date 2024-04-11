@@ -8,6 +8,7 @@ interface SeletorDataProps {
 
 const SeletorData: React.FC<SeletorDataProps> = ({ onDateChange }) => {
   const [date, setDate] = useState(new Date());
+  const [datePicked, setDatePicked] = useState(false);
   const [show, setShow] = useState(false);
 
   const onChange = (evento: DateTimePickerEvent, dataSelecionada?: Date | undefined) => {
@@ -16,6 +17,7 @@ const SeletorData: React.FC<SeletorDataProps> = ({ onDateChange }) => {
       setDate(currentDate);
       setShow(false);
       console.log(dataSelecionada.toLocaleDateString("pt-br"));
+      setDatePicked(true);
       onDateChange(currentDate);
     } else if (evento.type === "dismissed") {
       setShow(false);
@@ -25,7 +27,13 @@ const SeletorData: React.FC<SeletorDataProps> = ({ onDateChange }) => {
   return (
     <TouchableOpacity onPress={() => setShow(true)}>
       <View style={styles.container}>
-        <Image source={require("../assets/calendar.png")} />
+        <Image
+          source={
+            !datePicked
+              ? require("../assets/calendar.png")
+              : require("../assets/calendarActive.png")
+          }
+        />
         {show && (
           <RNDateTimePicker
             testID="dateTimePicker"
