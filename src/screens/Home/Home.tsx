@@ -393,7 +393,6 @@ export default function HomeScreen({ navigation }: Props) {
         >
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
-            <Text style={styles.titleModal}>Nova Meta</Text>
               <TextInput
                 style={styles.input}
                 placeholder="Nome"
