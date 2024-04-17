@@ -25,6 +25,7 @@ type Props = {
 export default function TransacaoScreen({ navigation }: Props) {
   const [dataSelecionada, setDataSelecionada] = useState(new Date());
   const [saldo, setSaldo] = useState<number | null>(null);
+  const [year, setYear] = useState(dataSelecionada.getFullYear());
   const [isLoading, setIsLoading] = useState(false);
   const saldoCache = useRef<Map<string, number>>(new Map());
 
@@ -44,6 +45,32 @@ export default function TransacaoScreen({ navigation }: Props) {
   ];
 
   const [monthIndex, setMonthIndex] = useState(dataSelecionada.getMonth());
+
+
+const handlePreviousYear = () => {
+  const newYear = year - 1;
+  setYear(newYear);
+  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
+  setDataSelecionada(newData);
+  updateSaldo(newData);
+  updateYear(newYear);
+};
+
+const handleNextYear = () => {
+  const newYear = year + 1;
+  setYear(newYear);
+  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
+  setDataSelecionada(newData);
+  updateSaldo(newData);
+  updateYear(newYear);
+};
+
+const updateYear = (newYear: number) => {
+  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
+  setDataSelecionada(newData);
+  setYear(newYear);
+  updateSaldo(newData);
+};
 
   const updateMonth = (newMonthIndex: number) => {
     setMonthIndex(newMonthIndex);
@@ -125,6 +152,21 @@ export default function TransacaoScreen({ navigation }: Props) {
           <Text style={styles.arrowText}>&gt;</Text>
         </TouchableOpacity>
       </View>
+      <View style={styles.yearHeader}>
+                  <TouchableOpacity
+                    onPress={handlePreviousYear}
+                    style={[styles.arrowButton, { marginTop: -100 }]}
+                  >
+                    <Text style={styles.arrowText}>&lt;</Text>
+                  </TouchableOpacity>
+                  <Text style={[styles.mesLabel, { marginTop: -100 }]}>{year}</Text>
+                  <TouchableOpacity
+                    onPress={handleNextYear}
+                    style={[styles.arrowButton, { marginTop: -100 }]}
+                  >
+                    <Text style={styles.arrowText}>&gt;</Text>
+                  </TouchableOpacity>
+                </View>
       <View style={styles.menuBody}>
         <View style={styles.content}>
           {isLoading ? (
@@ -216,4 +258,9 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: "#ffffff",
   },
+    yearHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: 'center',
+    },
 });
