@@ -22,7 +22,7 @@ import { adicionarNovaTransacao } from "../../../services/testeBanco";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import { Transacao } from ".    ./../../Model/Transacao";
+import { Transacao } from "../../../Model/Transacao";
 import { TransacaoDAL } from "../../../Repo/RepositorioTransacao";
 import ListaDeTransacoes from "../../../Components/listaTransacao";
 import { obterSaldoPorMes } from "../../../Controller/TransacaoController";
@@ -41,7 +41,6 @@ type Props = {
 
 type DateTimePickerMode = "date" | "time" | "datetime";
 
-
 // Use as props na definição do seu componente
 export default function HomeScreen({ navigation }: Props) {
   var [isModalVisible, setModalVisible] = useState(false);
@@ -58,6 +57,7 @@ export default function HomeScreen({ navigation }: Props) {
   const saldoCache = useRef<Map<string, SaldoMes>>(new Map());
   const [fData, setFData] = useState(""); // Adicionado estado para fData
   const [year, setYear] = useState(dataSelecionada.getFullYear());
+
   const [mostrarValores, setMostrarValores] = useState(true);
 
   const toggleValoresVisiveis = () => {
@@ -128,31 +128,30 @@ export default function HomeScreen({ navigation }: Props) {
 
   const [monthIndex, setMonthIndex] = useState(dataSelecionada.getMonth());
 
-const handlePreviousYear = () => {
-  const newYear = year - 1;
-  setYear(newYear);
-  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-  setDataSelecionada(newData);
-  updateSaldo(newData);
-  updateYear(newYear);
-};
+  const handlePreviousYear = () => {
+    const newYear = year - 1;
+    setYear(newYear);
+    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
+    setDataSelecionada(newData);
+    updateSaldo(newData);
+    updateYear(newYear);
+  };
 
-const handleNextYear = () => {
-  const newYear = year + 1;
-  setYear(newYear);
-  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-  setDataSelecionada(newData);
-  updateSaldo(newData);
-  updateYear(newYear);
-};
+  const handleNextYear = () => {
+    const newYear = year + 1;
+    setYear(newYear);
+    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
+    setDataSelecionada(newData);
+    updateSaldo(newData);
+    updateYear(newYear);
+  };
 
-const updateYear = (newYear: number) => {
-  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-  setDataSelecionada(newData);
-  setYear(newYear);
-  updateSaldo(newData);
-};
-
+  const updateYear = (newYear: number) => {
+    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
+    setDataSelecionada(newData);
+    setYear(newYear);
+    updateSaldo(newData);
+  };
 
   const updateMonth = (newMonthIndex: number) => {
     setMonthIndex(newMonthIndex);
@@ -199,64 +198,63 @@ const updateYear = (newYear: number) => {
     moeda: "BRL",
   };
 
-
   const handleTransacao = async () => {
-      try {
-        const valorFloat = isNaN(parseFloat(valor)) ? 0 : parseFloat(valor);
-        // Cria uma data de transação baseada no mês e ano selecionados, mas mantendo o dia atual,
-        // ou o dia 1 se desejar representar a transação simplesmente no mês selecionado sem um dia específico.
-        // Nota: Ajuste essa lógica conforme necessário para atender ao requisito exato de data da transação.
-        const dataTransacao = setfData;
-        console.log(dataTransacao);
-        const novosDados: Transacao = {
-          id: "",
-          usuarioId: "",
-          tipo: tipoTransacao,
-          valor: valorFloat,
-          data: dataTransacao, // Usando a dataTransacao ajustada aqui
-          nome: nome,
-          moeda: "BRL",
-        };
+    try {
+      const valorFloat = isNaN(parseFloat(valor)) ? 0 : parseFloat(valor);
+      // Cria uma data de transação baseada no mês e ano selecionados, mas mantendo o dia atual,
+      // ou o dia 1 se desejar representar a transação simplesmente no mês selecionado sem um dia específico.
+      // Nota: Ajuste essa lógica conforme necessário para atender ao requisito exato de data da transação.
+      const dataTransacao = setfData;
+      console.log(dataTransacao);
+      const novosDados: Transacao = {
+        id: "",
+        usuarioId: "",
+        tipo: tipoTransacao,
+        valor: valorFloat,
+        data: dataTransacao, // Usando a dataTransacao ajustada aqui
+        nome: nome,
+        moeda: "BRL",
+      };
 
-        await TransacaoDAL.adicionarTransacao(novosDados);
-        Alert.alert("Transação adicionada com Sucesso!");
+      await TransacaoDAL.adicionarTransacao(novosDados);
+      Alert.alert("Transação adicionada com Sucesso!");
 
-        // Invalidate o cache do mês específico da nova transação
-        const chaveCache = dataTransacao.toISOString().slice(0, 7);
-        saldoCache.current.delete(chaveCache);
+      // Invalidate o cache do mês específico da nova transação
+      const chaveCache = dataTransacao.toISOString().slice(0, 7);
+      saldoCache.current.delete(chaveCache);
 
-        // Recarrega os dados do saldo para refletir a nova transação
-        await handleObterSaldoPorMes();
-      } catch (err) {
-        Alert.alert("Erro ao adicionar transação");
-      }
-    };
+      // Recarrega os dados do saldo para refletir a nova transação
+      await handleObterSaldoPorMes();
+    } catch (err) {
+      Alert.alert("Erro ao adicionar transação");
+    }
+  };
 
-    const onChange = (
-      evento: DateTimePickerEvent,
-      dataSelecionada?: Date | undefined
-    ) => {
-      if (evento.type === "set" && dataSelecionada) {
-        const dataAtual = dataSelecionada || data;
-        setShow(Platform.OS === "ios");
-        setData(dataAtual);
-        setDataTextInput(dataAtual.toLocaleDateString("pt-br"));
-        setfData = dataAtual;
-        let tempData = new Date(dataAtual);
-        const dataFormatada =
-              tempData.getDate() +
-              "/" +
-              (tempData.getMonth() + 1) +
-              "/" +
-              tempData.getFullYear();
+  const onChange = (
+    evento: DateTimePickerEvent,
+    dataSelecionada?: Date | undefined
+  ) => {
+    if (evento.type === "set" && dataSelecionada) {
+      const dataAtual = dataSelecionada || data;
+      setShow(Platform.OS === "ios");
+      setData(dataAtual);
+      setDataTextInput(dataAtual.toLocaleDateString("pt-br"));
+      setfData = dataAtual;
+      let tempData = new Date(dataAtual);
+      const dataFormatada =
+        tempData.getDate() +
+        "/" +
+        (tempData.getMonth() + 1) +
+        "/" +
+        tempData.getFullYear();
 
-        console.log(dataFormatada);
-        updateMonth(tempData.getMonth()); // Chama updateMonth para atualizar o mês na tela
-        setShow(false);
-      } else if (evento.type === "dismissed") {
-        setShow(false);
-      }
-    };
+      console.log(dataFormatada);
+      updateMonth(tempData.getMonth()); // Chama updateMonth para atualizar o mês na tela
+      setShow(false);
+    } else if (evento.type === "dismissed") {
+      setShow(false);
+    }
+  };
 
   const showMode = (modoAtual: DateTimePickerMode) => {
     if (modoAtual === "date") {
@@ -293,36 +291,36 @@ const updateYear = (newYear: number) => {
   return (
     <View style={styles.container}>
       <View style={styles.menuHeader}>
-          <View style={styles.mesHeader}>
-            <TouchableOpacity
-              onPress={handlePreviousMonth}
-              style={styles.arrowButton}
-            >
-              <Text style={styles.arrowText}>&lt;</Text>
-            </TouchableOpacity>
-            <Text style={styles.mesLabel}>{monthNames[monthIndex]}</Text>
-            <TouchableOpacity
-              onPress={handleNextMonth}
-              style={styles.arrowButton}
-            >
-              <Text style={styles.arrowText}>&gt;</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.yearHeader}>
-            <TouchableOpacity
-              onPress={handlePreviousYear}
-              style={[styles.arrowButton, { marginTop: 5 }]}
-            >
-              <Text style={styles.arrowText}>&lt;</Text>
-            </TouchableOpacity>
-            <Text style={styles.mesLabel}>{year}</Text>
-            <TouchableOpacity
-              onPress={handleNextYear}
-              style={[styles.arrowButton, { marginTop: 5 }]}
-            >
-              <Text style={styles.arrowText}>&gt;</Text>
-            </TouchableOpacity>
-          </View>
+        <View style={styles.mesHeader}>
+          <TouchableOpacity
+            onPress={handlePreviousMonth}
+            style={styles.arrowButton}
+          >
+            <Text style={styles.arrowText}>&lt;</Text>
+          </TouchableOpacity>
+          <Text style={styles.mesLabel}>{monthNames[monthIndex]}</Text>
+          <TouchableOpacity
+            onPress={handleNextMonth}
+            style={styles.arrowButton}
+          >
+            <Text style={styles.arrowText}>&gt;</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.yearHeader}>
+          <TouchableOpacity
+            onPress={handlePreviousYear}
+            style={[styles.arrowButton]}
+          >
+            <Text style={styles.arrowText}>&lt;</Text>
+          </TouchableOpacity>
+          <Text style={styles.mesLabel}>{year}</Text>
+          <TouchableOpacity
+            onPress={handleNextYear}
+            style={[styles.arrowButton]}
+          >
+            <Text style={styles.arrowText}>&gt;</Text>
+          </TouchableOpacity>
+        </View>
         <View>
           {isLoading ? (
             <ActivityIndicator size="large" color="#ffffff" />
@@ -403,19 +401,22 @@ const updateYear = (newYear: number) => {
               <TextInput
                 style={styles.input}
                 placeholder="Nome"
+                placeholderTextColor="#FFFFFF"
                 value={nome}
                 onChangeText={setNome}
               />
               <TextInput
                 style={styles.input}
                 placeholder="Valor"
+                placeholderTextColor="#FFFFFF"
                 keyboardType="numeric"
                 value={valor}
                 onChangeText={setValor}
               />
               <TextInput
                 style={styles.input}
-                placeholder="dd/mm/yyyy"
+                placeholder="Data"
+                placeholderTextColor="#FFFFFF"
                 onPressIn={() => showMode("date")}
                 showSoftInputOnFocus={false}
                 caretHidden={true}
@@ -423,16 +424,18 @@ const updateYear = (newYear: number) => {
               />
 
               <View style={styles.buttonGroup}>
-                <Button
-                  title="Adicionar"
+                <TouchableOpacity
                   onPress={handleTransacao}
-                  color="#4CAF50"
-                />
-                <Button
-                  title="Cancelar"
+                  style={styles.btnModalSuccess}
+                >
+                  <Text style={styles.labelModal}>Concluir</Text>
+                </TouchableOpacity>
+                <Text
                   onPress={handleCancelarTransacao}
-                  color="#757575"
-                />
+                  style={styles.labelModal}
+                >
+                  Cancelar
+                </Text>
               </View>
 
               {show && (
@@ -468,9 +471,10 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.8)",
   },
   modalView: {
+    width: "80%",
     margin: 20,
     backgroundColor: "#424242",
-    borderRadius: 20,
+    borderRadius: 35,
     padding: 35,
     alignItems: "center",
     shadowColor: "#000",
@@ -483,18 +487,45 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   input: {
-    width: "100%",
-    padding: 10,
-    marginVertical: 10,
-    backgroundColor: "#616161",
-    borderRadius: 10,
-    color: "white",
-  },
+  width: "90%",
+  padding: 10,
+  paddingLeft: 20,
+  marginVertical: 8,
+  backgroundColor: "#616161",  // Fundo do input
+  borderRadius: 25,
+  color: "#ffffff",  // Cor do texto digitado
+  fontSize: 16,  // Tamanho da fonte
+  opacity: 0.7,
+},
+
   buttonGroup: {
-    flexDirection: "row",
-    justifyContent: "space-around",
+    alignItems: "center",
+    flexDirection: "column",
+    justifyContent: "center",
     borderRadius: 20,
     width: "100%",
+    marginTop: 15,
+  },
+  labelModal: {
+    color: "#ffffff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  titleModal: {
+    color: "#ffffff",
+    fontWeight: "bold",
+    fontSize: 22,
+    marginBottom: 15,
+    opacity: 0.8,
+  },
+  btnModalSuccess: {
+    borderRadius: 20,
+    backgroundColor: "#0fec32",
+    width: "90%",
+    height: 45,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 15,
   },
 
   container: {
@@ -514,7 +545,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#3A3E3A",
   },
   mesHeader: {
-    marginTop: 15,
+    marginTop: 20,
     flexDirection: "row",
   },
   menuBody: {
@@ -579,7 +610,6 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontWeight: "bold",
     fontSize: 18,
-    paddingTop: 10,
   },
   spacer: {
     padding: 2,
