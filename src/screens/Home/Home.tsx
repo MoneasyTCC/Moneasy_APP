@@ -46,7 +46,7 @@ export default function HomeScreen({ navigation }: Props) {
   var [isModalVisible, setModalVisible] = useState(false);
   const [valor, setValor] = useState("");
   const [nome, setNome] = useState("");
-  const [data, setData] = useState(dataSelecionada);
+  const [data, setData] = useState(dataSelecionada || new Date());
   const [modo, setModo] = useState<DateTimePickerMode | undefined>(undefined);
   const [show, setShow] = useState(false);
   const [tipoTransacao, setTipoTransacao] = useState("");
