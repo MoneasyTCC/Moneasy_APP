@@ -29,6 +29,7 @@ import { obterSaldoPorMes } from "../../../Controller/TransacaoController";
 import DropDownPicker from "react-native-dropdown-picker";
 import NavigationBar from "../menuNavegation";
 import CotacaoDolar from "../../../Components/cotacao";
+import SincronizaData, { useAppContext } from "../../../Components/SincronizaData";
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   "Home"
@@ -45,12 +46,12 @@ export default function HomeScreen({ navigation }: Props) {
   var [isModalVisible, setModalVisible] = useState(false);
   const [valor, setValor] = useState("");
   const [nome, setNome] = useState("");
-  const [data, setData] = useState(new Date());
+  const [data, setData] = useState(dataSelecionada);
   const [modo, setModo] = useState<DateTimePickerMode | undefined>(undefined);
   const [show, setShow] = useState(false);
   const [tipoTransacao, setTipoTransacao] = useState("");
   const [dataTextInput, setDataTextInput] = useState("");
-  const [dataSelecionada, setDataSelecionada] = useState(new Date());
+  const { dataSelecionada, setDataSelecionada } = useAppContext();
   const [checkNovaTransacao, setcheckNovaTransacao] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const saldoCache = useRef<Map<string, SaldoMes>>(new Map());
@@ -281,6 +282,10 @@ export default function HomeScreen({ navigation }: Props) {
   useEffect(() => {
     updateSaldo(dataSelecionada);
     handleObterSaldoPorMes();
+  }, [dataSelecionada]);
+
+  useEffect(() => {
+    setYear(dataSelecionada.getFullYear());
   }, [dataSelecionada]);
 
   return (
@@ -641,5 +646,6 @@ const styles = StyleSheet.create({
   yearHeader: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: 'center',
   },
 });
