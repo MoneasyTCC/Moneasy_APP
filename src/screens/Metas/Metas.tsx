@@ -183,6 +183,7 @@ export default function MetasScreen({ navigation }: Props) {
             <TextInput
               style={styles.inputTitulo}
               placeholder="Titulo"
+              placeholderTextColor={"#ffffff"}
               value={!isTelaDivida ? tituloMeta : tituloDivida}
               onChangeText={
                 !isTelaDivida ? (text) => setTituloMeta(text) : (text) => setTituloDivida(text)
@@ -192,6 +193,7 @@ export default function MetasScreen({ navigation }: Props) {
               <TextInput
                 style={styles.inputValores}
                 placeholder="Valor Atual"
+                placeholderTextColor={"#ffffff"}
                 keyboardType="numeric"
                 value={!isTelaDivida ? valorAtualMeta : valorPagoDivida}
                 onChangeText={
@@ -206,6 +208,7 @@ export default function MetasScreen({ navigation }: Props) {
               <TextInput
                 style={styles.inputValores}
                 placeholder="Valor final"
+                placeholderTextColor={"#ffffff"}
                 keyboardType="numeric"
                 value={!isTelaDivida ? valorObjetivoMeta : valorTotalDivida}
                 onChangeText={
