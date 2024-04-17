@@ -9,12 +9,14 @@ import {
   TextInput,
   Alert,
   TouchableOpacity,
+  Switch,
 } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
 import NavigationBar from "../menuNavegation";
 import { MetasDAL } from "../../../Repo/RepositorioMeta";
 import SeletorData from "../../../Components/SeletorData";
+import { DividaDAL } from "../../../Repo/RepositorioDivida";
 
 type MetasScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Metas">;
 
@@ -42,10 +44,15 @@ export default function MetasScreen({ navigation }: Props) {
     "Novembro",
     "Dezembro",
   ];
+  const [isTelaDivida, setIsTelaDivida] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [valorAtual, setValorAtual] = useState("");
-  const [valorObjetivo, setValorObjetivo] = useState("");
-  const [titulo, setTitulo] = useState("");
+  const [tituloMeta, setTituloMeta] = useState("");
+  const [valorAtualMeta, setValorAtualMeta] = useState("");
+  const [valorObjetivoMeta, setValorObjetivoMeta] = useState("");
+  const [tituloDivida, setTituloDivida] = useState("");
+  const [valorPagoDivida, setValorPagoDivida] = useState("");
+  const [valorTotalDivida, setValorTotalDivida] = useState("");
+  const [isDividaPendente, setIsDividaPendente] = useState(false);
 
   const updateMonth = (newMonthIndex: number) => {
     setMonthIndex(newMonthIndex);
@@ -74,12 +81,14 @@ export default function MetasScreen({ navigation }: Props) {
 
   const handleMeta = async () => {
     try {
-      const valorObjetivoFloat = isNaN(parseFloat(valorObjetivo)) ? 0 : parseFloat(valorObjetivo);
-      const valorAtualFloat = isNaN(parseFloat(valorAtual)) ? 0 : parseFloat(valorAtual);
+      const valorObjetivoFloat = isNaN(parseFloat(valorObjetivoMeta))
+        ? 0
+        : parseFloat(valorObjetivoMeta);
+      const valorAtualFloat = isNaN(parseFloat(valorAtualMeta)) ? 0 : parseFloat(valorAtualMeta);
       const novosDados = {
         id: "",
         usuarioId: "",
-        titulo: titulo,
+        titulo: tituloMeta,
         valorObjetivo: valorObjetivoFloat,
         valorAtual: valorAtualFloat,
         dataInicio: dataInicio,
@@ -91,6 +100,41 @@ export default function MetasScreen({ navigation }: Props) {
     } catch (err) {
       alert("Erro ao adicionar meta");
     }
+  };
+
+  const handleDivida = async () => {
+    try {
+      const valorTotalFloat = isNaN(parseFloat(valorTotalDivida))
+        ? 0
+        : parseFloat(valorTotalDivida);
+      const valorPagoFloat = isNaN(parseFloat(valorPagoDivida)) ? 0 : parseFloat(valorPagoDivida);
+      const novosDados = {
+        id: "",
+        usuarioId: "",
+        titulo: tituloDivida,
+        valorTotal: valorTotalFloat,
+        valorPago: valorPagoFloat,
+        dataInicio: dataInicio,
+        dataVencimento: dataFim,
+        status: !isDividaPendente ? "Pendente" : "Pago",
+      };
+      await DividaDAL.adicionarDivida(novosDados);
+      alert("Divida adicionada com sucesso!");
+    } catch (err) {
+      alert("Erro ao adicionar divida");
+    }
+  };
+
+  const limparEstados = () => {
+    setTituloMeta("");
+    setValorAtualMeta("");
+    setValorObjetivoMeta("");
+    setTituloDivida("");
+    setValorPagoDivida("");
+    setValorTotalDivida("");
+    setIsDividaPendente(false);
+    setDataInicio(new Date());
+    setDataFim(new Date());
   };
 
   return (
@@ -112,9 +156,19 @@ export default function MetasScreen({ navigation }: Props) {
         </TouchableOpacity>
       </View>
       <View style={styles.menuBody}>
-        <TouchableOpacity onPress={() => setIsModalVisible(true)}>
-          <Text style={{ color: "#0fec32", fontSize: 18 }}>Nova Meta</Text>
-        </TouchableOpacity>
+        <Switch
+          value={isTelaDivida}
+          onValueChange={() => setIsTelaDivida((prevState) => !prevState)}
+        ></Switch>
+        {!isTelaDivida ? (
+          <TouchableOpacity onPress={() => setIsModalVisible(true)}>
+            <Text style={{ color: "#0fec32", fontSize: 18 }}>Nova Meta</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity onPress={() => setIsModalVisible(true)}>
+            <Text style={{ color: "#0fec32", fontSize: 18 }}>Nova Divida</Text>
+          </TouchableOpacity>
+        )}
       </View>
       <Modal
         visible={isModalVisible}
@@ -126,16 +180,22 @@ export default function MetasScreen({ navigation }: Props) {
             <TextInput
               style={styles.inputTitulo}
               placeholder="Titulo"
-              value={titulo}
-              onChangeText={(text) => setTitulo(text)}
+              value={!isTelaDivida ? tituloMeta : tituloDivida}
+              onChangeText={
+                !isTelaDivida ? (text) => setTituloMeta(text) : (text) => setTituloDivida(text)
+              }
             />
             <View style={styles.inputValorDataGroup}>
               <TextInput
                 style={styles.inputValores}
                 placeholder="Valor Atual"
                 keyboardType="numeric"
-                value={valorAtual}
-                onChangeText={(text) => setValorAtual(text)}
+                value={!isTelaDivida ? valorAtualMeta : valorPagoDivida}
+                onChangeText={
+                  !isTelaDivida
+                    ? (text) => setValorAtualMeta(text)
+                    : (text) => setValorPagoDivida(text)
+                }
               />
               <SeletorData onDateChange={handleOnChangeDataInicio} />
             </View>
@@ -144,23 +204,48 @@ export default function MetasScreen({ navigation }: Props) {
                 style={styles.inputValores}
                 placeholder="Valor final"
                 keyboardType="numeric"
-                value={valorObjetivo}
-                onChangeText={(text) => setValorObjetivo(text)}
+                value={!isTelaDivida ? valorObjetivoMeta : valorTotalDivida}
+                onChangeText={
+                  !isTelaDivida
+                    ? (text) => setValorObjetivoMeta(text)
+                    : (text) => setValorTotalDivida(text)
+                }
               />
               <SeletorData onDateChange={handleOnChangeDataFim} />
             </View>
-            <View>
-              <View style={styles.buttonGroup}>
-                <TouchableOpacity
-                  style={styles.btnModalSuccess}
-                  onPress={() => handleMeta()}
-                >
-                  <Text style={styles.labelModal}>Concluir</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => setIsModalVisible(false)}>
-                  <Text style={styles.labelModal}>Cancelar</Text>
-                </TouchableOpacity>
-              </View>
+            {isTelaDivida && (
+              <>
+                <Text style={{ fontSize: 16, fontWeight: "bold", color: "#fff" }}>
+                  {!isDividaPendente ? "Pendente" : "Pago"}
+                </Text>
+                <Switch
+                  value={isDividaPendente}
+                  onValueChange={() => setIsDividaPendente((prevState) => !prevState)}
+                ></Switch>
+              </>
+            )}
+            <View style={styles.buttonGroup}>
+              <TouchableOpacity
+                style={styles.btnModalSuccess}
+                onPress={
+                  !isTelaDivida
+                    ? () => {
+                        handleMeta();
+                        setIsModalVisible(false);
+                        limparEstados();
+                      }
+                    : () => {
+                        handleDivida();
+                        setIsModalVisible(false);
+                        limparEstados();
+                      }
+                }
+              >
+                <Text style={styles.labelModal}>Concluir</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setIsModalVisible(false)}>
+                <Text style={styles.labelModal}>Cancelar</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
