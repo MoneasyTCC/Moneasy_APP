@@ -8,6 +8,7 @@ import {
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
 import ListaDeTransacoes from "../../../Components/listaTransacao";
+import SincronizaData, { useAppContext } from "../../../Components/SincronizaData";
 import { Transacao } from "../../../Model/Transacao";
 import { obterSaldoPorMes } from "../../../Controller/TransacaoController";
 import NavigationBar from "../menuNavegation";
@@ -23,7 +24,7 @@ type Props = {
 };
 
 export default function TransacaoScreen({ navigation }: Props) {
-  const [dataSelecionada, setDataSelecionada] = useState(new Date());
+  const { dataSelecionada, setDataSelecionada } = useAppContext();
   const [saldo, setSaldo] = useState<number | null>(null);
   const [year, setYear] = useState(dataSelecionada.getFullYear());
   const [isLoading, setIsLoading] = useState(false);

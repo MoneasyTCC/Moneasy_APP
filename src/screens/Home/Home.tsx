@@ -22,13 +22,14 @@ import { adicionarNovaTransacao } from "../../../services/testeBanco";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import { Transacao } from "../../../Model/Transacao";
+import { Transacao } from ".    ./../../Model/Transacao";
 import { TransacaoDAL } from "../../../Repo/RepositorioTransacao";
 import ListaDeTransacoes from "../../../Components/listaTransacao";
 import { obterSaldoPorMes } from "../../../Controller/TransacaoController";
 import DropDownPicker from "react-native-dropdown-picker";
 import NavigationBar from "../menuNavegation";
 import CotacaoDolar from "../../../Components/cotacao";
+import SincronizaData, { useAppContext } from "../../../Components/SincronizaData";
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   "Home"
@@ -40,24 +41,23 @@ type Props = {
 
 type DateTimePickerMode = "date" | "time" | "datetime";
 
+
 // Use as props na definição do seu componente
 export default function HomeScreen({ navigation }: Props) {
   var [isModalVisible, setModalVisible] = useState(false);
   const [valor, setValor] = useState("");
   const [nome, setNome] = useState("");
-  const [data, setData] = useState(new Date());
+  const [data, setData] = useState(dataSelecionada);
   const [modo, setModo] = useState<DateTimePickerMode | undefined>(undefined);
   const [show, setShow] = useState(false);
   const [tipoTransacao, setTipoTransacao] = useState("");
   const [dataTextInput, setDataTextInput] = useState("");
-  const [dataSelecionada, setDataSelecionada] = useState(new Date());
+  const { dataSelecionada, setDataSelecionada } = useAppContext();
   const [checkNovaTransacao, setcheckNovaTransacao] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const saldoCache = useRef<Map<string, SaldoMes>>(new Map());
   const [fData, setFData] = useState(""); // Adicionado estado para fData
   const [year, setYear] = useState(dataSelecionada.getFullYear());
-
-
   const [mostrarValores, setMostrarValores] = useState(true);
 
   const toggleValoresVisiveis = () => {
@@ -612,5 +612,6 @@ const styles = StyleSheet.create({
   yearHeader: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: 'center',
   },
 });
