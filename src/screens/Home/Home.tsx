@@ -286,6 +286,10 @@ const updateYear = (newYear: number) => {
     handleObterSaldoPorMes();
   }, [dataSelecionada]);
 
+  useEffect(() => {
+    setYear(dataSelecionada.getFullYear());
+  }, [dataSelecionada]);
+
   return (
     <View style={styles.container}>
       <View style={styles.menuHeader}>
