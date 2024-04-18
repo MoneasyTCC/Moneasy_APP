@@ -17,6 +17,8 @@ import { OrcamentoDAL } from "../../../Repo/RepositorioOrcamento";
 import DropDownPicker from "react-native-dropdown-picker";
 import ListaDeOrcamentos from "../../../Components/ListaOrcamento";
 import { obterTotalERestantePorMes } from "../../../Controller/OrcamentoController";
+import SincronizaData, { useAppContext } from "../../../Components/SincronizaData";
+
 
 type OrcamentoScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -34,7 +36,7 @@ interface TotalERestanteMes {
 
 // Use as props na definição do seu componente
 export default function MenuScreen({ navigation }: Props) {
-  const [dataSelecionada, setDataSelecionada] = useState(new Date());
+  const { dataSelecionada, setDataSelecionada } = useAppContext();
   const [monthIndex, setMonthIndex] = useState(dataSelecionada.getMonth());
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [valorDefinido, setValorDefinido] = useState("");
@@ -83,6 +85,7 @@ export default function MenuScreen({ navigation }: Props) {
     { label: "Dezembro", value: "12" },
   ]);
   const [updateLista, setUpdateLista] = useState(false);
+  const [year, setYear] = useState(dataSelecionada.getFullYear());
   const [valuesObject, setValuesObject] = useState<{
     valorDefinidoTotal: number;
     valorAtualTotal: number;
@@ -93,6 +96,29 @@ export default function MenuScreen({ navigation }: Props) {
     newDate.setMonth(value ? value - 1 : newDate.getMonth());
     setDataOrcamento(newDate);
   };
+
+const handlePreviousYear = () => {
+  const newYear = year - 1;
+  setYear(newYear);
+  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
+  setDataSelecionada(newData);
+  updateYear(newYear);
+};
+
+const handleNextYear = () => {
+  const newYear = year + 1;
+  setYear(newYear);
+  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
+  setDataSelecionada(newData);
+  updateYear(newYear);
+};
+
+const updateYear = (newYear: number) => {
+  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
+  setDataSelecionada(newData);
+  setYear(newYear);
+};
+
 
   const updateMonth = (newMonthIndex: number) => {
     setMonthIndex(newMonthIndex);
@@ -181,6 +207,21 @@ export default function MenuScreen({ navigation }: Props) {
           <Text style={styles.arrowText}>&gt;</Text>
         </TouchableOpacity>
       </View>
+                <View style={styles.yearHeader}>
+                  <TouchableOpacity
+                    onPress={handlePreviousYear}
+                    style={[styles.arrowButton, { marginTop: 5 }]}
+                  >
+                    <Text style={styles.arrowText}>&lt;</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.mesLabel}>{year}</Text>
+                  <TouchableOpacity
+                    onPress={handleNextYear}
+                    style={[styles.arrowButton, { marginTop: 5 }]}
+                  >
+                    <Text style={styles.arrowText}>&gt;</Text>
+                  </TouchableOpacity>
+                </View>
       <View style={styles.menuBody}>
         <View style={styles.totalERestanteGroup}>
           <View>
@@ -361,4 +402,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     width: 320,
   },
+    yearHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: 'center',
+    },
 });
