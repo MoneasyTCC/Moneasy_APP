@@ -17,6 +17,8 @@ import NavigationBar from "../menuNavegation";
 import { MetasDAL } from "../../../Repo/RepositorioMeta";
 import SeletorData from "../../../Components/SeletorData";
 import { DividaDAL } from "../../../Repo/RepositorioDivida";
+import ListaDeMetas from "../../../Components/ListaMeta";
+import ListaDeDividas from "../../../Components/ListaDivida";
 
 type MetasScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Metas">;
 
@@ -160,6 +162,11 @@ export default function MetasScreen({ navigation }: Props) {
           value={isTelaDivida}
           onValueChange={() => setIsTelaDivida((prevState) => !prevState)}
         ></Switch>
+        {!isTelaDivida ? (
+          <ListaDeMetas dataSelecionada={dataSelecionada} />
+        ) : (
+          <ListaDeDividas dataSelecionada={dataSelecionada} />
+        )}
         {!isTelaDivida ? (
           <TouchableOpacity onPress={() => setIsModalVisible(true)}>
             <Text style={{ color: "#0fec32", fontSize: 18 }}>Nova Meta</Text>

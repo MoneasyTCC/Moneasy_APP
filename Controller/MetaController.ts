@@ -11,3 +11,5 @@ async function obterMetasPorData(dataSelecionada: Date) {
     throw new Error("Erro ao buscar metas");
   }
 }
+
+export { obterMetasPorData };
