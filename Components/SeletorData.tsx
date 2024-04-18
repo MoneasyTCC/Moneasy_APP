@@ -1,6 +1,6 @@
 import RNDateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import React, { useState } from "react";
-import { Button, View, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Image } from "react-native";
 
 interface SeletorDataProps {
   onDateChange: (newDate: Date) => void;
@@ -13,9 +13,9 @@ const SeletorData: React.FC<SeletorDataProps> = ({ onDateChange }) => {
 
   const onChange = (evento: DateTimePickerEvent, dataSelecionada?: Date | undefined) => {
     if (evento.type === "set" && dataSelecionada) {
+      setShow(false);
       const currentDate = dataSelecionada || date;
       setDate(currentDate);
-      setShow(false);
       console.log(dataSelecionada.toLocaleDateString("pt-br"));
       setDatePicked(true);
       onDateChange(currentDate);
@@ -36,7 +36,6 @@ const SeletorData: React.FC<SeletorDataProps> = ({ onDateChange }) => {
         />
         {show && (
           <RNDateTimePicker
-            testID="dateTimePicker"
             value={date}
             is24Hour={true}
             mode="date"
@@ -52,7 +51,8 @@ const SeletorData: React.FC<SeletorDataProps> = ({ onDateChange }) => {
 const styles = StyleSheet.create({
   container: {
     width: 60,
-    height: 42,
+    height: 40,
+    marginVertical: 10,
     backgroundColor: "#2a2a2a",
     borderRadius: 30,
     justifyContent: "center",
