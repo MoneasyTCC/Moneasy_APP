@@ -9,6 +9,7 @@ import {
   Image,
   Modal,
   TextInput,
+  Switch,
 } from "react-native";
 import { obterMetasPorData } from "../Controller/MetaController";
 import { MetasDAL } from "../Repo/RepositorioMeta";
@@ -17,21 +18,26 @@ import SeletorData from "./SeletorData";
 
 interface ListaDeMetasProps {
   dataSelecionada: Date;
+  novaMeta: boolean;
 }
 
-const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada }) => {
+const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }) => {
   const [metas, setMetas] = useState<Meta[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [updateLista, setUpdateLista] = useState(false);
   const [isEditable, setIsEditable] = useState(false);
-  const [novaDataInicio, setNovaDataInicio] = useState(new Date());
-  const [novaDataFim, setNovaDataFim] = useState(new Date());
+  const [isMetaPausada, setIsMetaPausada] = useState(false);
   const [selectedItemTitulo, setSelectedItemTitulo] = useState("");
   const [selectedItemId, setSelectedItemId] = useState("");
   const [selectedItemValorAtual, setSelectedItemValorAtual] = useState("");
   const [selectedItemValorObjetivo, setSelectedItemValorObjetivo] = useState("");
   const [selectedItemDataInicio, setSelectedItemDataInicio] = useState(new Date());
   const [selectedItemDataFimPrevista, setSelectedItemDataFimPrevista] = useState(new Date());
+  const [novaDataInicio, setNovaDataInicio] = useState(new Date());
+  const [novaDataFim, setNovaDataFim] = useState(new Date());
+  const [novoValorAtual, setNovoValorAtual] = useState("");
+  const [novoValorObjetivo, setNovoValorObjetivo] = useState("");
+  const [novoTitulo, setNovoTitulo] = useState("");
 
   useEffect(() => {
     const buscarMetas = async () => {
@@ -48,7 +54,7 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada }) => {
     };
     buscarMetas();
     setUpdateLista(false);
-  }, [dataSelecionada, updateLista]);
+  }, [dataSelecionada, updateLista, novaMeta]);
 
   const handleOnChangeNovaDataInicio = (data: Date) => {
     setNovaDataInicio(data);
@@ -71,6 +77,47 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada }) => {
     return formattedDate;
   };
 
+  const handleATualizarValorAtual = async (metaId: string) => {
+    const novoValorAtualNumber = isNaN(parseFloat(novoValorAtual)) ? 0 : parseFloat(novoValorAtual);
+    try {
+      const novosDados: Partial<Meta> = {
+        valorAtual: novoValorAtualNumber,
+      };
+      await MetasDAL.alterarMeta(metaId, novosDados);
+      alert("Valor atual atualizado com sucesso!");
+      setIsModalVisible(false);
+      limparEstados();
+      setUpdateLista(!updateLista);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleAlterarMeta = async (metaId: string) => {
+    const novoValorAtualNumber = isNaN(parseFloat(novoValorAtual)) ? 0 : parseFloat(novoValorAtual);
+    const novoValorObjetivoNumber = isNaN(parseFloat(novoValorObjetivo))
+      ? 0
+      : parseFloat(novoValorObjetivo);
+    try {
+      const novosDados: Partial<Meta> = {
+        titulo: novoTitulo,
+        valorAtual: novoValorAtualNumber,
+        valorObjetivo: novoValorObjetivoNumber,
+        dataInicio: novaDataInicio,
+        dataFimPrevista: novaDataFim,
+        status: isMetaPausada ? "Pausado" : "Ativo",
+      };
+      await MetasDAL.alterarMeta(metaId, novosDados);
+      alert("Meta alterada com sucesso!");
+      setIsModalVisible(false);
+      setIsEditable(false);
+      limparEstados();
+      setUpdateLista(!updateLista);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handleDeletarMeta = async (metaId: string) => {
     try {
       await MetasDAL.deletarMeta(metaId);
@@ -80,6 +127,48 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada }) => {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const metaPorcentagem = (valorAtual: number, valorObjetivo: number) => {
+    const porcentagem = (valorAtual / valorObjetivo) * 100;
+    return porcentagem.toFixed();
+  };
+
+  const diasRestantes = (status: string, dataInicio: Date, dataFim: Date) => {
+    let dias = 0;
+    const dataInicioConvertida = converterTimestampParaData(dataInicio.toString());
+    const dataFimConvertida = converterTimestampParaData(dataFim.toString());
+    const dataAtual = new Date();
+    if (status === "Ativo") {
+      const diferenca = dataFimConvertida.getTime() - dataAtual.getTime();
+      dias = Math.ceil(diferenca / (1000 * 3600 * 24));
+      if (dataFimConvertida <= dataAtual) {
+        return "Concluida";
+      }
+      return `${dias} ${dias > 1 ? "dias restantes" : "dia restante"}`;
+    } else {
+      return status;
+    }
+  };
+
+  const tempoEmDia = (dataInicio: Date) => {
+    const dataInicioConvertida = converterTimestampParaData(dataInicio.toString());
+    const dataAtual = new Date();
+    const diferenca = dataAtual.getTime() - dataInicioConvertida.getTime();
+    const dia = Math.ceil(diferenca / (1000 * 3600 * 24));
+    if (dia === 1) {
+      return "Começou hoje";
+    }
+    return `Começou faz: ${dia} ${dia > 1 ? "dias" : "dia"}`;
+  };
+
+  const limparEstados = () => {
+    setNovoTitulo("");
+    setNovoValorAtual("");
+    setNovoValorObjetivo("");
+    setNovaDataInicio(new Date());
+    setNovaDataFim(new Date());
+    setIsMetaPausada(false);
   };
 
   const toggleModal = (
@@ -120,35 +209,62 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada }) => {
           </TouchableOpacity>
         </View>
         <View style={{ width: "100%", flexDirection: "row", justifyContent: "space-between" }}>
-          <Text style={styles.textOpaco}>{item.status}</Text>
-          <Text style={styles.textOpaco}>tempo em: dia</Text>
+          <Text style={styles.textOpaco}>
+            {diasRestantes(item.status, item.dataInicio, item.dataFimPrevista)}
+          </Text>
+          {item.status === "Concluida" ? (
+            <></>
+          ) : (
+            <Text style={styles.textOpaco}>{tempoEmDia(item.dataInicio)}</Text>
+          )}
         </View>
       </View>
-      <View style={styles.valoresContainer}>
+      {item.status === "Concluida" ? (
         <View style={{ flexDirection: "column", alignItems: "center" }}>
-          <Text style={styles.text}>Valor guardado</Text>
-          <Text style={styles.textValor}>R${item.valorAtual},00</Text>
-        </View>
-        <View style={styles.separador}></View>
-        <View style={{ flexDirection: "column", alignItems: "center" }}>
-          <Text style={styles.text}>Valor Objetivo</Text>
+          <Text style={styles.text}>Valor Alcançado</Text>
           <Text style={styles.textValor}>R${item.valorObjetivo},00</Text>
+          <View style={{ marginTop: 10 }}>
+            <Text style={{ fontSize: 12, color: "#fff", fontWeight: "bold" }}>
+              Finalizada em:{" "}
+              {converterTimestampParaData(item.dataFimPrevista?.toString()).toLocaleDateString(
+                "pt-br"
+              )}
+            </Text>
+          </View>
         </View>
-      </View>
-      <View
-        style={{
-          width: "100%",
-          flexDirection: "row",
-          justifyContent: "space-around",
-          marginTop: 10,
-        }}
-      >
-        <Text style={{ fontSize: 12, color: "#fff", fontWeight: "bold" }}>Meta 50% concluida</Text>
-        <Text style={{ fontSize: 12, color: "#fff", fontWeight: "bold" }}>
-          Finaliza em:{" "}
-          {converterTimestampParaData(item.dataFimPrevista?.toString()).toLocaleDateString("pt-br")}
-        </Text>
-      </View>
+      ) : (
+        <>
+          <View style={styles.valoresContainer}>
+            <View style={{ flexDirection: "column", alignItems: "center" }}>
+              <Text style={styles.text}>Valor guardado</Text>
+              <Text style={styles.textValor}>R${item.valorAtual},00</Text>
+            </View>
+            <View style={styles.separador}></View>
+            <View style={{ flexDirection: "column", alignItems: "center" }}>
+              <Text style={styles.text}>Valor Objetivo</Text>
+              <Text style={styles.textValor}>R${item.valorObjetivo},00</Text>
+            </View>
+          </View>
+          <View
+            style={{
+              width: "100%",
+              flexDirection: "row",
+              justifyContent: "space-around",
+              marginTop: 10,
+            }}
+          >
+            <Text style={{ fontSize: 12, color: "#fff", fontWeight: "bold" }}>
+              Meta {metaPorcentagem(item.valorAtual, item.valorObjetivo)}% concluída
+            </Text>
+            <Text style={{ fontSize: 12, color: "#fff", fontWeight: "bold" }}>
+              Finaliza em:{" "}
+              {converterTimestampParaData(item.dataFimPrevista?.toString()).toLocaleDateString(
+                "pt-br"
+              )}
+            </Text>
+          </View>
+        </>
+      )}
     </View>
   );
   return (
@@ -217,6 +333,9 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada }) => {
                 style={styles.inputAtualizarValorAtual}
                 placeholder={`R$${selectedItemValorAtual},00`}
                 placeholderTextColor={"#ffffff"}
+                keyboardType="numeric"
+                value={novoValorAtual}
+                onChangeText={(text) => setNovoValorAtual(text)}
               ></TextInput>
             )}
             {isEditable && (
@@ -225,6 +344,8 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada }) => {
                   style={styles.inputTitulo}
                   placeholder={selectedItemTitulo}
                   placeholderTextColor={"#fff"}
+                  value={novoTitulo}
+                  onChangeText={(text) => setNovoTitulo(text)}
                 ></TextInput>
                 <View style={styles.inputValorDataGroup}>
                   <TextInput
@@ -232,17 +353,33 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada }) => {
                     placeholder={`R$${selectedItemValorAtual},00`}
                     placeholderTextColor={"#fff"}
                     keyboardType="numeric"
+                    value={novoValorAtual}
+                    onChangeText={(text) => setNovoValorAtual(text)}
                   ></TextInput>
-                  <SeletorData onDateChange={handleOnChangeNovaDataInicio} />
+                  <SeletorData
+                    onDateChange={handleOnChangeNovaDataInicio}
+                    dataMaxima={new Date()}
+                  />
                 </View>
                 <View style={styles.inputValorDataGroup}>
                   <TextInput
                     style={styles.inputAtualizarValorAtual}
                     placeholder={`R$${selectedItemValorObjetivo},00`}
                     placeholderTextColor={"#fff"}
+                    keyboardType="numeric"
+                    value={novoValorObjetivo}
+                    onChangeText={(text) => setNovoValorObjetivo(text)}
                   ></TextInput>
-                  <SeletorData onDateChange={handleOnChangeNovaDataFim} />
+                  <SeletorData
+                    onDateChange={handleOnChangeNovaDataFim}
+                    dataMinima={new Date()}
+                  />
                 </View>
+                <Text style={styles.text}>{isMetaPausada ? "Pausar" : "Ativar"}</Text>
+                <Switch
+                  value={isMetaPausada}
+                  onValueChange={() => setIsMetaPausada((prevState) => !prevState)}
+                ></Switch>
               </>
             )}
             <TouchableOpacity
@@ -250,6 +387,11 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada }) => {
                 !isEditable
                   ? [styles.btnModalSuccess, { width: 160 }]
                   : [styles.btnModalSuccess, { width: 230 }]
+              }
+              onPress={
+                !isEditable
+                  ? () => handleATualizarValorAtual(selectedItemId)
+                  : () => handleAlterarMeta(selectedItemId)
               }
             >
               <Text style={styles.labelModal}>{!isEditable ? "Atualizar Valor" : "Concluir"}</Text>

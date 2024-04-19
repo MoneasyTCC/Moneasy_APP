@@ -29,6 +29,7 @@ type Props = {
 // Use as props na definição do seu componente
 export default function MetasScreen({ navigation }: Props) {
   const [dataSelecionada, setDataSelecionada] = useState(new Date());
+  const [updateLista, setUpdateLista] = useState(false);
   const [dataInicio, setDataInicio] = useState(new Date());
   const [dataFim, setDataFim] = useState(new Date());
   const [monthIndex, setMonthIndex] = useState(dataSelecionada.getMonth());
@@ -98,6 +99,8 @@ export default function MetasScreen({ navigation }: Props) {
         status: "Ativo",
       };
       await MetasDAL.adicionarMeta(novosDados);
+      setUpdateLista(!updateLista);
+      setIsModalVisible(false);
       alert("Meta adicionada com sucesso!");
     } catch (err) {
       alert("Erro ao adicionar meta");
@@ -121,6 +124,7 @@ export default function MetasScreen({ navigation }: Props) {
         status: !isDividaPendente ? "Pendente" : "Pago",
       };
       await DividaDAL.adicionarDivida(novosDados);
+      setIsModalVisible(false);
       alert("Divida adicionada com sucesso!");
     } catch (err) {
       alert("Erro ao adicionar divida");
@@ -163,7 +167,10 @@ export default function MetasScreen({ navigation }: Props) {
           onValueChange={() => setIsTelaDivida((prevState) => !prevState)}
         ></Switch>
         {!isTelaDivida ? (
-          <ListaDeMetas dataSelecionada={dataSelecionada} />
+          <ListaDeMetas
+            dataSelecionada={dataSelecionada}
+            novaMeta={updateLista}
+          />
         ) : (
           <ListaDeDividas dataSelecionada={dataSelecionada} />
         )}
@@ -207,7 +214,10 @@ export default function MetasScreen({ navigation }: Props) {
                     : (text) => setValorPagoDivida(text)
                 }
               />
-              <SeletorData onDateChange={handleOnChangeDataInicio} />
+              <SeletorData
+                onDateChange={handleOnChangeDataInicio}
+                dataMaxima={new Date()}
+              />
             </View>
             <View style={styles.inputValorDataGroup}>
               <TextInput
@@ -222,7 +232,10 @@ export default function MetasScreen({ navigation }: Props) {
                     : (text) => setValorTotalDivida(text)
                 }
               />
-              <SeletorData onDateChange={handleOnChangeDataFim} />
+              <SeletorData
+                onDateChange={handleOnChangeDataFim}
+                dataMinima={new Date()}
+              />
             </View>
             {isTelaDivida && (
               <>

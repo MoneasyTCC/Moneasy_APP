@@ -4,9 +4,11 @@ import { View, StyleSheet, TouchableOpacity, Image } from "react-native";
 
 interface SeletorDataProps {
   onDateChange: (newDate: Date) => void;
+  dataMinima?: Date;
+  dataMaxima?: Date;
 }
 
-const SeletorData: React.FC<SeletorDataProps> = ({ onDateChange }) => {
+const SeletorData: React.FC<SeletorDataProps> = ({ onDateChange, dataMinima, dataMaxima }) => {
   const [date, setDate] = useState(new Date());
   const [datePicked, setDatePicked] = useState(false);
   const [show, setShow] = useState(false);
@@ -41,6 +43,8 @@ const SeletorData: React.FC<SeletorDataProps> = ({ onDateChange }) => {
             mode="date"
             display="default"
             onChange={onChange}
+            minimumDate={dataMinima}
+            maximumDate={dataMaxima}
           />
         )}
       </View>
