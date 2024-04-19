@@ -1,8 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity, Image } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  Alert,
+  TouchableOpacity,
+  Image,
+  Modal,
+  TextInput,
+} from "react-native";
 import { obterMetasPorData } from "../Controller/MetaController";
 import { MetasDAL } from "../Repo/RepositorioMeta";
 import { Meta } from "../Model/Meta";
+import SeletorData from "./SeletorData";
 
 interface ListaDeMetasProps {
   dataSelecionada: Date;
@@ -10,6 +21,11 @@ interface ListaDeMetasProps {
 
 const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada }) => {
   const [metas, setMetas] = useState<Meta[]>([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [updateLista, setUpdateLista] = useState(false);
+  const [isEditable, setIsEditable] = useState(false);
+  const [novaDataInicio, setNovaDataInicio] = useState(new Date());
+  const [novaDataFim, setNovaDataFim] = useState(new Date());
   const [selectedItemTitulo, setSelectedItemTitulo] = useState("");
   const [selectedItemId, setSelectedItemId] = useState("");
   const [selectedItemValorAtual, setSelectedItemValorAtual] = useState("");
@@ -31,7 +47,16 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada }) => {
       }
     };
     buscarMetas();
-  }, []);
+    setUpdateLista(false);
+  }, [dataSelecionada, updateLista]);
+
+  const handleOnChangeNovaDataInicio = (data: Date) => {
+    setNovaDataInicio(data);
+  };
+
+  const handleOnChangeNovaDataFim = (data: Date) => {
+    setNovaDataFim(data);
+  };
 
   const converterTimestampParaData = (timestamp: string) => {
     let seconds = 0;
@@ -44,6 +69,17 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada }) => {
     const timestampConvertido = new Date(seconds * 1000 + nanoseconds / 1000000);
     const formattedDate = timestampConvertido;
     return formattedDate;
+  };
+
+  const handleDeletarMeta = async (metaId: string) => {
+    try {
+      await MetasDAL.deletarMeta(metaId);
+      alert("Meta deletada com sucesso!");
+      setIsModalVisible(false);
+      setUpdateLista(!updateLista);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const toggleModal = (
@@ -60,65 +96,60 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada }) => {
     setSelectedItemValorObjetivo(itemValorObjetivo.toString());
     setSelectedItemDataInicio(converterTimestampParaData(itemDataInicio.toString()));
     setSelectedItemDataFimPrevista(converterTimestampParaData(itemDataFimPrevista.toString()));
+    setIsModalVisible(!isModalVisible);
   };
 
   const renderItem = ({ item }: { item: Meta }) => (
-    <TouchableOpacity
-      onPress={() =>
-        toggleModal(
-          item.titulo,
-          item.id,
-          item.valorAtual,
-          item.valorObjetivo,
-          item.dataInicio,
-          item.dataFimPrevista
-        )
-      }
-    >
-      <View style={styles.container}>
-        <View style={{ width: "100%", justifyContent: "flex-start" }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", width: "100%" }}>
-            <Text style={styles.text}>{item.titulo}</Text>
-            <TouchableOpacity>
-              <Image source={require("../assets/hamburguerMenu.png")} />
-            </TouchableOpacity>
-          </View>
-          <View style={{ width: "100%", flexDirection: "row", justifyContent: "space-between" }}>
-            <Text style={styles.textOpaco}>{item.status}</Text>
-            <Text style={styles.textOpaco}>tempo em: dia</Text>
-          </View>
+    <View style={styles.container}>
+      <View style={{ width: "100%", justifyContent: "flex-start" }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", width: "100%" }}>
+          <Text style={styles.text}>{item.titulo}</Text>
+          <TouchableOpacity
+            onPress={() =>
+              toggleModal(
+                item.titulo,
+                item.id,
+                item.valorAtual,
+                item.valorObjetivo,
+                item.dataInicio,
+                item.dataFimPrevista
+              )
+            }
+          >
+            <Image source={require("../assets/hamburguerMenu.png")} />
+          </TouchableOpacity>
         </View>
-        <View style={styles.valoresContainer}>
-          <View style={{ flexDirection: "column", alignItems: "center" }}>
-            <Text style={styles.text}>Valor guardado</Text>
-            <Text style={styles.textValor}>R${item.valorAtual},00</Text>
-          </View>
-          <View style={styles.separador}></View>
-          <View style={{ flexDirection: "column", alignItems: "center" }}>
-            <Text style={styles.text}>Valor Objetivo</Text>
-            <Text style={styles.textValor}>R${item.valorObjetivo},00</Text>
-          </View>
-        </View>
-        <View
-          style={{
-            width: "100%",
-            flexDirection: "row",
-            justifyContent: "space-around",
-            marginTop: 10,
-          }}
-        >
-          <Text style={{ fontSize: 12, color: "#fff", fontWeight: "bold" }}>
-            Meta 50% concluida
-          </Text>
-          <Text style={{ fontSize: 12, color: "#fff", fontWeight: "bold" }}>
-            Finaliza em:{" "}
-            {converterTimestampParaData(item.dataFimPrevista?.toString()).toLocaleDateString(
-              "pt-br"
-            )}
-          </Text>
+        <View style={{ width: "100%", flexDirection: "row", justifyContent: "space-between" }}>
+          <Text style={styles.textOpaco}>{item.status}</Text>
+          <Text style={styles.textOpaco}>tempo em: dia</Text>
         </View>
       </View>
-    </TouchableOpacity>
+      <View style={styles.valoresContainer}>
+        <View style={{ flexDirection: "column", alignItems: "center" }}>
+          <Text style={styles.text}>Valor guardado</Text>
+          <Text style={styles.textValor}>R${item.valorAtual},00</Text>
+        </View>
+        <View style={styles.separador}></View>
+        <View style={{ flexDirection: "column", alignItems: "center" }}>
+          <Text style={styles.text}>Valor Objetivo</Text>
+          <Text style={styles.textValor}>R${item.valorObjetivo},00</Text>
+        </View>
+      </View>
+      <View
+        style={{
+          width: "100%",
+          flexDirection: "row",
+          justifyContent: "space-around",
+          marginTop: 10,
+        }}
+      >
+        <Text style={{ fontSize: 12, color: "#fff", fontWeight: "bold" }}>Meta 50% concluida</Text>
+        <Text style={{ fontSize: 12, color: "#fff", fontWeight: "bold" }}>
+          Finaliza em:{" "}
+          {converterTimestampParaData(item.dataFimPrevista?.toString()).toLocaleDateString("pt-br")}
+        </Text>
+      </View>
+    </View>
   );
   return (
     <>
@@ -151,6 +182,88 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada }) => {
         renderItem={renderItem}
         ItemSeparatorComponent={() => <View style={{ marginBottom: 10 }} />}
       />
+      <Modal
+        visible={isModalVisible}
+        transparent={true}
+        animationType="slide"
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>{!isEditable ? "Atualizar Meta" : "Editar Meta"}</Text>
+            {!isEditable && (
+              <>
+                <TouchableOpacity
+                  style={{ position: "absolute", top: 20, left: 20 }}
+                  onPress={() => handleDeletarMeta(selectedItemId)}
+                >
+                  <Image
+                    source={require("../assets/trashcan.png")}
+                    style={{ width: 25, height: 25 }}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ position: "absolute", top: 20, right: 20 }}
+                  onPress={() => setIsEditable(!isEditable)}
+                >
+                  <Image
+                    source={require("../assets/edit.png")}
+                    style={{ width: 25, height: 25 }}
+                  />
+                </TouchableOpacity>
+              </>
+            )}
+            {!isEditable && (
+              <TextInput
+                style={styles.inputAtualizarValorAtual}
+                placeholder={`R$${selectedItemValorAtual},00`}
+                placeholderTextColor={"#ffffff"}
+              ></TextInput>
+            )}
+            {isEditable && (
+              <>
+                <TextInput
+                  style={styles.inputTitulo}
+                  placeholder={selectedItemTitulo}
+                  placeholderTextColor={"#fff"}
+                ></TextInput>
+                <View style={styles.inputValorDataGroup}>
+                  <TextInput
+                    style={styles.inputAtualizarValorAtual}
+                    placeholder={`R$${selectedItemValorAtual},00`}
+                    placeholderTextColor={"#fff"}
+                    keyboardType="numeric"
+                  ></TextInput>
+                  <SeletorData onDateChange={handleOnChangeNovaDataInicio} />
+                </View>
+                <View style={styles.inputValorDataGroup}>
+                  <TextInput
+                    style={styles.inputAtualizarValorAtual}
+                    placeholder={`R$${selectedItemValorObjetivo},00`}
+                    placeholderTextColor={"#fff"}
+                  ></TextInput>
+                  <SeletorData onDateChange={handleOnChangeNovaDataFim} />
+                </View>
+              </>
+            )}
+            <TouchableOpacity
+              style={
+                !isEditable
+                  ? [styles.btnModalSuccess, { width: 160 }]
+                  : [styles.btnModalSuccess, { width: 230 }]
+              }
+            >
+              <Text style={styles.labelModal}>{!isEditable ? "Atualizar Valor" : "Concluir"}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                setIsModalVisible(!isModalVisible), setIsEditable(false);
+              }}
+            >
+              <Text style={styles.labelModal}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 };
@@ -193,6 +306,74 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     width: "100%",
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.8)",
+  },
+  modalView: {
+    width: "80%",
+    margin: 20,
+    backgroundColor: "#424242",
+    borderRadius: 35,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 5.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  inputAtualizarValorAtual: {
+    width: 160,
+    padding: 10,
+    paddingLeft: 20,
+    marginVertical: 8,
+    backgroundColor: "#616161",
+    borderRadius: 25,
+    color: "#ffffff",
+    fontSize: 16,
+    opacity: 0.7,
+  },
+  btnModalSuccess: {
+    borderRadius: 20,
+    backgroundColor: "#0fec32",
+    height: 45,
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 10,
+  },
+  labelModal: {
+    color: "#ffffff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  inputTitulo: {
+    width: 230,
+    padding: 10,
+    paddingLeft: 20,
+    marginVertical: 8,
+    backgroundColor: "#616161",
+    borderRadius: 25,
+    color: "#ffffff",
+    fontSize: 16,
+    opacity: 0.7,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 10,
+  },
+  inputValorDataGroup: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: 230,
   },
 });
 

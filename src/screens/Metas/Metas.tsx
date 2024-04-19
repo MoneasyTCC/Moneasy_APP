@@ -184,9 +184,7 @@ export default function MetasScreen({ navigation }: Props) {
       >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <Text style={{ fontSize: 16, fontWeight: "bold", color: "#fff", marginBottom: 10 }}>
-              {!isTelaDivida ? "Nova Meta" : "Nova Divida"}
-            </Text>
+            <Text style={styles.modalTitle}>{!isTelaDivida ? "Nova Meta" : "Nova Divida"}</Text>
             <TextInput
               style={styles.inputTitulo}
               placeholder="Titulo"
@@ -395,5 +393,11 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     width: "100%",
     marginTop: 15,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 10,
   },
 });
