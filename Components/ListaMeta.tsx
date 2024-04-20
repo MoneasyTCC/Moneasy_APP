@@ -23,6 +23,7 @@ interface ListaDeMetasProps {
 
 const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }) => {
   const [metas, setMetas] = useState<Meta[]>([]);
+  const [switchMetaStatus, setSwitchMetaStatus] = useState("Ativo");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [updateLista, setUpdateLista] = useState(false);
   const [isEditable, setIsEditable] = useState(false);
@@ -33,6 +34,7 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
   const [selectedItemValorObjetivo, setSelectedItemValorObjetivo] = useState("");
   const [selectedItemDataInicio, setSelectedItemDataInicio] = useState(new Date());
   const [selectedItemDataFimPrevista, setSelectedItemDataFimPrevista] = useState(new Date());
+  const [selectedItemStatus, setSelectedItemStatus] = useState("");
   const [novaDataInicio, setNovaDataInicio] = useState(new Date());
   const [novaDataFim, setNovaDataFim] = useState(new Date());
   const [novoValorAtual, setNovoValorAtual] = useState("");
@@ -40,21 +42,18 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
   const [novoTitulo, setNovoTitulo] = useState("");
 
   useEffect(() => {
-    const buscarMetas = async () => {
+    const buscarMetasPorStatus = async () => {
       try {
-        if (!(dataSelecionada instanceof Date)) {
-          throw new Error("Data inválida");
-        }
-        const metasObtidas = await obterMetasPorData(dataSelecionada);
+        const metasObtidas = await MetasDAL.buscarMetasPorStatus(switchMetaStatus);
         setMetas(metasObtidas);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Um erro ocorreu";
         Alert.alert("Erro", errorMessage);
       }
     };
-    buscarMetas();
+    buscarMetasPorStatus();
     setUpdateLista(false);
-  }, [dataSelecionada, updateLista, novaMeta]);
+  }, [dataSelecionada, updateLista, novaMeta, switchMetaStatus]);
 
   const handleOnChangeNovaDataInicio = (data: Date) => {
     setNovaDataInicio(data);
@@ -82,7 +81,11 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
     try {
       const novosDados: Partial<Meta> = {
         valorAtual: novoValorAtualNumber,
+        status: isMetaPausada ? "Pausado" : "Ativo",
       };
+      if (novoValorAtual === selectedItemValorObjetivo) {
+        novosDados.status = "Concluído";
+      }
       await MetasDAL.alterarMeta(metaId, novosDados);
       alert("Valor atual atualizado com sucesso!");
       setIsModalVisible(false);
@@ -107,6 +110,9 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
         dataFimPrevista: novaDataFim,
         status: isMetaPausada ? "Pausado" : "Ativo",
       };
+      if (novoValorAtual === novoValorObjetivo) {
+        novosDados.status = "Concluído";
+      }
       await MetasDAL.alterarMeta(metaId, novosDados);
       alert("Meta alterada com sucesso!");
       setIsModalVisible(false);
@@ -134,16 +140,15 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
     return porcentagem.toFixed();
   };
 
-  const diasRestantes = (status: string, dataInicio: Date, dataFim: Date) => {
+  const diasRestantes = (status: string, dataFim: Date) => {
     let dias = 0;
-    const dataInicioConvertida = converterTimestampParaData(dataInicio.toString());
     const dataFimConvertida = converterTimestampParaData(dataFim.toString());
     const dataAtual = new Date();
     if (status === "Ativo") {
       const diferenca = dataFimConvertida.getTime() - dataAtual.getTime();
       dias = Math.ceil(diferenca / (1000 * 3600 * 24));
       if (dataFimConvertida <= dataAtual) {
-        return "Concluida";
+        return "Concluída";
       }
       return `${dias} ${dias > 1 ? "dias restantes" : "dia restante"}`;
     } else {
@@ -177,7 +182,8 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
     itemValorAtual: number,
     itemValorObjetivo: number,
     itemDataInicio: Date,
-    itemDataFimPrevista: Date
+    itemDataFimPrevista: Date,
+    itemStatus: string
   ) => {
     setSelectedItemTitulo(itemTitulo);
     setSelectedItemId(itemId);
@@ -185,13 +191,14 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
     setSelectedItemValorObjetivo(itemValorObjetivo.toString());
     setSelectedItemDataInicio(converterTimestampParaData(itemDataInicio.toString()));
     setSelectedItemDataFimPrevista(converterTimestampParaData(itemDataFimPrevista.toString()));
+    setSelectedItemStatus(itemStatus);
     setIsModalVisible(!isModalVisible);
   };
 
   const renderItem = ({ item }: { item: Meta }) => (
     <View style={styles.container}>
-      <View style={{ width: "100%", justifyContent: "flex-start" }}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", width: "100%" }}>
+      <View style={styles.tituloETempoWrapper}>
+        <View style={styles.tituloETempo}>
           <Text style={styles.text}>{item.titulo}</Text>
           <TouchableOpacity
             onPress={() =>
@@ -201,30 +208,29 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
                 item.valorAtual,
                 item.valorObjetivo,
                 item.dataInicio,
-                item.dataFimPrevista
+                item.dataFimPrevista,
+                item.status
               )
             }
           >
             <Image source={require("../assets/hamburguerMenu.png")} />
           </TouchableOpacity>
         </View>
-        <View style={{ width: "100%", flexDirection: "row", justifyContent: "space-between" }}>
-          <Text style={styles.textOpaco}>
-            {diasRestantes(item.status, item.dataInicio, item.dataFimPrevista)}
-          </Text>
-          {item.status === "Concluida" ? (
-            <></>
-          ) : (
+        <View style={styles.tituloETempo}>
+          <Text style={styles.textOpaco}>{diasRestantes(item.status, item.dataFimPrevista)}</Text>
+          {item.status === "Ativo" ? (
             <Text style={styles.textOpaco}>{tempoEmDia(item.dataInicio)}</Text>
+          ) : (
+            <></>
           )}
         </View>
       </View>
-      {item.status === "Concluida" ? (
-        <View style={{ flexDirection: "column", alignItems: "center" }}>
+      {item.status === "Concluído" ? (
+        <View style={styles.textoEValorWrapper}>
           <Text style={styles.text}>Valor Alcançado</Text>
           <Text style={styles.textValor}>R${item.valorObjetivo},00</Text>
           <View style={{ marginTop: 10 }}>
-            <Text style={{ fontSize: 12, color: "#fff", fontWeight: "bold" }}>
+            <Text style={styles.porcentagemEData}>
               Finalizada em:{" "}
               {converterTimestampParaData(item.dataFimPrevista?.toString()).toLocaleDateString(
                 "pt-br"
@@ -235,28 +241,21 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
       ) : (
         <>
           <View style={styles.valoresContainer}>
-            <View style={{ flexDirection: "column", alignItems: "center" }}>
+            <View style={styles.textoEValorWrapper}>
               <Text style={styles.text}>Valor guardado</Text>
               <Text style={styles.textValor}>R${item.valorAtual},00</Text>
             </View>
             <View style={styles.separador}></View>
-            <View style={{ flexDirection: "column", alignItems: "center" }}>
+            <View style={styles.textoEValorWrapper}>
               <Text style={styles.text}>Valor Objetivo</Text>
               <Text style={styles.textValor}>R${item.valorObjetivo},00</Text>
             </View>
           </View>
-          <View
-            style={{
-              width: "100%",
-              flexDirection: "row",
-              justifyContent: "space-around",
-              marginTop: 10,
-            }}
-          >
-            <Text style={{ fontSize: 12, color: "#fff", fontWeight: "bold" }}>
+          <View style={styles.porcentagemEDataWrapper}>
+            <Text style={styles.porcentagemEData}>
               Meta {metaPorcentagem(item.valorAtual, item.valorObjetivo)}% concluída
             </Text>
-            <Text style={{ fontSize: 12, color: "#fff", fontWeight: "bold" }}>
+            <Text style={styles.porcentagemEData}>
               Finaliza em:{" "}
               {converterTimestampParaData(item.dataFimPrevista?.toString()).toLocaleDateString(
                 "pt-br"
@@ -269,26 +268,21 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
   );
   return (
     <>
-      <View
-        style={{
-          flexDirection: "row",
-          width: "90%",
-          height: 50,
-          backgroundColor: "#2a2a2a",
-          borderRadius: 30,
-          alignItems: "center",
-          justifyContent: "space-evenly",
-          marginBottom: 20,
-        }}
-      >
-        <TouchableOpacity>
-          <Text style={{ color: "#0fec32" }}>Ativo</Text>
+      <View style={styles.metaStatusSwitch}>
+        <TouchableOpacity onPress={() => setSwitchMetaStatus("Ativo")}>
+          <Text style={switchMetaStatus === "Ativo" ? { color: "#0fec32" } : { color: "#fff" }}>
+            Ativo
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity>
-          <Text>Pausado</Text>
+        <TouchableOpacity onPress={() => setSwitchMetaStatus("Pausado")}>
+          <Text style={switchMetaStatus === "Pausado" ? { color: "#0fec32" } : { color: "#fff" }}>
+            Pausado
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity>
-          <Text>Concluido</Text>
+        <TouchableOpacity onPress={() => setSwitchMetaStatus("Concluído")}>
+          <Text style={switchMetaStatus === "Concluído" ? { color: "#0fec32" } : { color: "#fff" }}>
+            Concluído
+          </Text>
         </TouchableOpacity>
       </View>
       <FlatList
@@ -305,7 +299,13 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
       >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <Text style={styles.modalTitle}>{!isEditable ? "Atualizar Meta" : "Editar Meta"}</Text>
+            {selectedItemStatus === "Concluído" ? (
+              <></>
+            ) : (
+              <Text style={styles.modalTitle}>
+                {!isEditable ? "Atualizar Meta" : "Editar Meta"}
+              </Text>
+            )}
             {!isEditable && (
               <>
                 <TouchableOpacity
@@ -317,26 +317,64 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
                     style={{ width: 25, height: 25 }}
                   />
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={{ position: "absolute", top: 20, right: 20 }}
-                  onPress={() => setIsEditable(!isEditable)}
-                >
-                  <Image
-                    source={require("../assets/edit.png")}
-                    style={{ width: 25, height: 25 }}
-                  />
-                </TouchableOpacity>
+                {selectedItemStatus === "Concluído" ? (
+                  <></>
+                ) : (
+                  <TouchableOpacity
+                    style={{ position: "absolute", top: 20, right: 20 }}
+                    onPress={() => setIsEditable(!isEditable)}
+                  >
+                    <Image
+                      source={require("../assets/edit.png")}
+                      style={{ width: 25, height: 25 }}
+                    />
+                  </TouchableOpacity>
+                )}
               </>
             )}
-            {!isEditable && (
-              <TextInput
-                style={styles.inputAtualizarValorAtual}
-                placeholder={`R$${selectedItemValorAtual},00`}
-                placeholderTextColor={"#ffffff"}
-                keyboardType="numeric"
-                value={novoValorAtual}
-                onChangeText={(text) => setNovoValorAtual(text)}
-              ></TextInput>
+            {selectedItemStatus === "Pausado" ? (
+              <>
+                {!isEditable && (
+                  <>
+                    <Text style={styles.text}>{isMetaPausada ? "Pausar" : "Ativar"}</Text>
+                    <Switch
+                      value={isMetaPausada}
+                      onValueChange={() => setIsMetaPausada((prevState) => !prevState)}
+                    ></Switch>
+                  </>
+                )}
+              </>
+            ) : selectedItemStatus === "Concluído" ? (
+              <>
+                <Text style={styles.text}>Titulo: {selectedItemTitulo}</Text>
+                <Text style={styles.text}>Valor Alcancado: {selectedItemValorObjetivo}</Text>
+                <Text style={styles.text}>
+                  Comecou em: {selectedItemDataInicio.toLocaleDateString("pt-br")}
+                </Text>
+                <Text style={styles.text}>
+                  Finalizada em: {selectedItemDataFimPrevista.toLocaleDateString("pt-br")}
+                </Text>
+              </>
+            ) : (
+              <>
+                {!isEditable && (
+                  <>
+                    <TextInput
+                      style={styles.inputAtualizarValorAtual}
+                      placeholder={`R$${selectedItemValorAtual},00`}
+                      placeholderTextColor={"#ffffff"}
+                      keyboardType="numeric"
+                      value={novoValorAtual}
+                      onChangeText={(text) => setNovoValorAtual(text)}
+                    ></TextInput>
+                    <Text style={styles.text}>{isMetaPausada ? "Pausar" : "Ativar"}</Text>
+                    <Switch
+                      value={isMetaPausada}
+                      onValueChange={() => setIsMetaPausada((prevState) => !prevState)}
+                    ></Switch>
+                  </>
+                )}
+              </>
             )}
             {isEditable && (
               <>
@@ -382,23 +420,29 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
                 ></Switch>
               </>
             )}
-            <TouchableOpacity
-              style={
-                !isEditable
-                  ? [styles.btnModalSuccess, { width: 160 }]
-                  : [styles.btnModalSuccess, { width: 230 }]
-              }
-              onPress={
-                !isEditable
-                  ? () => handleATualizarValorAtual(selectedItemId)
-                  : () => handleAlterarMeta(selectedItemId)
-              }
-            >
-              <Text style={styles.labelModal}>{!isEditable ? "Atualizar Valor" : "Concluir"}</Text>
-            </TouchableOpacity>
+            {selectedItemStatus === "Concluído" ? (
+              <></>
+            ) : (
+              <TouchableOpacity
+                style={
+                  !isEditable
+                    ? [styles.btnModalSuccess, { width: 160 }]
+                    : [styles.btnModalSuccess, { width: 230 }]
+                }
+                onPress={
+                  !isEditable
+                    ? () => handleATualizarValorAtual(selectedItemId)
+                    : () => handleAlterarMeta(selectedItemId)
+                }
+              >
+                <Text style={styles.labelModal}>
+                  {!isEditable ? "Atualizar Valor" : "Concluir"}
+                </Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               onPress={() => {
-                setIsModalVisible(!isModalVisible), setIsEditable(false);
+                setIsModalVisible(!isModalVisible), setIsEditable(false), setIsMetaPausada(false);
               }}
             >
               <Text style={styles.labelModal}>Cancelar</Text>
@@ -516,6 +560,45 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     width: 230,
+  },
+  tituloETempo: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  tituloETempoWrapper: {
+    width: "100%",
+    justifyContent: "flex-start",
+  },
+  porcentagemEData: {
+    fontSize: 12,
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  porcentagemEDataWrapper: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginTop: 10,
+  },
+  textoEValorWrapper: {
+    flexDirection: "column",
+    alignItems: "center",
+  },
+  metaStatusSwitch: {
+    flexDirection: "row",
+    width: "90%",
+    height: 50,
+    backgroundColor: "#2a2a2a",
+    borderRadius: 30,
+    alignItems: "center",
+    justifyContent: "space-evenly",
+    marginBottom: 20,
+  },
+  editDeletePosition: {
+    position: "absolute",
+    top: 20,
+    right: 20,
   },
 });
 

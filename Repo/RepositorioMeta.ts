@@ -94,6 +94,30 @@ export const MetasDAL = {
     }
   },
 
+  buscarMetasPorStatus: async (metaStatus: string) => {
+    const usuarioId = await getCurrentUserId();
+    if (!usuarioId) throw new Error("Usuário não autenticado.");
+
+    try {
+      const q = query(collection(db, "metas"), where("usuarioId", "==", usuarioId));
+      const querySnapshot = await getDocs(q);
+      let metas: any[] = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      metas = metas.filter((meta) => meta.status === metaStatus);
+
+      return metas;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new Error(`Erro ao buscar metas por status: ${error.message}`);
+      } else {
+        throw new Error("Ocorreu um erro ao buscar metas por status.");
+      }
+    }
+  },
+
   // Função para deletar uma meta
   deletarMeta: async (metaId: string) => {
     try {

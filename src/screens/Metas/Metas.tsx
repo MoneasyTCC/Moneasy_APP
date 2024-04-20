@@ -98,6 +98,9 @@ export default function MetasScreen({ navigation }: Props) {
         dataFimPrevista: dataFim,
         status: "Ativo",
       };
+      if (valorAtualMeta === valorObjetivoMeta) {
+        novosDados.status = "Concluído";
+      }
       await MetasDAL.adicionarMeta(novosDados);
       setUpdateLista(!updateLista);
       setIsModalVisible(false);
@@ -234,7 +237,7 @@ export default function MetasScreen({ navigation }: Props) {
               />
               <SeletorData
                 onDateChange={handleOnChangeDataFim}
-                dataMinima={new Date()}
+                dataMinima={dataInicio}
               />
             </View>
             {isTelaDivida && (
