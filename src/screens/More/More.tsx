@@ -13,6 +13,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
 import ImportTransactions from "../../../Components/documentPicker";
 import NavigationBar from "../menuNavegation";
+import ImportarCsvComponente from "../../../Components/documentPicker";
 
 type MoreScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -32,7 +33,7 @@ export default function MoreScreen({ navigation }: Props) {
       </View>
       <View style={styles.menuBody}>
         <View style={styles.content}></View>
-        <ImportTransactions />
+        <ImportarCsvComponente />
       </View>
       <View style={styles.menuFooter}>
         <NavigationBar></NavigationBar>
