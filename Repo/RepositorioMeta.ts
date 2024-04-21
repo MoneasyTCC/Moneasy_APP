@@ -94,7 +94,7 @@ export const MetasDAL = {
     }
   },
 
-  buscarMetasPorStatus: async (metaStatus: string) => {
+  buscarMetasPorStatus: async (metaStatus: string, year: string) => {
     const usuarioId = await getCurrentUserId();
     if (!usuarioId) throw new Error("Usuário não autenticado.");
 
@@ -106,7 +106,16 @@ export const MetasDAL = {
         ...doc.data(),
       }));
 
-      metas = metas.filter((meta) => meta.status === metaStatus);
+      const dateSelected = new Date(year);
+
+      metas = metas.filter((meta) => {
+        const dataMeta = meta.dataFimPrevista.toDate();
+        if (dataMeta.getFullYear() !== dateSelected.getFullYear()) {
+          return false;
+        } else {
+          return dataMeta.getFullYear() === dateSelected.getFullYear(), meta.status === metaStatus;
+        }
+      });
 
       return metas;
     } catch (error: unknown) {

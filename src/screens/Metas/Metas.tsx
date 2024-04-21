@@ -219,7 +219,8 @@ export default function MetasScreen({ navigation }: Props) {
               />
               <SeletorData
                 onDateChange={handleOnChangeDataInicio}
-                dataMaxima={new Date()}
+                dataMinima={new Date(new Date().getFullYear(), 0, 1)}
+                dataMaxima={new Date(new Date().getFullYear(), 11, 31)}
               />
             </View>
             <View style={styles.inputValorDataGroup}>
