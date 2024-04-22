@@ -11,7 +11,6 @@ import {
   TextInput,
   Switch,
 } from "react-native";
-import { obterMetasPorData } from "../Controller/MetaController";
 import { MetasDAL } from "../Repo/RepositorioMeta";
 import { Meta } from "../Model/Meta";
 import SeletorData from "./SeletorData";
@@ -80,6 +79,9 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
   };
 
   const handleATualizarValorAtual = async (metaId: string) => {
+    const oldValorAtualNumber = isNaN(parseFloat(selectedItemValorAtual))
+      ? 0
+      : parseFloat(selectedItemValorAtual);
     const novoValorAtualNumber = isNaN(parseFloat(novoValorAtual)) ? 0 : parseFloat(novoValorAtual);
     try {
       const novosDados: Partial<Meta> = {
@@ -88,6 +90,12 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
       };
       if (novoValorAtual === selectedItemValorObjetivo) {
         novosDados.status = "Concluído";
+      }
+      if (isMetaPausada && novoValorAtualNumber !== oldValorAtualNumber) {
+        novosDados.valorAtual = novoValorAtualNumber;
+      }
+      if (isMetaPausada && novoValorAtualNumber === 0) {
+        novosDados.valorAtual = oldValorAtualNumber;
       }
       await MetasDAL.alterarMeta(metaId, novosDados);
       alert("Valor atual atualizado com sucesso!");
@@ -99,12 +107,15 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
     }
   };
 
-  const handleMetaAtrasada = async (metaId: string) => {
+  const handleDespausarMeta = async (metaId: string) => {
     try {
       const novosDados: Partial<Meta> = {
-        status: "Pausado",
+        status: isMetaPausada ? "Pausado" : "Ativo",
       };
       await MetasDAL.alterarMeta(metaId, novosDados);
+      isMetaPausada ? null : alert("Meta ativada!");
+      setIsModalVisible(false);
+      limparEstados();
       setUpdateLista(!updateLista);
     } catch (err) {
       console.error(err);
@@ -182,17 +193,6 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
     }
   };
 
-  const tempoEmDia = (dataInicio: Date) => {
-    const dataInicioConvertida = converterTimestampParaData(dataInicio.toString());
-    const dataAtual = new Date();
-    const diferenca = dataAtual.getTime() - dataInicioConvertida.getTime();
-    const dia = Math.ceil(diferenca / (1000 * 3600 * 24));
-    if (dia === 1) {
-      return "Começou hoje";
-    }
-    return `Começou faz: ${dia} ${dia > 1 ? "dias" : "dia"}`;
-  };
-
   const limparEstados = () => {
     setNovoTitulo("");
     setNovoValorAtual("");
@@ -245,7 +245,11 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
         <View style={styles.tituloETempo}>
           <Text style={styles.textOpaco}>{diasRestantes(item.status, item.dataFimPrevista)}</Text>
           {item.status === "Ativo" ? (
-            <Text style={styles.textOpaco}>{tempoEmDia(item.dataInicio)}</Text>
+            <Text style={styles.textOpaco}>
+              {`Começou em: ${converterTimestampParaData(
+                item.dataInicio.toString()
+              ).toLocaleDateString("pt-br")}`}
+            </Text>
           ) : (
             <></>
           )}
@@ -299,11 +303,17 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
   if (!(selectedItemDataFimPrevista < new Date())) {
     dataMenorQueDataAtual = (
       <>
-        <Text style={styles.text}>{isMetaPausada ? "Pausar" : "Ativar"}</Text>
-        <Switch
-          value={isMetaPausada}
-          onValueChange={() => setIsMetaPausada((prevState) => !prevState)}
-        ></Switch>
+        {isEditable ? (
+          <></>
+        ) : (
+          <>
+            <Text style={styles.text}>{isMetaPausada ? "Pausar" : "Ativar"}</Text>
+            <Switch
+              value={isMetaPausada}
+              onValueChange={() => setIsMetaPausada((prevState) => !prevState)}
+            ></Switch>
+          </>
+        )}
       </>
     );
   } else {
@@ -369,12 +379,21 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
   } else if (!isEditable) {
     btnSuccessCase = (
       <>
-        <TouchableOpacity
-          style={[styles.btnModalSuccess, { width: 160 }]}
-          onPress={() => handleATualizarValorAtual(selectedItemId)}
-        >
-          <Text style={styles.labelModal}>Atualizar Valor</Text>
-        </TouchableOpacity>
+        {selectedItemStatus === "Pausado" ? (
+          <TouchableOpacity
+            style={[styles.btnModalSuccess, { width: 160 }]}
+            onPress={() => handleDespausarMeta(selectedItemId)}
+          >
+            <Text style={styles.labelModal}>Atualizar Estado</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={[styles.btnModalSuccess, { width: 160 }]}
+            onPress={() => handleATualizarValorAtual(selectedItemId)}
+          >
+            <Text style={styles.labelModal}>Atualizar Valor</Text>
+          </TouchableOpacity>
+        )}
       </>
     );
   } else {
@@ -498,11 +517,6 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
                     dataMinima={novaDataInicio}
                   />
                 </View>
-                <Text style={styles.text}>{isMetaPausada ? "Pausar" : "Ativar"}</Text>
-                <Switch
-                  value={isMetaPausada}
-                  onValueChange={() => setIsMetaPausada((prevState) => !prevState)}
-                ></Switch>
               </>
             )}
             {selectedItemStatus === "Concluído" ? <></> : <>{btnSuccessCase}</>}

@@ -32,21 +32,6 @@ export default function MetasScreen({ navigation }: Props) {
   const [updateLista, setUpdateLista] = useState(false);
   const [dataInicio, setDataInicio] = useState(new Date());
   const [dataFim, setDataFim] = useState(new Date());
-  const [monthIndex, setMonthIndex] = useState(dataSelecionada.getMonth());
-  const monthNames = [
-    "Janeiro",
-    "Fevereiro",
-    "Março",
-    "Abril",
-    "Maio",
-    "Junho",
-    "Julho",
-    "Agosto",
-    "Setembro",
-    "Outubro",
-    "Novembro",
-    "Dezembro",
-  ];
   const [isTelaDivida, setIsTelaDivida] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [tituloMeta, setTituloMeta] = useState("");
@@ -56,22 +41,28 @@ export default function MetasScreen({ navigation }: Props) {
   const [valorPagoDivida, setValorPagoDivida] = useState("");
   const [valorTotalDivida, setValorTotalDivida] = useState("");
   const [isDividaPendente, setIsDividaPendente] = useState(false);
+  const [year, setYear] = useState(dataSelecionada.getFullYear());
 
-  const updateMonth = (newMonthIndex: number) => {
-    setMonthIndex(newMonthIndex);
-    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex, 31);
+  const handlePreviousYear = () => {
+    const newYear = year - 1;
+    setYear(newYear);
+    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
     setDataSelecionada(newData);
-    /* updateSaldo(newData); */
+    updateYear(newYear);
   };
 
-  const handlePreviousMonth = () => {
-    const newMonthIndex = monthIndex > 0 ? monthIndex - 1 : 11;
-    updateMonth(newMonthIndex);
+  const handleNextYear = () => {
+    const newYear = year + 1;
+    setYear(newYear);
+    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
+    setDataSelecionada(newData);
+    updateYear(newYear);
   };
 
-  const handleNextMonth = () => {
-    const newMonthIndex = monthIndex < 11 ? monthIndex + 1 : 0;
-    updateMonth(newMonthIndex);
+  const updateYear = (newYear: number) => {
+    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
+    setDataSelecionada(newData);
+    setYear(newYear);
   };
 
   const handleOnChangeDataInicio = (data: Date) => {
@@ -154,15 +145,15 @@ export default function MetasScreen({ navigation }: Props) {
       <Text style={styles.textOrcamento}>Metas</Text>
       <View style={styles.menuHeader}>
         <TouchableOpacity
-          onPress={handlePreviousMonth}
-          style={styles.arrowButton}
+          onPress={handlePreviousYear}
+          style={[styles.arrowButton, { marginTop: 5 }]}
         >
           <Text style={styles.arrowText}>&lt;</Text>
         </TouchableOpacity>
-        <Text style={styles.mesLabel}>{monthNames[monthIndex]}</Text>
+        <Text style={styles.mesLabel}>{year}</Text>
         <TouchableOpacity
-          onPress={handleNextMonth}
-          style={styles.arrowButton}
+          onPress={handleNextYear}
+          style={[styles.arrowButton, { marginTop: 5 }]}
         >
           <Text style={styles.arrowText}>&gt;</Text>
         </TouchableOpacity>
