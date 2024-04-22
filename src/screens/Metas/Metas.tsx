@@ -101,6 +101,9 @@ export default function MetasScreen({ navigation }: Props) {
       if (valorAtualMeta === valorObjetivoMeta) {
         novosDados.status = "Concluído";
       }
+      if (dataFim < new Date()) {
+        novosDados.status = "Pausado";
+      }
       await MetasDAL.adicionarMeta(novosDados);
       setUpdateLista(!updateLista);
       setIsModalVisible(false);

@@ -34,7 +34,7 @@ export const MetasDAL = {
         id: metaId,
       });
 
-      console.log("Categoria adicionada com ID: ", metaId);
+      console.log("Meta adicionada com ID: ", metaId);
       return metaId;
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -94,7 +94,7 @@ export const MetasDAL = {
     }
   },
 
-  buscarMetasPorStatus: async (metaStatus: string, year: string) => {
+  buscarMetasPorStatusEAno: async (metaStatus: string, year: string) => {
     const usuarioId = await getCurrentUserId();
     if (!usuarioId) throw new Error("Usuário não autenticado.");
 
@@ -116,6 +116,14 @@ export const MetasDAL = {
           return dataMeta.getFullYear() === dateSelected.getFullYear(), meta.status === metaStatus;
         }
       });
+
+      for (const meta of metas) {
+        const dataFim = meta.dataFimPrevista.toDate();
+        if (dataFim < new Date() && meta.status !== "Pausado") {
+          await MetasDAL.alterarMeta(meta.id, { status: "Pausado" });
+          console.log("Meta Atrasada: ", meta.id);
+        }
+      }
 
       return metas;
     } catch (error: unknown) {

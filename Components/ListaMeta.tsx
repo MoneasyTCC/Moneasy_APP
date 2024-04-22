@@ -44,7 +44,7 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
   useEffect(() => {
     const buscarMetasPorStatus = async () => {
       try {
-        const metasObtidas = await MetasDAL.buscarMetasPorStatus(
+        const metasObtidas = await MetasDAL.buscarMetasPorStatusEAno(
           switchMetaStatus,
           new Date(dataSelecionada.getFullYear(), 11, 31).toString()
         );
@@ -169,22 +169,13 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
     return porcentagem.toFixed();
   };
 
-  const diasRestantes = (
-    status: string,
-    dataFim: Date,
-    valorAtual: number,
-    valorObjetivo: number,
-    itemId: string
-  ) => {
+  const diasRestantes = (status: string, dataFim: Date) => {
     let dias = 0;
     const dataFimConvertida = converterTimestampParaData(dataFim.toString());
     const dataAtual = new Date();
     if (status === "Ativo") {
       const diferenca = dataFimConvertida.getTime() - dataAtual.getTime();
       dias = Math.ceil(diferenca / (1000 * 3600 * 24));
-      if (valorAtual !== valorObjetivo && dataFimConvertida < dataAtual) {
-        handleMetaAtrasada(itemId);
-      }
       return `${dias} ${dias > 1 ? "dias restantes" : "dia restante"}`;
     } else {
       return status;
@@ -252,15 +243,7 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
           </TouchableOpacity>
         </View>
         <View style={styles.tituloETempo}>
-          <Text style={styles.textOpaco}>
-            {diasRestantes(
-              item.status,
-              item.dataFimPrevista,
-              item.valorAtual,
-              item.valorObjetivo,
-              item.id
-            )}
-          </Text>
+          <Text style={styles.textOpaco}>{diasRestantes(item.status, item.dataFimPrevista)}</Text>
           {item.status === "Ativo" ? (
             <Text style={styles.textOpaco}>{tempoEmDia(item.dataInicio)}</Text>
           ) : (
@@ -310,6 +293,102 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
       )}
     </View>
   );
+  //pra evitar o nesting bizarro de operador ternario que eu tava fazendo eu separei em variaveis
+  //pra ficar mais legivel
+  let dataMenorQueDataAtual = null;
+  if (!(selectedItemDataFimPrevista < new Date())) {
+    dataMenorQueDataAtual = (
+      <>
+        <Text style={styles.text}>{isMetaPausada ? "Pausar" : "Ativar"}</Text>
+        <Switch
+          value={isMetaPausada}
+          onValueChange={() => setIsMetaPausada((prevState) => !prevState)}
+        ></Switch>
+      </>
+    );
+  } else {
+    dataMenorQueDataAtual = (
+      <>
+        <Text style={styles.text}>Atualize a data</Text>
+        <SeletorData
+          onDateChange={handleOnChangeNovaDataFim}
+          dataMinima={new Date()}
+        />
+      </>
+    );
+  }
+  let itemStatusIgualConcluido = null;
+  if (selectedItemStatus === "Concluído") {
+    itemStatusIgualConcluido = (
+      <>
+        <Text style={styles.text}>Titulo: {selectedItemTitulo}</Text>
+        <Text style={styles.text}>Valor Alcancado: {selectedItemValorObjetivo}</Text>
+        <Text style={styles.text}>
+          Comecou em: {selectedItemDataInicio.toLocaleDateString("pt-br")}
+        </Text>
+        <Text style={styles.text}>
+          Finalizada em: {selectedItemDataFimPrevista.toLocaleDateString("pt-br")}
+        </Text>
+      </>
+    );
+  } else if (!isEditable) {
+    itemStatusIgualConcluido = (
+      <>
+        <TextInput
+          style={styles.inputAtualizarValorAtual}
+          placeholder={`R$${selectedItemValorAtual},00`}
+          placeholderTextColor={"#ffffff"}
+          keyboardType="numeric"
+          value={novoValorAtual}
+          onChangeText={(text) => setNovoValorAtual(text)}
+        ></TextInput>
+        <Text style={styles.text}>{isMetaPausada ? "Pausar" : "Ativar"}</Text>
+        <Switch
+          value={isMetaPausada}
+          onValueChange={() => setIsMetaPausada((prevState) => !prevState)}
+        ></Switch>
+      </>
+    );
+  }
+  let btnSuccessCase = null;
+  if (selectedItemDataFimPrevista < new Date()) {
+    btnSuccessCase = (
+      <>
+        <TouchableOpacity
+          style={
+            !isEditable
+              ? [styles.btnModalSuccess, { width: 160 }]
+              : [styles.btnModalSuccess, { width: 230 }]
+          }
+          onPress={() => handleAtualizarDataFim(selectedItemId)}
+        >
+          <Text style={styles.labelModal}>Atualizar Data</Text>
+        </TouchableOpacity>
+      </>
+    );
+  } else if (!isEditable) {
+    btnSuccessCase = (
+      <>
+        <TouchableOpacity
+          style={[styles.btnModalSuccess, { width: 160 }]}
+          onPress={() => handleATualizarValorAtual(selectedItemId)}
+        >
+          <Text style={styles.labelModal}>Atualizar Valor</Text>
+        </TouchableOpacity>
+      </>
+    );
+  } else {
+    btnSuccessCase = (
+      <>
+        <TouchableOpacity
+          style={[styles.btnModalSuccess, { width: 230 }]}
+          onPress={() => handleAlterarMeta(selectedItemId)}
+        >
+          <Text style={styles.labelModal}>Concluir</Text>
+        </TouchableOpacity>
+      </>
+    );
+  }
   return (
     <>
       <View style={styles.metaStatusSwitch}>
@@ -377,56 +456,9 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
               </>
             )}
             {selectedItemStatus === "Pausado" ? (
-              <>
-                {!(selectedItemDataFimPrevista < new Date()) ? (
-                  <>
-                    <Text style={styles.text}>{isMetaPausada ? "Pausar" : "Ativar"}</Text>
-                    <Switch
-                      value={isMetaPausada}
-                      onValueChange={() => setIsMetaPausada((prevState) => !prevState)}
-                    ></Switch>
-                  </>
-                ) : (
-                  <>
-                    <Text style={styles.text}>Atualize a data</Text>
-                    <SeletorData
-                      onDateChange={handleOnChangeNovaDataFim}
-                      dataMinima={new Date()}
-                    />
-                  </>
-                )}
-              </>
-            ) : selectedItemStatus === "Concluído" ? (
-              <>
-                <Text style={styles.text}>Titulo: {selectedItemTitulo}</Text>
-                <Text style={styles.text}>Valor Alcancado: {selectedItemValorObjetivo}</Text>
-                <Text style={styles.text}>
-                  Comecou em: {selectedItemDataInicio.toLocaleDateString("pt-br")}
-                </Text>
-                <Text style={styles.text}>
-                  Finalizada em: {selectedItemDataFimPrevista.toLocaleDateString("pt-br")}
-                </Text>
-              </>
+              <>{dataMenorQueDataAtual}</>
             ) : (
-              <>
-                {!isEditable && (
-                  <>
-                    <TextInput
-                      style={styles.inputAtualizarValorAtual}
-                      placeholder={`R$${selectedItemValorAtual},00`}
-                      placeholderTextColor={"#ffffff"}
-                      keyboardType="numeric"
-                      value={novoValorAtual}
-                      onChangeText={(text) => setNovoValorAtual(text)}
-                    ></TextInput>
-                    <Text style={styles.text}>{isMetaPausada ? "Pausar" : "Ativar"}</Text>
-                    <Switch
-                      value={isMetaPausada}
-                      onValueChange={() => setIsMetaPausada((prevState) => !prevState)}
-                    ></Switch>
-                  </>
-                )}
-              </>
+              <>{itemStatusIgualConcluido}</>
             )}
             {isEditable && (
               <>
@@ -473,32 +505,7 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
                 ></Switch>
               </>
             )}
-            {selectedItemStatus === "Concluído" ? (
-              <></>
-            ) : (
-              <TouchableOpacity
-                style={
-                  !isEditable
-                    ? [styles.btnModalSuccess, { width: 160 }]
-                    : [styles.btnModalSuccess, { width: 230 }]
-                }
-                onPress={
-                  selectedItemDataFimPrevista < new Date()
-                    ? () => handleAtualizarDataFim(selectedItemId)
-                    : !isEditable
-                    ? () => handleATualizarValorAtual(selectedItemId)
-                    : () => handleAlterarMeta(selectedItemId)
-                }
-              >
-                <Text style={styles.labelModal}>
-                  {selectedItemDataFimPrevista < new Date()
-                    ? "Atualizar Data"
-                    : !isEditable
-                    ? "Atualizar Valor"
-                    : "Concluir"}
-                </Text>
-              </TouchableOpacity>
-            )}
+            {selectedItemStatus === "Concluído" ? <></> : <>{btnSuccessCase}</>}
             <TouchableOpacity
               onPress={() => {
                 setIsModalVisible(!isModalVisible), setIsEditable(false), setIsMetaPausada(false);
