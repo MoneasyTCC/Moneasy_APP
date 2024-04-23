@@ -30,7 +30,8 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedItemCategoria, setSelectedItemCategoria] = useState("");
   const [selectedItemValorAtual, setSelectedItemValorAtual] = useState("");
-  const [selectedItemValorDefinido, setSelectedItemValorDefinido] = useState("");
+  const [selectedItemValorDefinido, setSelectedItemValorDefinido] =
+    useState("");
   const [selectedItemId, setSelectedItemId] = useState("");
   const [selectedItemData, setSelectedItemData] = useState(new Date());
   const [dataOrcamento, setDataOrcamento] = useState(new Date());
@@ -79,7 +80,8 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
         const orcamentosObtidos = await obterOrcamentosPorData(dataSelecionada);
         setOrcamentos(orcamentosObtidos);
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Um erro ocorreu";
+        const errorMessage =
+          error instanceof Error ? error.message : "Um erro ocorreu";
         Alert.alert("Erro", errorMessage);
       }
     };
@@ -200,7 +202,8 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
       <View style={styles.container}>
         <Text style={styles.text}>{item.categoria}</Text>
         <Text style={{ color: "#fff", fontSize: 15 }}>
-          Orcamento {orcamentoPorcentagem(item.valorAtual, item.valorDefinido)}% concluido
+          Orcamento {orcamentoPorcentagem(item.valorAtual, item.valorDefinido)}%
+          concluido
         </Text>
         <View style={styles.valoresContainer}>
           <View style={{ flexDirection: "column" }}>
@@ -226,48 +229,48 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
           <View style={{ borderBottomWidth: 1, borderBottomColor: "#fff" }} />
         )}
       />
-      <Modal
-        visible={isModalVisible}
-        animationType="slide"
-        transparent={true}
-      >
+      <Modal visible={isModalVisible} animationType="slide" transparent={true}>
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
             {isEditable ? (
               <>
-                <TextInput
-                  style={styles.input}
-                  placeholder={`Valor Definido\nR$${selectedItemValorDefinido},00`}
-                  value={novoValorDefinido}
-                  onChangeText={setNovoValorDefinido}
-                  keyboardType="numeric"
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder={`Valor Atual\nR$${selectedItemValorAtual},00`}
-                  value={novoValorAtual}
-                  onChangeText={setNovoValorAtual}
-                  keyboardType="numeric"
-                />
-                <DropDownPicker
-                  open={openCategoria}
-                  value={selectedItemCategoria}
-                  items={categorias}
-                  setOpen={setOpenCategoria}
-                  setValue={setSelectedItemCategoria}
-                  setItems={setCategorias}
-                  onChangeValue={() => setSelectedItemCategoria(selectedItemCategoria)}
-                />
-                <DropDownPicker
-                  open={openMes}
-                  value={value}
-                  items={items}
-                  setOpen={setOpenMes}
-                  setValue={setValue}
-                  setItems={setItems}
-                  onChangeValue={() => setMonthData()}
-                  style={{ zIndex: 0 }}
-                />
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    style={styles.input}
+                    placeholder={`Valor Definido\nR$${selectedItemValorDefinido},00`}
+                    value={novoValorDefinido}
+                    onChangeText={setNovoValorDefinido}
+                    keyboardType="numeric"
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder={`Valor Atual\nR$${selectedItemValorAtual},00`}
+                    value={novoValorAtual}
+                    onChangeText={setNovoValorAtual}
+                    keyboardType="numeric"
+                  />
+                  <DropDownPicker
+                    open={openCategoria}
+                    value={selectedItemCategoria}
+                    items={categorias}
+                    setOpen={setOpenCategoria}
+                    setValue={setSelectedItemCategoria}
+                    setItems={setCategorias}
+                    onChangeValue={() =>
+                      setSelectedItemCategoria(selectedItemCategoria)
+                    }
+                  />
+                  <DropDownPicker
+                    open={openMes}
+                    value={value}
+                    items={items}
+                    setOpen={setOpenMes}
+                    setValue={setValue}
+                    setItems={setItems}
+                    onChangeValue={() => setMonthData()}
+                    style={{ zIndex: 0 }}
+                  />
+                </View>
                 <View style={{ flexDirection: "row", gap: 5, paddingTop: 5 }}>
                   <Button
                     title="Atualizar"
@@ -378,6 +381,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     color: "white",
   },
+  inputContainer:{
+    flexDirection: "row",
+    width: "100%",
+
+  }
 });
 
 export default ListaDeOrcamentos;
