@@ -217,6 +217,7 @@ export default function HomeScreen({ navigation }: Props) {
       };
 
       await TransacaoDAL.adicionarTransacao(novosDados);
+      toggleModal();
       Alert.alert("Transação adicionada com Sucesso!");
 
       // Invalidate o cache do mês específico da nova transação
