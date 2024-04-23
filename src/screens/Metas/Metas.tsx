@@ -29,23 +29,9 @@ type Props = {
 // Use as props na definição do seu componente
 export default function MetasScreen({ navigation }: Props) {
   const [dataSelecionada, setDataSelecionada] = useState(new Date());
+  const [updateLista, setUpdateLista] = useState(false);
   const [dataInicio, setDataInicio] = useState(new Date());
   const [dataFim, setDataFim] = useState(new Date());
-  const [monthIndex, setMonthIndex] = useState(dataSelecionada.getMonth());
-  const monthNames = [
-    "Janeiro",
-    "Fevereiro",
-    "Março",
-    "Abril",
-    "Maio",
-    "Junho",
-    "Julho",
-    "Agosto",
-    "Setembro",
-    "Outubro",
-    "Novembro",
-    "Dezembro",
-  ];
   const [isTelaDivida, setIsTelaDivida] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [tituloMeta, setTituloMeta] = useState("");
@@ -55,22 +41,28 @@ export default function MetasScreen({ navigation }: Props) {
   const [valorPagoDivida, setValorPagoDivida] = useState("");
   const [valorTotalDivida, setValorTotalDivida] = useState("");
   const [isDividaPendente, setIsDividaPendente] = useState(false);
+  const [year, setYear] = useState(dataSelecionada.getFullYear());
 
-  const updateMonth = (newMonthIndex: number) => {
-    setMonthIndex(newMonthIndex);
-    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex, 31);
+  const handlePreviousYear = () => {
+    const newYear = year - 1;
+    setYear(newYear);
+    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
     setDataSelecionada(newData);
-    /* updateSaldo(newData); */
+    updateYear(newYear);
   };
 
-  const handlePreviousMonth = () => {
-    const newMonthIndex = monthIndex > 0 ? monthIndex - 1 : 11;
-    updateMonth(newMonthIndex);
+  const handleNextYear = () => {
+    const newYear = year + 1;
+    setYear(newYear);
+    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
+    setDataSelecionada(newData);
+    updateYear(newYear);
   };
 
-  const handleNextMonth = () => {
-    const newMonthIndex = monthIndex < 11 ? monthIndex + 1 : 0;
-    updateMonth(newMonthIndex);
+  const updateYear = (newYear: number) => {
+    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
+    setDataSelecionada(newData);
+    setYear(newYear);
   };
 
   const handleOnChangeDataInicio = (data: Date) => {
@@ -97,7 +89,15 @@ export default function MetasScreen({ navigation }: Props) {
         dataFimPrevista: dataFim,
         status: "Ativo",
       };
+      if (valorAtualMeta === valorObjetivoMeta) {
+        novosDados.status = "Concluído";
+      }
+      if (dataFim < new Date()) {
+        novosDados.status = "Pausado";
+      }
       await MetasDAL.adicionarMeta(novosDados);
+      setUpdateLista(!updateLista);
+      setIsModalVisible(false);
       alert("Meta adicionada com sucesso!");
     } catch (err) {
       alert("Erro ao adicionar meta");
@@ -121,6 +121,7 @@ export default function MetasScreen({ navigation }: Props) {
         status: !isDividaPendente ? "Pendente" : "Pago",
       };
       await DividaDAL.adicionarDivida(novosDados);
+      setIsModalVisible(false);
       alert("Divida adicionada com sucesso!");
     } catch (err) {
       alert("Erro ao adicionar divida");
@@ -144,15 +145,15 @@ export default function MetasScreen({ navigation }: Props) {
       <Text style={styles.textOrcamento}>Metas</Text>
       <View style={styles.menuHeader}>
         <TouchableOpacity
-          onPress={handlePreviousMonth}
-          style={styles.arrowButton}
+          onPress={handlePreviousYear}
+          style={[styles.arrowButton, { marginTop: 5 }]}
         >
           <Text style={styles.arrowText}>&lt;</Text>
         </TouchableOpacity>
-        <Text style={styles.mesLabel}>{monthNames[monthIndex]}</Text>
+        <Text style={styles.mesLabel}>{year}</Text>
         <TouchableOpacity
-          onPress={handleNextMonth}
-          style={styles.arrowButton}
+          onPress={handleNextYear}
+          style={[styles.arrowButton, { marginTop: 5 }]}
         >
           <Text style={styles.arrowText}>&gt;</Text>
         </TouchableOpacity>
@@ -163,7 +164,10 @@ export default function MetasScreen({ navigation }: Props) {
           onValueChange={() => setIsTelaDivida((prevState) => !prevState)}
         ></Switch>
         {!isTelaDivida ? (
-          <ListaDeMetas dataSelecionada={dataSelecionada} />
+          <ListaDeMetas
+            dataSelecionada={dataSelecionada}
+            novaMeta={updateLista}
+          />
         ) : (
           <ListaDeDividas dataSelecionada={dataSelecionada} />
         )}
@@ -184,9 +188,7 @@ export default function MetasScreen({ navigation }: Props) {
       >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <Text style={{ fontSize: 16, fontWeight: "bold", color: "#fff", marginBottom: 10 }}>
-              {!isTelaDivida ? "Nova Meta" : "Nova Divida"}
-            </Text>
+            <Text style={styles.modalTitle}>{!isTelaDivida ? "Nova Meta" : "Nova Divida"}</Text>
             <TextInput
               style={styles.inputTitulo}
               placeholder="Titulo"
@@ -209,7 +211,11 @@ export default function MetasScreen({ navigation }: Props) {
                     : (text) => setValorPagoDivida(text)
                 }
               />
-              <SeletorData onDateChange={handleOnChangeDataInicio} />
+              <SeletorData
+                onDateChange={handleOnChangeDataInicio}
+                dataMinima={new Date(new Date().getFullYear(), 0, 1)}
+                dataMaxima={new Date(new Date().getFullYear(), 11, 31)}
+              />
             </View>
             <View style={styles.inputValorDataGroup}>
               <TextInput
@@ -224,7 +230,10 @@ export default function MetasScreen({ navigation }: Props) {
                     : (text) => setValorTotalDivida(text)
                 }
               />
-              <SeletorData onDateChange={handleOnChangeDataFim} />
+              <SeletorData
+                onDateChange={handleOnChangeDataFim}
+                dataMinima={dataInicio}
+              />
             </View>
             {isTelaDivida && (
               <>
@@ -395,5 +404,11 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     width: "100%",
     marginTop: 15,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 10,
   },
 });

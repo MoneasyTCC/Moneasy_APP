@@ -34,7 +34,7 @@ export const MetasDAL = {
         id: metaId,
       });
 
-      console.log("Categoria adicionada com ID: ", metaId);
+      console.log("Meta adicionada com ID: ", metaId);
       return metaId;
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -90,6 +90,47 @@ export const MetasDAL = {
         throw new Error(`Erro ao buscar metas por data: ${error.message}`);
       } else {
         throw new Error("Ocorreu um erro ao buscar metas por data.");
+      }
+    }
+  },
+
+  buscarMetasPorStatusEAno: async (metaStatus: string, year: string) => {
+    const usuarioId = await getCurrentUserId();
+    if (!usuarioId) throw new Error("Usuário não autenticado.");
+
+    try {
+      const q = query(collection(db, "metas"), where("usuarioId", "==", usuarioId));
+      const querySnapshot = await getDocs(q);
+      let metas: any[] = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      const dateSelected = new Date(year);
+
+      metas = metas.filter((meta) => {
+        const dataMeta = meta.dataFimPrevista.toDate();
+        if (dataMeta.getFullYear() !== dateSelected.getFullYear()) {
+          return false;
+        } else {
+          return dataMeta.getFullYear() === dateSelected.getFullYear(), meta.status === metaStatus;
+        }
+      });
+
+      for (const meta of metas) {
+        const dataFim = meta.dataFimPrevista.toDate();
+        if (dataFim < new Date() && meta.status !== "Pausado") {
+          await MetasDAL.alterarMeta(meta.id, { status: "Pausado" });
+          console.log("Meta Atrasada: ", meta.id);
+        }
+      }
+
+      return metas;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new Error(`Erro ao buscar metas por status: ${error.message}`);
+      } else {
+        throw new Error("Ocorreu um erro ao buscar metas por status.");
       }
     }
   },
