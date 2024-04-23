@@ -348,7 +348,11 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
               <>
                 <TextInput
                   style={styles.input}
-                  placeholder="Valor Atual"
+                  placeholder={
+                    selectedItemValorAtual != "0"
+                      ? selectedItemValorAtual
+                      : `Valor Atual`
+                  }
                   placeholderTextColor="#FFFFFF"
                   value={novoValorAtual}
                   onChangeText={setNovoValorAtual}
