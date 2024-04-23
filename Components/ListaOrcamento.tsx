@@ -237,52 +237,111 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
                 <View style={styles.inputContainer}>
                   <TextInput
                     style={styles.input}
-                    placeholder={`Valor Definido\nR$${selectedItemValorDefinido},00`}
+                    placeholder={
+                      selectedItemValorDefinido != "0"
+                        ? selectedItemValorDefinido
+                        : `Valor Definido`
+                    }
+                    placeholderTextColor="#FFFFFF"
                     value={novoValorDefinido}
                     onChangeText={setNovoValorDefinido}
                     keyboardType="numeric"
                   />
                   <TextInput
                     style={styles.input}
-                    placeholder={`Valor Atual\nR$${selectedItemValorAtual},00`}
+                    placeholder={
+                      selectedItemValorAtual != "0"
+                        ? selectedItemValorAtual
+                        : `Valor Atual`
+                    }
+                    placeholderTextColor="#FFFFFF"
                     value={novoValorAtual}
                     onChangeText={setNovoValorAtual}
                     keyboardType="numeric"
                   />
-                  <DropDownPicker
-                    open={openCategoria}
-                    value={selectedItemCategoria}
-                    items={categorias}
-                    setOpen={setOpenCategoria}
-                    setValue={setSelectedItemCategoria}
-                    setItems={setCategorias}
-                    onChangeValue={() =>
-                      setSelectedItemCategoria(selectedItemCategoria)
-                    }
-                  />
-                  <DropDownPicker
-                    open={openMes}
-                    value={value}
-                    items={items}
-                    setOpen={setOpenMes}
-                    setValue={setValue}
-                    setItems={setItems}
-                    onChangeValue={() => setMonthData()}
-                    style={{ zIndex: 0 }}
-                  />
-                </View>
-                <View style={{ flexDirection: "row", gap: 5, paddingTop: 5 }}>
-                  <Button
-                    title="Atualizar"
-                    onPress={() => handleAlterarOrcamento(selectedItemId)}
-                  />
-                  <Button
-                    title="cancelar"
-                    onPress={() => {
-                      setIsModalVisible(false);
-                      setIsEditable(false);
-                    }}
-                  />
+                  <View>
+                    <DropDownPicker
+                      open={openCategoria}
+                      value={selectedItemCategoria}
+                      items={categorias}
+                      setOpen={setOpenCategoria}
+                      setValue={setSelectedItemCategoria}
+                      setItems={setCategorias}
+                      onChangeValue={() =>
+                        setSelectedItemCategoria(selectedItemCategoria)
+                      }
+                      style={styles.dropdownStyle}
+                      dropDownContainerStyle={{
+                        backgroundColor: "#616161",
+                        borderColor: "#707070",
+                        opacity: 1,
+                        width: "90%",
+                      }}
+                      textStyle={{
+                        color: "white",
+                        opacity: 1,
+                        opacity: 0.7,
+                      }}
+                      arrowIconStyle={{
+                        width: 20,
+                        height: 20,
+                        tintColor: "white",
+                        opacity: 1,
+                      }}
+                      tickIconStyle={{
+                        width: 20,
+                        height: 20,
+                        tintColor: "white",
+                        opacity: 1,
+                      }}
+                    />
+                    <DropDownPicker
+                      open={openMes}
+                      value={value}
+                      items={items}
+                      setOpen={setOpenMes}
+                      setValue={setValue}
+                      setItems={setItems}
+                      onChangeValue={() => setMonthData()}
+                      style={[styles.dropdownStyle, styles.dropdownStyle2]}
+                      dropDownContainerStyle={{
+                        backgroundColor: "#616161",
+                        borderColor: "#707070",
+                        width: "90%",
+                      }}
+                      textStyle={{
+                        color: "white",
+                        opacity: 0.7,
+                      }}
+                      arrowIconStyle={{
+                        width: 20,
+                        height: 20,
+                        tintColor: "white",
+                      }}
+                      tickIconStyle={{
+                        width: 20,
+                        height: 20,
+                        tintColor: "white",
+                      }}
+                    />
+                  </View>
+                  <View style={styles.botoesDivRow}>
+                    <TouchableOpacity
+                      onPress={() => handleAlterarOrcamento(selectedItemId)}
+                      style={[styles.btn, styles.Adicionar]}
+                    >
+                      <Text style={styles.labelModal}>Atualizar</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setIsModalVisible(false);
+                        setIsEditable(false);
+                      }}
+                      style={[styles.btn, styles.Cancelar]}
+                    >
+                      <Text style={styles.labelModal}>Cancelar</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </>
             ) : (
@@ -290,30 +349,31 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
                 <TextInput
                   style={styles.input}
                   placeholder="Valor Atual"
+                  placeholderTextColor="#FFFFFF"
                   value={novoValorAtual}
                   onChangeText={setNovoValorAtual}
                   keyboardType="numeric"
                 />
                 <View style={{ flexDirection: "row", gap: 5 }}>
                   <View style={{ flexDirection: "column", gap: 5 }}>
-                    <Button
-                      title="Atualizar"
+                    <TouchableOpacity
                       onPress={() => handleAtualizarValorAtual(selectedItemId)}
-                    />
-                    <Button
-                      title="editar"
-                      onPress={() => setIsEditable(true)}
-                    />
+                    >
+                      <Text style={styles.labelModal}>Atualizar</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setIsEditable(true)}>
+                      <Text style={styles.labelModal}>Editar</Text>
+                    </TouchableOpacity>
                   </View>
                   <View style={{ flexDirection: "column", gap: 5 }}>
-                    <Button
-                      title="excluir"
+                    <TouchableOpacity
                       onPress={() => handleDeletarOrcamento(selectedItemId)}
-                    />
-                    <Button
-                      title="cancelar"
-                      onPress={() => setIsModalVisible(false)}
-                    />
+                    >
+                      <Text style={styles.labelModal}>Excluir</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setIsModalVisible(false)}>
+                      <Text style={styles.labelModal}>Cancelar</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
               </>
@@ -359,6 +419,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.8)",
   },
   modalView: {
+    width: "90%",
     margin: 20,
     backgroundColor: "#424242",
     borderRadius: 20,
@@ -373,19 +434,57 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  btn: {
+    alignItems: "center",
+    justifyContent: "center",
+    width: "45%",
+    height: 30,
+    borderRadius: 15,
+    marginVertical: 12,
+    marginHorizontal: 5,
+  },
+  Adicionar: {
+    backgroundColor: "#4CAF50",
+  },
+  Cancelar: {
+    backgroundColor: "#B22222",
+  },
+
+  botoesDivRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   input: {
-    width: "100%",
+    width: "90%",
     padding: 10,
     marginVertical: 10,
     backgroundColor: "#616161",
     borderRadius: 10,
     color: "white",
+    opacity: 0.7,
   },
-  inputContainer:{
-    flexDirection: "row",
+  inputContainer: {
     width: "100%",
+    flexDirection: "column",
+    alignItems: "center",
+  },
 
-  }
+  labelModal: {
+    color: "#ffffff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  dropdownStyle: {
+    backgroundColor: "#616161",
+    borderWidth: 0,
+    opacity: 0.9,
+    marginVertical: 8,
+    width: "90%",
+    borderRadius: 10,
+  },
+  dropdownStyle2: {
+    zIndex: 0,
+  },
 });
 
 export default ListaDeOrcamentos;
