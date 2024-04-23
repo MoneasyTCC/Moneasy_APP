@@ -286,11 +286,13 @@ export default function MenuScreen({ navigation }: Props) {
                   dropDownContainerStyle={{
                     backgroundColor: "#616161",
                     borderColor: "#707070",
-                    opacity: 1
+                    opacity: 1,
+                    width: "90%",
                   }}
                   textStyle={{
                     color: "white",
-                    opacity: 1
+                    opacity: 1,
+                    opacity: 0.7
                   }}
                   arrowIconStyle={{
                     width: 20,
@@ -317,9 +319,11 @@ export default function MenuScreen({ navigation }: Props) {
                   dropDownContainerStyle={{
                     backgroundColor: "#616161",
                     borderColor: "#707070",
+                    width: "90%",
                   }}
                   textStyle={{
                     color: "white",
+                    opacity: 0.7
                   }}
                   arrowIconStyle={{
                     width: 20,
@@ -497,9 +501,10 @@ const styles = StyleSheet.create({
   dropdownStyle: {
     backgroundColor: "#616161",
     borderWidth: 0,
-    opacity: 0.7,
-    marginVertical: 5,
+    opacity: 0.9,
+    marginVertical: 8,
     width: "90%",
+    borderRadius: 10,
   },
   dropdownStyle2: {
     zIndex: 0 
