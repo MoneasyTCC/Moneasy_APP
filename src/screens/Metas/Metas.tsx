@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   View,
   Text,
@@ -19,6 +19,7 @@ import SeletorData from "../../../Components/SeletorData";
 import { DividaDAL } from "../../../Repo/RepositorioDivida";
 import ListaDeMetas from "../../../Components/ListaMeta";
 import ListaDeDividas from "../../../Components/ListaDivida";
+import { DataContext } from "../../../Contexts/DataContext";
 
 type MetasScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Metas">;
 
@@ -28,7 +29,10 @@ type Props = {
 
 // Use as props na definição do seu componente
 export default function MetasScreen({ navigation }: Props) {
-  const [dataSelecionada, setDataSelecionada] = useState(new Date());
+  const { dataSelecionada, setDataSelecionada } = useContext(DataContext) as {
+    dataSelecionada: Date;
+    setDataSelecionada: (data: Date) => void;
+  };
   const [updateLista, setUpdateLista] = useState(false);
   const [dataInicio, setDataInicio] = useState(new Date());
   const [dataFim, setDataFim] = useState(new Date());
@@ -60,9 +64,9 @@ export default function MetasScreen({ navigation }: Props) {
   };
 
   const updateYear = (newYear: number) => {
-    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-    setDataSelecionada(newData);
+    const newData = new Date(newYear, dataSelecionada.getMonth() + 1, 0);
     setYear(newYear);
+    setDataSelecionada(newData);
   };
 
   const handleOnChangeDataInicio = (data: Date) => {
@@ -139,6 +143,10 @@ export default function MetasScreen({ navigation }: Props) {
     setDataInicio(new Date());
     setDataFim(new Date());
   };
+
+  useEffect(() => {
+    setYear(dataSelecionada.getFullYear());
+  }, [dataSelecionada]);
 
   return (
     <View style={styles.container}>

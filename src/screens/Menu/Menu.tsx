@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -17,14 +17,9 @@ import { OrcamentoDAL } from "../../../Repo/RepositorioOrcamento";
 import DropDownPicker from "react-native-dropdown-picker";
 import ListaDeOrcamentos from "../../../Components/ListaOrcamento";
 import { obterTotalERestantePorMes } from "../../../Controller/OrcamentoController";
-import SincronizaData, {
-  useAppContext,
-} from "../../../Components/SincronizaData";
+import { DataContext } from "../../../Contexts/DataContext";
 
-type OrcamentoScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "Orcamento"
->;
+type OrcamentoScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Orcamento">;
 
 type Props = {
   navigation: OrcamentoScreenNavigationProp;
@@ -37,7 +32,10 @@ interface TotalERestanteMes {
 
 // Use as props na definição do seu componente
 export default function MenuScreen({ navigation }: Props) {
-  const { dataSelecionada, setDataSelecionada } = useAppContext();
+  const { dataSelecionada, setDataSelecionada } = useContext(DataContext) as {
+    dataSelecionada: Date;
+    setDataSelecionada: (data: Date) => void;
+  };
   const [monthIndex, setMonthIndex] = useState(dataSelecionada.getMonth());
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [valorDefinido, setValorDefinido] = useState("");
@@ -50,9 +48,7 @@ export default function MenuScreen({ navigation }: Props) {
     { label: "Mercado", value: "Mercado" },
     { label: "Outros", value: "Outros" },
   ]);
-  const [categoriaSelecionada, setCategoriaSelecionada] = useState(
-    categorias[5].value
-  );
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState(categorias[5].value);
   const [dataOrcamento, setDataOrcamento] = useState(new Date());
   const monthNames = [
     "Janeiro",
@@ -117,14 +113,14 @@ export default function MenuScreen({ navigation }: Props) {
   };
 
   const updateYear = (newYear: number) => {
-    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-    setDataSelecionada(newData);
+    const newData = new Date(newYear, dataSelecionada.getMonth() + 1, 0);
     setYear(newYear);
+    setDataSelecionada(newData);
   };
 
   const updateMonth = (newMonthIndex: number) => {
     setMonthIndex(newMonthIndex);
-    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex, 31);
+    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex + 1, 0);
     setDataSelecionada(newData);
     /* updateSaldo(newData); */
   };
@@ -141,12 +137,8 @@ export default function MenuScreen({ navigation }: Props) {
 
   const handleOrcamento = async () => {
     try {
-      const valorDefinidoFloat = isNaN(parseFloat(valorDefinido))
-        ? 0
-        : parseFloat(valorDefinido);
-      const valorAtualFloat = isNaN(parseFloat(valorAtual))
-        ? 0
-        : parseFloat(valorAtual);
+      const valorDefinidoFloat = isNaN(parseFloat(valorDefinido)) ? 0 : parseFloat(valorDefinido);
+      const valorAtualFloat = isNaN(parseFloat(valorAtual)) ? 0 : parseFloat(valorAtual);
       setMonthData();
       const novosDados = {
         id: "",
@@ -168,9 +160,7 @@ export default function MenuScreen({ navigation }: Props) {
 
   const handleObterTotalERestantePorMes = async () => {
     try {
-      const result: TotalERestanteMes = await obterTotalERestantePorMes(
-        dataSelecionada
-      );
+      const result: TotalERestanteMes = await obterTotalERestantePorMes(dataSelecionada);
       setValuesObject(result);
     } catch (err) {
       console.error("Erro ao obter total e restante por mês: ", err);
@@ -193,6 +183,8 @@ export default function MenuScreen({ navigation }: Props) {
 
   useEffect(() => {
     handleObterTotalERestantePorMes();
+    setMonthIndex(dataSelecionada.getMonth());
+    setYear(dataSelecionada.getFullYear());
   }, [updateLista, dataSelecionada]);
 
   return (
@@ -206,7 +198,10 @@ export default function MenuScreen({ navigation }: Props) {
           <Text style={styles.arrowText}>&lt;</Text>
         </TouchableOpacity>
         <Text style={styles.mesLabel}>{monthNames[monthIndex]}</Text>
-        <TouchableOpacity onPress={handleNextMonth} style={styles.arrowButton}>
+        <TouchableOpacity
+          onPress={handleNextMonth}
+          style={styles.arrowButton}
+        >
           <Text style={styles.arrowText}>&gt;</Text>
         </TouchableOpacity>
       </View>
@@ -229,15 +224,11 @@ export default function MenuScreen({ navigation }: Props) {
         <View style={styles.totalERestanteGroup}>
           <View>
             <Text style={styles.totalERestanteText}>Total</Text>
-            <Text style={styles.totalERestanteValor}>
-              R${valuesObject.valorDefinidoTotal},00
-            </Text>
+            <Text style={styles.totalERestanteValor}>R${valuesObject.valorDefinidoTotal},00</Text>
           </View>
           <View>
             <Text style={styles.totalERestanteText}>Restante</Text>
-            <Text style={styles.totalERestanteValor}>
-              R${valuesObject.valorAtualTotal},00
-            </Text>
+            <Text style={styles.totalERestanteValor}>R${valuesObject.valorAtualTotal},00</Text>
           </View>
         </View>
         <ListaDeOrcamentos
@@ -246,12 +237,14 @@ export default function MenuScreen({ navigation }: Props) {
           onInteraction={handleInteractionInListaDeOrcamentos}
         />
         <TouchableOpacity onPress={() => setIsModalVisible(true)}>
-          <Text style={{ color: "#0fec32", fontSize: 18, fontWeight: 800 }}>
-            Novo Orçamento
-          </Text>
+          <Text style={{ color: "#0fec32", fontSize: 18, fontWeight: 800 }}>Novo Orçamento</Text>
         </TouchableOpacity>
       </View>
-      <Modal visible={isModalVisible} transparent={true} animationType="slide">
+      <Modal
+        visible={isModalVisible}
+        transparent={true}
+        animationType="slide"
+      >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
             <View style={styles.inputContainer}>
@@ -279,9 +272,7 @@ export default function MenuScreen({ navigation }: Props) {
                   setOpen={setOpenCategoria}
                   setValue={setCategoriaSelecionada}
                   setItems={setCategorias}
-                  onChangeValue={() =>
-                    setCategoriaSelecionada(categoriaSelecionada)
-                  }
+                  onChangeValue={() => setCategoriaSelecionada(categoriaSelecionada)}
                   style={styles.dropdownStyle}
                   dropDownContainerStyle={{
                     backgroundColor: "#616161",
@@ -292,19 +283,19 @@ export default function MenuScreen({ navigation }: Props) {
                   textStyle={{
                     color: "white",
                     opacity: 1,
-                    opacity: 0.7
+                    opacity: 0.7,
                   }}
                   arrowIconStyle={{
                     width: 20,
                     height: 20,
                     tintColor: "white",
-                    opacity: 1
+                    opacity: 1,
                   }}
                   tickIconStyle={{
                     width: 20,
                     height: 20,
                     tintColor: "white",
-                    opacity: 1
+                    opacity: 1,
                   }}
                 />
                 <DropDownPicker
@@ -323,7 +314,7 @@ export default function MenuScreen({ navigation }: Props) {
                   }}
                   textStyle={{
                     color: "white",
-                    opacity: 0.7
+                    opacity: 0.7,
                   }}
                   arrowIconStyle={{
                     width: 20,
@@ -507,6 +498,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   dropdownStyle2: {
-    zIndex: 0 
-  }
+    zIndex: 0,
+  },
 });
