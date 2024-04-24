@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -17,13 +17,9 @@ import { OrcamentoDAL } from "../../../Repo/RepositorioOrcamento";
 import DropDownPicker from "react-native-dropdown-picker";
 import ListaDeOrcamentos from "../../../Components/ListaOrcamento";
 import { obterTotalERestantePorMes } from "../../../Controller/OrcamentoController";
-import SincronizaData, { useAppContext } from "../../../Components/SincronizaData";
+import { DataContext } from "../../../Contexts/DataContext";
 
-
-type OrcamentoScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "Orcamento"
->;
+type OrcamentoScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Orcamento">;
 
 type Props = {
   navigation: OrcamentoScreenNavigationProp;
@@ -36,7 +32,10 @@ interface TotalERestanteMes {
 
 // Use as props na definição do seu componente
 export default function MenuScreen({ navigation }: Props) {
-  const { dataSelecionada, setDataSelecionada } = useAppContext();
+  const { dataSelecionada, setDataSelecionada } = useContext(DataContext) as {
+    dataSelecionada: Date;
+    setDataSelecionada: (data: Date) => void;
+  };
   const [monthIndex, setMonthIndex] = useState(dataSelecionada.getMonth());
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [valorDefinido, setValorDefinido] = useState("");
@@ -97,32 +96,31 @@ export default function MenuScreen({ navigation }: Props) {
     setDataOrcamento(newDate);
   };
 
-const handlePreviousYear = () => {
-  const newYear = year - 1;
-  setYear(newYear);
-  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-  setDataSelecionada(newData);
-  updateYear(newYear);
-};
+  const handlePreviousYear = () => {
+    const newYear = year - 1;
+    setYear(newYear);
+    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
+    setDataSelecionada(newData);
+    updateYear(newYear);
+  };
 
-const handleNextYear = () => {
-  const newYear = year + 1;
-  setYear(newYear);
-  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-  setDataSelecionada(newData);
-  updateYear(newYear);
-};
+  const handleNextYear = () => {
+    const newYear = year + 1;
+    setYear(newYear);
+    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
+    setDataSelecionada(newData);
+    updateYear(newYear);
+  };
 
-const updateYear = (newYear: number) => {
-  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-  setDataSelecionada(newData);
-  setYear(newYear);
-};
-
+  const updateYear = (newYear: number) => {
+    const newData = new Date(newYear, dataSelecionada.getMonth() + 1, 0);
+    setYear(newYear);
+    setDataSelecionada(newData);
+  };
 
   const updateMonth = (newMonthIndex: number) => {
     setMonthIndex(newMonthIndex);
-    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex, 31);
+    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex + 1, 0);
     setDataSelecionada(newData);
     /* updateSaldo(newData); */
   };
@@ -139,9 +137,7 @@ const updateYear = (newYear: number) => {
 
   const handleOrcamento = async () => {
     try {
-      const valorDefinidoFloat = isNaN(parseFloat(valorDefinido))
-        ? 0
-        : parseFloat(valorDefinido);
+      const valorDefinidoFloat = isNaN(parseFloat(valorDefinido)) ? 0 : parseFloat(valorDefinido);
       const valorAtualFloat = isNaN(parseFloat(valorAtual)) ? 0 : parseFloat(valorAtual);
       setMonthData();
       const novosDados = {
@@ -187,6 +183,8 @@ const updateYear = (newYear: number) => {
 
   useEffect(() => {
     handleObterTotalERestantePorMes();
+    setMonthIndex(dataSelecionada.getMonth());
+    setYear(dataSelecionada.getFullYear());
   }, [updateLista, dataSelecionada]);
 
   return (
@@ -207,34 +205,30 @@ const updateYear = (newYear: number) => {
           <Text style={styles.arrowText}>&gt;</Text>
         </TouchableOpacity>
       </View>
-                <View style={styles.yearHeader}>
-                  <TouchableOpacity
-                    onPress={handlePreviousYear}
-                    style={[styles.arrowButton, { marginTop: 5 }]}
-                  >
-                    <Text style={styles.arrowText}>&lt;</Text>
-                  </TouchableOpacity>
-                  <Text style={styles.mesLabel}>{year}</Text>
-                  <TouchableOpacity
-                    onPress={handleNextYear}
-                    style={[styles.arrowButton, { marginTop: 5 }]}
-                  >
-                    <Text style={styles.arrowText}>&gt;</Text>
-                  </TouchableOpacity>
-                </View>
+      <View style={styles.yearHeader}>
+        <TouchableOpacity
+          onPress={handlePreviousYear}
+          style={[styles.arrowButton, { marginTop: 5 }]}
+        >
+          <Text style={styles.arrowText}>&lt;</Text>
+        </TouchableOpacity>
+        <Text style={styles.mesLabel}>{year}</Text>
+        <TouchableOpacity
+          onPress={handleNextYear}
+          style={[styles.arrowButton, { marginTop: 5 }]}
+        >
+          <Text style={styles.arrowText}>&gt;</Text>
+        </TouchableOpacity>
+      </View>
       <View style={styles.menuBody}>
         <View style={styles.totalERestanteGroup}>
           <View>
             <Text style={styles.totalERestanteText}>Total</Text>
-            <Text style={styles.totalERestanteValor}>
-              R${valuesObject.valorDefinidoTotal},00
-            </Text>
+            <Text style={styles.totalERestanteValor}>R${valuesObject.valorDefinidoTotal},00</Text>
           </View>
           <View>
             <Text style={styles.totalERestanteText}>Restante</Text>
-            <Text style={styles.totalERestanteValor}>
-              R${valuesObject.valorAtualTotal},00
-            </Text>
+            <Text style={styles.totalERestanteValor}>R${valuesObject.valorAtualTotal},00</Text>
           </View>
         </View>
         <ListaDeOrcamentos
@@ -402,9 +396,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     width: 320,
   },
-    yearHeader: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: 'center',
-    },
+  yearHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });
