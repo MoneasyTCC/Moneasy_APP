@@ -351,12 +351,13 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   input: {
-    width: "70%",
+    width: "90%",
     padding: 10,
     marginVertical: 10,
     backgroundColor: "#616161",
     borderRadius: 10,
     color: "#ffffff",
+    opacity: 0.7,
   },
   buttonGroup: {
     flexDirection: "row",

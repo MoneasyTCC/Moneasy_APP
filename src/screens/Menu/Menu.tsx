@@ -237,7 +237,7 @@ export default function MenuScreen({ navigation }: Props) {
           onInteraction={handleInteractionInListaDeOrcamentos}
         />
         <TouchableOpacity onPress={() => setIsModalVisible(true)}>
-          <Text style={{ color: "#0fec32", fontSize: 18 }}>Novo Orçamento</Text>
+          <Text style={{ color: "#0fec32", fontSize: 18, fontWeight: 800 }}>Novo Orçamento</Text>
         </TouchableOpacity>
       </View>
       <Modal
@@ -247,47 +247,102 @@ export default function MenuScreen({ navigation }: Props) {
       >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <TextInput
-              style={styles.input}
-              placeholder="Valor Definido"
-              value={valorDefinido}
-              onChangeText={(text) => setValorDefinido(text)}
-              keyboardType="numeric"
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Valor Atual"
-              value={valorAtual}
-              onChangeText={(text) => setValorAtual(text)}
-              keyboardType="numeric"
-            />
-            <DropDownPicker
-              open={openCategoria}
-              value={categoriaSelecionada}
-              items={categorias}
-              setOpen={setOpenCategoria}
-              setValue={setCategoriaSelecionada}
-              setItems={setCategorias}
-              onChangeValue={() => setCategoriaSelecionada(categoriaSelecionada)}
-            />
-            <DropDownPicker
-              open={openMes}
-              value={value}
-              items={items}
-              setOpen={setOpenMes}
-              setValue={setValue}
-              setItems={setItems}
-              onChangeValue={() => setMonthData()}
-              style={{ zIndex: 0 }}
-            />
-            <Button
-              title="adicionar"
-              onPress={() => handleOrcamento()}
-            />
-            <Button
-              title="cancelar"
-              onPress={() => setIsModalVisible(false)}
-            />
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Valor Definido"
+                placeholderTextColor="#FFFFFF"
+                value={valorDefinido}
+                onChangeText={(text) => setValorDefinido(text)}
+                keyboardType="numeric"
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Valor Atual"
+                placeholderTextColor="#FFFFFF"
+                value={valorAtual}
+                onChangeText={(text) => setValorAtual(text)}
+                keyboardType="numeric"
+              />
+              <View>
+                <DropDownPicker
+                  open={openCategoria}
+                  value={categoriaSelecionada}
+                  items={categorias}
+                  setOpen={setOpenCategoria}
+                  setValue={setCategoriaSelecionada}
+                  setItems={setCategorias}
+                  onChangeValue={() => setCategoriaSelecionada(categoriaSelecionada)}
+                  style={styles.dropdownStyle}
+                  dropDownContainerStyle={{
+                    backgroundColor: "#616161",
+                    borderColor: "#707070",
+                    opacity: 1,
+                    width: "90%",
+                  }}
+                  textStyle={{
+                    color: "white",
+                    opacity: 1,
+                    opacity: 0.7,
+                  }}
+                  arrowIconStyle={{
+                    width: 20,
+                    height: 20,
+                    tintColor: "white",
+                    opacity: 1,
+                  }}
+                  tickIconStyle={{
+                    width: 20,
+                    height: 20,
+                    tintColor: "white",
+                    opacity: 1,
+                  }}
+                />
+                <DropDownPicker
+                  open={openMes}
+                  value={value}
+                  items={items}
+                  setOpen={setOpenMes}
+                  setValue={setValue}
+                  setItems={setItems}
+                  onChangeValue={() => setMonthData()}
+                  style={[styles.dropdownStyle, styles.dropdownStyle2]}
+                  dropDownContainerStyle={{
+                    backgroundColor: "#616161",
+                    borderColor: "#707070",
+                    width: "90%",
+                  }}
+                  textStyle={{
+                    color: "white",
+                    opacity: 0.7,
+                  }}
+                  arrowIconStyle={{
+                    width: 20,
+                    height: 20,
+                    tintColor: "white",
+                  }}
+                  tickIconStyle={{
+                    width: 20,
+                    height: 20,
+                    tintColor: "white",
+                  }}
+                />
+              </View>
+            </View>
+            <View style={styles.botoesDivRow}>
+              <TouchableOpacity
+                onPress={() => handleOrcamento()}
+                style={[styles.btn, styles.Adicionar]}
+              >
+                <Text style={styles.labelModal}>Adicionar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setIsModalVisible(false)}
+                style={[styles.btn, styles.Cancelar]}
+              >
+                <Text style={styles.labelModal}>Cancelar</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -360,6 +415,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.8)",
   },
   modalView: {
+    width: "90%",
     margin: 20,
     backgroundColor: "#424242",
     borderRadius: 20,
@@ -373,14 +429,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 5.25,
     shadowRadius: 3.84,
     elevation: 5,
-  },
-  input: {
-    width: "100%",
-    padding: 10,
-    marginVertical: 10,
-    backgroundColor: "#616161",
-    borderRadius: 10,
-    color: "white",
   },
   totalERestanteText: {
     color: "#fff",
@@ -400,5 +448,56 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+  },
+  btn: {
+    alignItems: "center",
+    justifyContent: "center",
+    width: "45%",
+    height: 30,
+    borderRadius: 15,
+    marginVertical: 12,
+    marginHorizontal: 5,
+  },
+  Adicionar: {
+    backgroundColor: "#4CAF50",
+  },
+  Cancelar: {
+    backgroundColor: "#B22222",
+  },
+
+  botoesDivRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  input: {
+    width: "90%",
+    padding: 10,
+    marginVertical: 10,
+    backgroundColor: "#616161",
+    borderRadius: 10,
+    color: "white",
+    opacity: 0.7,
+  },
+  inputContainer: {
+    width: "100%",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+
+  labelModal: {
+    color: "#ffffff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  dropdownStyle: {
+    backgroundColor: "#616161",
+    borderWidth: 0,
+    opacity: 0.9,
+    marginVertical: 8,
+    width: "90%",
+    borderRadius: 10,
+  },
+  dropdownStyle2: {
+    zIndex: 0,
   },
 });
