@@ -1,13 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
+import { DataContext } from "../Contexts/DataContext";
 
 interface SeletorMesAnoProps {
-  seletorMes: boolean;
-  seletorAno: boolean;
+  seletorMes?: boolean;
+  seletorAno?: boolean;
+  onMonthChange?: (data: Date) => void;
+  onYearChange?: (data: Date) => void;
 }
 
-const SeletorMesAno: React.FC<SeletorMesAnoProps> = ({ seletorMes, seletorAno }) => {
-  const [dataSelecionada, setDataSelecionada] = useState(new Date());
+const SeletorMesAno: React.FC<SeletorMesAnoProps> = ({
+  seletorMes,
+  seletorAno,
+  onMonthChange,
+  onYearChange,
+}) => {
+  const { dataSelecionada, setDataSelecionada } = useContext(DataContext) as {
+    dataSelecionada: Date;
+    setDataSelecionada: (data: Date) => void;
+  };
   const monthNames = [
     "Janeiro",
     "Fevereiro",
@@ -27,14 +38,16 @@ const SeletorMesAno: React.FC<SeletorMesAnoProps> = ({ seletorMes, seletorAno })
 
   const updateMonth = (newMonthIndex: number) => {
     setMonthIndex(newMonthIndex);
-    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex, 31);
+    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex + 1, 0);
+    onMonthChange && onMonthChange(newData);
     setDataSelecionada(newData);
   };
 
   const updateYear = (newYear: number) => {
-    const newData = new Date(newYear, dataSelecionada.getMonth(), 31);
-    setDataSelecionada(newData);
+    const newData = new Date(newYear, dataSelecionada.getMonth() + 1, 0);
     setYear(newYear);
+    onYearChange && onYearChange(newData);
+    setDataSelecionada(newData);
   };
 
   const handlePreviousMonth = () => {
@@ -50,18 +63,19 @@ const SeletorMesAno: React.FC<SeletorMesAnoProps> = ({ seletorMes, seletorAno })
   const handlePreviousYear = () => {
     const newYear = year - 1;
     setYear(newYear);
-    const newData = new Date(newYear, dataSelecionada.getMonth(), 31);
-    setDataSelecionada(newData);
     updateYear(newYear);
   };
 
   const handleNextYear = () => {
     const newYear = year + 1;
     setYear(newYear);
-    const newData = new Date(newYear, dataSelecionada.getMonth(), 31);
-    setDataSelecionada(newData);
     updateYear(newYear);
   };
+
+  useEffect(() => {
+    setMonthIndex(dataSelecionada.getMonth());
+    setYear(dataSelecionada.getFullYear());
+  }, [dataSelecionada]);
 
   let mes = null;
   if (seletorMes) {
@@ -105,16 +119,15 @@ const SeletorMesAno: React.FC<SeletorMesAnoProps> = ({ seletorMes, seletorAno })
   }
 
   return (
-    <View style={{ marginTop: "10%" }}>
-      {mes}
+    <View>
       {ano}
+      {mes}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   mesHeader: {
-    marginTop: 20,
     flexDirection: "row",
     justifyContent: "center",
   },

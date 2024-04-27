@@ -19,6 +19,7 @@ import SeletorData from "../../../Components/SeletorData";
 import { DividaDAL } from "../../../Repo/RepositorioDivida";
 import ListaDeMetas from "../../../Components/ListaMeta";
 import ListaDeDividas from "../../../Components/ListaDivida";
+import SeletorMesAno from "../../../Components/SeletorMesAno";
 import { DataContext } from "../../../Contexts/DataContext";
 
 type MetasScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Metas">;
@@ -45,29 +46,6 @@ export default function MetasScreen({ navigation }: Props) {
   const [valorPagoDivida, setValorPagoDivida] = useState("");
   const [valorTotalDivida, setValorTotalDivida] = useState("");
   const [isDividaPendente, setIsDividaPendente] = useState(false);
-  const [year, setYear] = useState(dataSelecionada.getFullYear());
-
-  const handlePreviousYear = () => {
-    const newYear = year - 1;
-    setYear(newYear);
-    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-    setDataSelecionada(newData);
-    updateYear(newYear);
-  };
-
-  const handleNextYear = () => {
-    const newYear = year + 1;
-    setYear(newYear);
-    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-    setDataSelecionada(newData);
-    updateYear(newYear);
-  };
-
-  const updateYear = (newYear: number) => {
-    const newData = new Date(newYear, dataSelecionada.getMonth() + 1, 0);
-    setYear(newYear);
-    setDataSelecionada(newData);
-  };
 
   const handleOnChangeDataInicio = (data: Date) => {
     setDataInicio(data);
@@ -144,27 +122,18 @@ export default function MetasScreen({ navigation }: Props) {
     setDataFim(new Date());
   };
 
-  useEffect(() => {
-    setYear(dataSelecionada.getFullYear());
-  }, [dataSelecionada]);
+  const handleOnYearChange = (data: Date) => {
+    setDataSelecionada(data);
+  };
 
   return (
     <View style={styles.container}>
       <Text style={styles.textOrcamento}>Metas</Text>
       <View style={styles.menuHeader}>
-        <TouchableOpacity
-          onPress={handlePreviousYear}
-          style={[styles.arrowButton, { marginTop: 5 }]}
-        >
-          <Text style={styles.arrowText}>&lt;</Text>
-        </TouchableOpacity>
-        <Text style={styles.mesLabel}>{year}</Text>
-        <TouchableOpacity
-          onPress={handleNextYear}
-          style={[styles.arrowButton, { marginTop: 5 }]}
-        >
-          <Text style={styles.arrowText}>&gt;</Text>
-        </TouchableOpacity>
+        <SeletorMesAno
+          seletorAno={true}
+          onYearChange={handleOnYearChange}
+        />
       </View>
       <View style={styles.menuBody}>
         <Switch
