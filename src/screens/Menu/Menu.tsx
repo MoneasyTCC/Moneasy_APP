@@ -17,6 +17,7 @@ import { OrcamentoDAL } from "../../../Repo/RepositorioOrcamento";
 import DropDownPicker from "react-native-dropdown-picker";
 import ListaDeOrcamentos from "../../../Components/ListaOrcamento";
 import { obterTotalERestantePorMes } from "../../../Controller/OrcamentoController";
+import SeletorMesAno from "../../../Components/SeletorMesAno";
 import { DataContext } from "../../../Contexts/DataContext";
 
 type OrcamentoScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Orcamento">;
@@ -36,7 +37,6 @@ export default function MenuScreen({ navigation }: Props) {
     dataSelecionada: Date;
     setDataSelecionada: (data: Date) => void;
   };
-  const [monthIndex, setMonthIndex] = useState(dataSelecionada.getMonth());
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [valorDefinido, setValorDefinido] = useState("");
   const [valorAtual, setValorAtual] = useState("");
@@ -50,20 +50,6 @@ export default function MenuScreen({ navigation }: Props) {
   ]);
   const [categoriaSelecionada, setCategoriaSelecionada] = useState(categorias[5].value);
   const [dataOrcamento, setDataOrcamento] = useState(new Date());
-  const monthNames = [
-    "Janeiro",
-    "Fevereiro",
-    "Março",
-    "Abril",
-    "Maio",
-    "Junho",
-    "Julho",
-    "Agosto",
-    "Setembro",
-    "Outubro",
-    "Novembro",
-    "Dezembro",
-  ];
 
   const [openMes, setOpenMes] = useState(false);
   const [openCategoria, setOpenCategoria] = useState(false);
@@ -84,7 +70,6 @@ export default function MenuScreen({ navigation }: Props) {
     { label: "Dezembro", value: "12" },
   ]);
   const [updateLista, setUpdateLista] = useState(false);
-  const [year, setYear] = useState(dataSelecionada.getFullYear());
   const [valuesObject, setValuesObject] = useState<{
     valorDefinidoTotal: number;
     valorAtualTotal: number;
@@ -96,43 +81,12 @@ export default function MenuScreen({ navigation }: Props) {
     setDataOrcamento(newDate);
   };
 
-  const handlePreviousYear = () => {
-    const newYear = year - 1;
-    setYear(newYear);
-    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-    setDataSelecionada(newData);
-    updateYear(newYear);
+  const handleOnChangeMonth = (data: Date) => {
+    setDataSelecionada(data);
   };
 
-  const handleNextYear = () => {
-    const newYear = year + 1;
-    setYear(newYear);
-    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-    setDataSelecionada(newData);
-    updateYear(newYear);
-  };
-
-  const updateYear = (newYear: number) => {
-    const newData = new Date(newYear, dataSelecionada.getMonth() + 1, 0);
-    setYear(newYear);
-    setDataSelecionada(newData);
-  };
-
-  const updateMonth = (newMonthIndex: number) => {
-    setMonthIndex(newMonthIndex);
-    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex + 1, 0);
-    setDataSelecionada(newData);
-    /* updateSaldo(newData); */
-  };
-
-  const handlePreviousMonth = () => {
-    const newMonthIndex = monthIndex > 0 ? monthIndex - 1 : 11;
-    updateMonth(newMonthIndex);
-  };
-
-  const handleNextMonth = () => {
-    const newMonthIndex = monthIndex < 11 ? monthIndex + 1 : 0;
-    updateMonth(newMonthIndex);
+  const handleOnChangeYear = (data: Date) => {
+    setDataSelecionada(data);
   };
 
   const handleOrcamento = async () => {
@@ -183,42 +137,18 @@ export default function MenuScreen({ navigation }: Props) {
 
   useEffect(() => {
     handleObterTotalERestantePorMes();
-    setMonthIndex(dataSelecionada.getMonth());
-    setYear(dataSelecionada.getFullYear());
   }, [updateLista, dataSelecionada]);
 
   return (
     <View style={styles.container}>
       <Text style={styles.textOrcamento}>Orçamento</Text>
       <View style={styles.menuHeader}>
-        <TouchableOpacity
-          onPress={handlePreviousMonth}
-          style={styles.arrowButton}
-        >
-          <Text style={styles.arrowText}>&lt;</Text>
-        </TouchableOpacity>
-        <Text style={styles.mesLabel}>{monthNames[monthIndex]}</Text>
-        <TouchableOpacity
-          onPress={handleNextMonth}
-          style={styles.arrowButton}
-        >
-          <Text style={styles.arrowText}>&gt;</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.yearHeader}>
-        <TouchableOpacity
-          onPress={handlePreviousYear}
-          style={[styles.arrowButton, { marginTop: 5 }]}
-        >
-          <Text style={styles.arrowText}>&lt;</Text>
-        </TouchableOpacity>
-        <Text style={styles.mesLabel}>{year}</Text>
-        <TouchableOpacity
-          onPress={handleNextYear}
-          style={[styles.arrowButton, { marginTop: 5 }]}
-        >
-          <Text style={styles.arrowText}>&gt;</Text>
-        </TouchableOpacity>
+        <SeletorMesAno
+          seletorMes={true}
+          seletorAno={true}
+          onMonthChange={handleOnChangeMonth}
+          onYearChange={handleOnChangeYear}
+        />
       </View>
       <View style={styles.menuBody}>
         <View style={styles.totalERestanteGroup}>
@@ -363,7 +293,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     justifyContent: "center",
     width: "100%",
-    height: "16%",
+    height: "20%",
   },
   menuBody: {
     borderTopLeftRadius: 50,

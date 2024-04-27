@@ -7,6 +7,7 @@ import { Transacao } from "../../../Model/Transacao";
 import { obterSaldoPorMes } from "../../../Controller/TransacaoController";
 import NavigationBar from "../menuNavegation";
 import { useEffect, useRef, useState, useContext } from "react";
+import SeletorMesAno from "../../../Components/SeletorMesAno";
 
 type TransacaoScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Transacao">;
 
@@ -20,58 +21,17 @@ export default function TransacaoScreen({ navigation }: Props) {
     setDataSelecionada: (data: Date) => void;
   };
   const [saldo, setSaldo] = useState<number | null>(null);
-  const [year, setYear] = useState(dataSelecionada.getFullYear());
   const [isLoading, setIsLoading] = useState(false);
   const saldoCache = useRef<Map<string, number>>(new Map());
 
-  const monthNames = [
-    "Janeiro",
-    "Fevereiro",
-    "Março",
-    "Abril",
-    "Maio",
-    "Junho",
-    "Julho",
-    "Agosto",
-    "Setembro",
-    "Outubro",
-    "Novembro",
-    "Dezembro",
-  ];
-
-  const [monthIndex, setMonthIndex] = useState(dataSelecionada.getMonth());
-
-  const handlePreviousYear = () => {
-    const newYear = year - 1;
-    setYear(newYear);
-    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-    setDataSelecionada(newData);
-    updateSaldo(newData);
-    updateYear(newYear);
+  const handleOnChangeMonth = (data: Date) => {
+    setDataSelecionada(data);
   };
 
-  const handleNextYear = () => {
-    const newYear = year + 1;
-    setYear(newYear);
-    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-    setDataSelecionada(newData);
-    updateSaldo(newData);
-    updateYear(newYear);
+  const handleOnChangeYear = (data: Date) => {
+    setDataSelecionada(data);
   };
 
-  const updateYear = (newYear: number) => {
-    const newData = new Date(newYear, dataSelecionada.getMonth() + 1, 0);
-    setYear(newYear);
-    setDataSelecionada(newData);
-    updateSaldo(newData);
-  };
-
-  const updateMonth = (newMonthIndex: number) => {
-    setMonthIndex(newMonthIndex);
-    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex + 1, 0);
-    setDataSelecionada(newData);
-    updateSaldo(newData);
-  };
   const onTransacaoAlterada = () => {
     attSaldoDepoisDeAlterarOuDeletar(dataSelecionada); // Atualiza o saldo
   };
@@ -91,16 +51,6 @@ export default function TransacaoScreen({ navigation }: Props) {
     } finally {
       setIsLoading(false); // Finaliza o loading
     }
-  };
-
-  const handlePreviousMonth = () => {
-    const newMonthIndex = monthIndex > 0 ? monthIndex - 1 : 11;
-    updateMonth(newMonthIndex);
-  };
-
-  const handleNextMonth = () => {
-    const newMonthIndex = monthIndex < 11 ? monthIndex + 1 : 0;
-    updateMonth(newMonthIndex);
   };
 
   const updateSaldo = async (date: Date) => {
@@ -129,41 +79,19 @@ export default function TransacaoScreen({ navigation }: Props) {
 
   useEffect(() => {
     updateSaldo(dataSelecionada);
-    setMonthIndex(dataSelecionada.getMonth());
-    setYear(dataSelecionada.getFullYear());
   }, [dataSelecionada]);
 
   return (
     <View style={styles.container}>
       <View style={styles.menuHeader}>
-        <TouchableOpacity
-          onPress={handlePreviousMonth}
-          style={styles.arrowButton}
-        >
-          <Text style={styles.arrowText}>&lt;</Text>
-        </TouchableOpacity>
-        <Text style={styles.mesLabel}>{monthNames[monthIndex]}</Text>
-        <TouchableOpacity
-          onPress={handleNextMonth}
-          style={styles.arrowButton}
-        >
-          <Text style={styles.arrowText}>&gt;</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.yearHeader}>
-        <TouchableOpacity
-          onPress={handlePreviousYear}
-          style={[styles.arrowButton, { marginTop: -100 }]}
-        >
-          <Text style={styles.arrowText}>&lt;</Text>
-        </TouchableOpacity>
-        <Text style={[styles.mesLabel, { marginTop: -100 }]}>{year}</Text>
-        <TouchableOpacity
-          onPress={handleNextYear}
-          style={[styles.arrowButton, { marginTop: -100 }]}
-        >
-          <Text style={styles.arrowText}>&gt;</Text>
-        </TouchableOpacity>
+        <View style={{ marginTop: "20%" }}>
+          <SeletorMesAno
+            seletorMes={true}
+            seletorAno={true}
+            onMonthChange={handleOnChangeMonth}
+            onYearChange={handleOnChangeYear}
+          />
+        </View>
       </View>
       <View style={styles.menuBody}>
         <View style={styles.content}>

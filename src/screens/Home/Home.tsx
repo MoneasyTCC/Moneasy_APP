@@ -28,6 +28,8 @@ import DropDownPicker from "react-native-dropdown-picker";
 import NavigationBar from "../menuNavegation";
 import CotacaoDolar from "../../../Components/cotacao";
 import { DataContext } from "../../../Contexts/DataContext";
+import SeletorMesAno from "../../../Components/SeletorMesAno";
+
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Home">;
 
 type Props = {
@@ -54,7 +56,6 @@ export default function HomeScreen({ navigation }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const saldoCache = useRef<Map<string, SaldoMes>>(new Map());
   const [fData, setFData] = useState(""); // Adicionado estado para fData
-  const [year, setYear] = useState(dataSelecionada.getFullYear());
 
   const [mostrarValores, setMostrarValores] = useState(true);
 
@@ -107,66 +108,15 @@ export default function HomeScreen({ navigation }: Props) {
     }
   };
 
+  const handleOnChangeMonth = (data: Date) => {
+    setDataSelecionada(data);
+  };
+
+  const handleOnChangeYear = (data: Date) => {
+    setDataSelecionada(data);
+  };
+
   const [saldo, setSaldo] = useState<number | null>(null);
-
-  const monthNames = [
-    "Janeiro",
-    "Fevereiro",
-    "Março",
-    "Abril",
-    "Maio",
-    "Junho",
-    "Julho",
-    "Agosto",
-    "Setembro",
-    "Outubro",
-    "Novembro",
-    "Dezembro",
-  ];
-
-  const [monthIndex, setMonthIndex] = useState(dataSelecionada.getMonth());
-
-  const handlePreviousYear = () => {
-    const newYear = year - 1;
-    setYear(newYear);
-    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-    setDataSelecionada(newData);
-    updateSaldo(newData);
-    updateYear(newYear);
-  };
-
-  const handleNextYear = () => {
-    const newYear = year + 1;
-    setYear(newYear);
-    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-    setDataSelecionada(newData);
-    updateSaldo(newData);
-    updateYear(newYear);
-  };
-
-  const updateYear = (newYear: number) => {
-    const newData = new Date(newYear, dataSelecionada.getMonth() + 1, 0);
-    setYear(newYear);
-    setDataSelecionada(newData);
-    updateSaldo(newData);
-  };
-
-  const updateMonth = (newMonthIndex: number) => {
-    setMonthIndex(newMonthIndex);
-    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex + 1, 0);
-    setDataSelecionada(newData);
-    updateSaldo(newData);
-  };
-
-  const handlePreviousMonth = () => {
-    const newMonthIndex = monthIndex > 0 ? monthIndex - 1 : 11;
-    updateMonth(newMonthIndex);
-  };
-
-  const handleNextMonth = () => {
-    const newMonthIndex = monthIndex < 11 ? monthIndex + 1 : 0;
-    updateMonth(newMonthIndex);
-  };
 
   const updateSaldo = async (date: Date) => {
     try {
@@ -274,43 +224,17 @@ export default function HomeScreen({ navigation }: Props) {
   useEffect(() => {
     updateSaldo(dataSelecionada);
     handleObterSaldoPorMes();
-    setMonthIndex(dataSelecionada.getMonth());
-    setYear(dataSelecionada.getFullYear());
   }, [dataSelecionada]);
 
   return (
     <View style={styles.container}>
       <View style={styles.menuHeader}>
-        <View style={styles.mesHeader}>
-          <TouchableOpacity
-            onPress={handlePreviousMonth}
-            style={styles.arrowButton}
-          >
-            <Text style={styles.arrowText}>&lt;</Text>
-          </TouchableOpacity>
-          <Text style={styles.mesLabel}>{monthNames[monthIndex]}</Text>
-          <TouchableOpacity
-            onPress={handleNextMonth}
-            style={styles.arrowButton}
-          >
-            <Text style={styles.arrowText}>&gt;</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.yearHeader}>
-          <TouchableOpacity
-            onPress={handlePreviousYear}
-            style={[styles.arrowButton]}
-          >
-            <Text style={styles.arrowText}>&lt;</Text>
-          </TouchableOpacity>
-          <Text style={styles.mesLabel}>{year}</Text>
-          <TouchableOpacity
-            onPress={handleNextYear}
-            style={[styles.arrowButton]}
-          >
-            <Text style={styles.arrowText}>&gt;</Text>
-          </TouchableOpacity>
-        </View>
+        <SeletorMesAno
+          seletorMes={true}
+          seletorAno={true}
+          onMonthChange={handleOnChangeMonth}
+          onYearChange={handleOnChangeYear}
+        />
         <View>
           {isLoading ? (
             <ActivityIndicator
