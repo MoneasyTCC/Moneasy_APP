@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -17,13 +17,10 @@ import { OrcamentoDAL } from "../../../Repo/RepositorioOrcamento";
 import DropDownPicker from "react-native-dropdown-picker";
 import ListaDeOrcamentos from "../../../Components/ListaOrcamento";
 import { obterTotalERestantePorMes } from "../../../Controller/OrcamentoController";
-import SincronizaData, { useAppContext } from "../../../Components/SincronizaData";
+import SeletorMesAno from "../../../Components/SeletorMesAno";
+import { DataContext } from "../../../Contexts/DataContext";
 
-
-type OrcamentoScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "Orcamento"
->;
+type OrcamentoScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Orcamento">;
 
 type Props = {
   navigation: OrcamentoScreenNavigationProp;
@@ -36,8 +33,10 @@ interface TotalERestanteMes {
 
 // Use as props na definição do seu componente
 export default function MenuScreen({ navigation }: Props) {
-  const { dataSelecionada, setDataSelecionada } = useAppContext();
-  const [monthIndex, setMonthIndex] = useState(dataSelecionada.getMonth());
+  const { dataSelecionada, setDataSelecionada } = useContext(DataContext) as {
+    dataSelecionada: Date;
+    setDataSelecionada: (data: Date) => void;
+  };
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [valorDefinido, setValorDefinido] = useState("");
   const [valorAtual, setValorAtual] = useState("");
@@ -51,20 +50,6 @@ export default function MenuScreen({ navigation }: Props) {
   ]);
   const [categoriaSelecionada, setCategoriaSelecionada] = useState(categorias[5].value);
   const [dataOrcamento, setDataOrcamento] = useState(new Date());
-  const monthNames = [
-    "Janeiro",
-    "Fevereiro",
-    "Março",
-    "Abril",
-    "Maio",
-    "Junho",
-    "Julho",
-    "Agosto",
-    "Setembro",
-    "Outubro",
-    "Novembro",
-    "Dezembro",
-  ];
 
   const [openMes, setOpenMes] = useState(false);
   const [openCategoria, setOpenCategoria] = useState(false);
@@ -85,7 +70,6 @@ export default function MenuScreen({ navigation }: Props) {
     { label: "Dezembro", value: "12" },
   ]);
   const [updateLista, setUpdateLista] = useState(false);
-  const [year, setYear] = useState(dataSelecionada.getFullYear());
   const [valuesObject, setValuesObject] = useState<{
     valorDefinidoTotal: number;
     valorAtualTotal: number;
@@ -97,51 +81,17 @@ export default function MenuScreen({ navigation }: Props) {
     setDataOrcamento(newDate);
   };
 
-const handlePreviousYear = () => {
-  const newYear = year - 1;
-  setYear(newYear);
-  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-  setDataSelecionada(newData);
-  updateYear(newYear);
-};
-
-const handleNextYear = () => {
-  const newYear = year + 1;
-  setYear(newYear);
-  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-  setDataSelecionada(newData);
-  updateYear(newYear);
-};
-
-const updateYear = (newYear: number) => {
-  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-  setDataSelecionada(newData);
-  setYear(newYear);
-};
-
-
-  const updateMonth = (newMonthIndex: number) => {
-    setMonthIndex(newMonthIndex);
-    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex, 31);
-    setDataSelecionada(newData);
-    /* updateSaldo(newData); */
+  const handleOnChangeMonth = (data: Date) => {
+    setDataSelecionada(data);
   };
 
-  const handlePreviousMonth = () => {
-    const newMonthIndex = monthIndex > 0 ? monthIndex - 1 : 11;
-    updateMonth(newMonthIndex);
-  };
-
-  const handleNextMonth = () => {
-    const newMonthIndex = monthIndex < 11 ? monthIndex + 1 : 0;
-    updateMonth(newMonthIndex);
+  const handleOnChangeYear = (data: Date) => {
+    setDataSelecionada(data);
   };
 
   const handleOrcamento = async () => {
     try {
-      const valorDefinidoFloat = isNaN(parseFloat(valorDefinido))
-        ? 0
-        : parseFloat(valorDefinido);
+      const valorDefinidoFloat = isNaN(parseFloat(valorDefinido)) ? 0 : parseFloat(valorDefinido);
       const valorAtualFloat = isNaN(parseFloat(valorAtual)) ? 0 : parseFloat(valorAtual);
       setMonthData();
       const novosDados = {
@@ -193,48 +143,22 @@ const updateYear = (newYear: number) => {
     <View style={styles.container}>
       <Text style={styles.textOrcamento}>Orçamento</Text>
       <View style={styles.menuHeader}>
-        <TouchableOpacity
-          onPress={handlePreviousMonth}
-          style={styles.arrowButton}
-        >
-          <Text style={styles.arrowText}>&lt;</Text>
-        </TouchableOpacity>
-        <Text style={styles.mesLabel}>{monthNames[monthIndex]}</Text>
-        <TouchableOpacity
-          onPress={handleNextMonth}
-          style={styles.arrowButton}
-        >
-          <Text style={styles.arrowText}>&gt;</Text>
-        </TouchableOpacity>
+        <SeletorMesAno
+          seletorMes={true}
+          seletorAno={true}
+          onMonthChange={handleOnChangeMonth}
+          onYearChange={handleOnChangeYear}
+        />
       </View>
-                <View style={styles.yearHeader}>
-                  <TouchableOpacity
-                    onPress={handlePreviousYear}
-                    style={[styles.arrowButton, { marginTop: 5 }]}
-                  >
-                    <Text style={styles.arrowText}>&lt;</Text>
-                  </TouchableOpacity>
-                  <Text style={styles.mesLabel}>{year}</Text>
-                  <TouchableOpacity
-                    onPress={handleNextYear}
-                    style={[styles.arrowButton, { marginTop: 5 }]}
-                  >
-                    <Text style={styles.arrowText}>&gt;</Text>
-                  </TouchableOpacity>
-                </View>
       <View style={styles.menuBody}>
         <View style={styles.totalERestanteGroup}>
           <View>
             <Text style={styles.totalERestanteText}>Total</Text>
-            <Text style={styles.totalERestanteValor}>
-              R${valuesObject.valorDefinidoTotal},00
-            </Text>
+            <Text style={styles.totalERestanteValor}>R${valuesObject.valorDefinidoTotal},00</Text>
           </View>
           <View>
             <Text style={styles.totalERestanteText}>Restante</Text>
-            <Text style={styles.totalERestanteValor}>
-              R${valuesObject.valorAtualTotal},00
-            </Text>
+            <Text style={styles.totalERestanteValor}>R${valuesObject.valorAtualTotal},00</Text>
           </View>
         </View>
         <ListaDeOrcamentos
@@ -243,7 +167,7 @@ const updateYear = (newYear: number) => {
           onInteraction={handleInteractionInListaDeOrcamentos}
         />
         <TouchableOpacity onPress={() => setIsModalVisible(true)}>
-          <Text style={{ color: "#0fec32", fontSize: 18 }}>Novo Orçamento</Text>
+          <Text style={{ color: "#0fec32", fontSize: 18, fontWeight: 800 }}>Novo Orçamento</Text>
         </TouchableOpacity>
       </View>
       <Modal
@@ -253,47 +177,102 @@ const updateYear = (newYear: number) => {
       >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <TextInput
-              style={styles.input}
-              placeholder="Valor Definido"
-              value={valorDefinido}
-              onChangeText={(text) => setValorDefinido(text)}
-              keyboardType="numeric"
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Valor Atual"
-              value={valorAtual}
-              onChangeText={(text) => setValorAtual(text)}
-              keyboardType="numeric"
-            />
-            <DropDownPicker
-              open={openCategoria}
-              value={categoriaSelecionada}
-              items={categorias}
-              setOpen={setOpenCategoria}
-              setValue={setCategoriaSelecionada}
-              setItems={setCategorias}
-              onChangeValue={() => setCategoriaSelecionada(categoriaSelecionada)}
-            />
-            <DropDownPicker
-              open={openMes}
-              value={value}
-              items={items}
-              setOpen={setOpenMes}
-              setValue={setValue}
-              setItems={setItems}
-              onChangeValue={() => setMonthData()}
-              style={{ zIndex: 0 }}
-            />
-            <Button
-              title="adicionar"
-              onPress={() => handleOrcamento()}
-            />
-            <Button
-              title="cancelar"
-              onPress={() => setIsModalVisible(false)}
-            />
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Valor Definido"
+                placeholderTextColor="#FFFFFF"
+                value={valorDefinido}
+                onChangeText={(text) => setValorDefinido(text)}
+                keyboardType="numeric"
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Valor Atual"
+                placeholderTextColor="#FFFFFF"
+                value={valorAtual}
+                onChangeText={(text) => setValorAtual(text)}
+                keyboardType="numeric"
+              />
+              <View>
+                <DropDownPicker
+                  open={openCategoria}
+                  value={categoriaSelecionada}
+                  items={categorias}
+                  setOpen={setOpenCategoria}
+                  setValue={setCategoriaSelecionada}
+                  setItems={setCategorias}
+                  onChangeValue={() => setCategoriaSelecionada(categoriaSelecionada)}
+                  style={styles.dropdownStyle}
+                  dropDownContainerStyle={{
+                    backgroundColor: "#616161",
+                    borderColor: "#707070",
+                    opacity: 1,
+                    width: "90%",
+                  }}
+                  textStyle={{
+                    color: "white",
+                    opacity: 1,
+                    opacity: 0.7,
+                  }}
+                  arrowIconStyle={{
+                    width: 20,
+                    height: 20,
+                    tintColor: "white",
+                    opacity: 1,
+                  }}
+                  tickIconStyle={{
+                    width: 20,
+                    height: 20,
+                    tintColor: "white",
+                    opacity: 1,
+                  }}
+                />
+                <DropDownPicker
+                  open={openMes}
+                  value={value}
+                  items={items}
+                  setOpen={setOpenMes}
+                  setValue={setValue}
+                  setItems={setItems}
+                  onChangeValue={() => setMonthData()}
+                  style={[styles.dropdownStyle, styles.dropdownStyle2]}
+                  dropDownContainerStyle={{
+                    backgroundColor: "#616161",
+                    borderColor: "#707070",
+                    width: "90%",
+                  }}
+                  textStyle={{
+                    color: "white",
+                    opacity: 0.7,
+                  }}
+                  arrowIconStyle={{
+                    width: 20,
+                    height: 20,
+                    tintColor: "white",
+                  }}
+                  tickIconStyle={{
+                    width: 20,
+                    height: 20,
+                    tintColor: "white",
+                  }}
+                />
+              </View>
+            </View>
+            <View style={styles.botoesDivRow}>
+              <TouchableOpacity
+                onPress={() => handleOrcamento()}
+                style={[styles.btn, styles.Adicionar]}
+              >
+                <Text style={styles.labelModal}>Adicionar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setIsModalVisible(false)}
+                style={[styles.btn, styles.Cancelar]}
+              >
+                <Text style={styles.labelModal}>Cancelar</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -314,7 +293,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     justifyContent: "center",
     width: "100%",
-    height: "16%",
+    height: "20%",
   },
   menuBody: {
     borderTopLeftRadius: 50,
@@ -366,6 +345,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.8)",
   },
   modalView: {
+    width: "90%",
     margin: 20,
     backgroundColor: "#424242",
     borderRadius: 20,
@@ -379,14 +359,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 5.25,
     shadowRadius: 3.84,
     elevation: 5,
-  },
-  input: {
-    width: "100%",
-    padding: 10,
-    marginVertical: 10,
-    backgroundColor: "#616161",
-    borderRadius: 10,
-    color: "white",
   },
   totalERestanteText: {
     color: "#fff",
@@ -402,9 +374,60 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     width: 320,
   },
-    yearHeader: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: 'center',
-    },
+  yearHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  btn: {
+    alignItems: "center",
+    justifyContent: "center",
+    width: "45%",
+    height: 30,
+    borderRadius: 15,
+    marginVertical: 12,
+    marginHorizontal: 5,
+  },
+  Adicionar: {
+    backgroundColor: "#4CAF50",
+  },
+  Cancelar: {
+    backgroundColor: "#B22222",
+  },
+
+  botoesDivRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  input: {
+    width: "90%",
+    padding: 10,
+    marginVertical: 10,
+    backgroundColor: "#616161",
+    borderRadius: 10,
+    color: "white",
+    opacity: 0.7,
+  },
+  inputContainer: {
+    width: "100%",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+
+  labelModal: {
+    color: "#ffffff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  dropdownStyle: {
+    backgroundColor: "#616161",
+    borderWidth: 0,
+    opacity: 0.9,
+    marginVertical: 8,
+    width: "90%",
+    borderRadius: 10,
+  },
+  dropdownStyle2: {
+    zIndex: 0,
+  },
 });

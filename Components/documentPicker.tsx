@@ -1,80 +1,112 @@
-import React from 'react';
-import { Button, View, Alert } from 'react-native';
-import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
+import * as DocumentPicker from 'expo-document-picker';
+import { Alert, Button, Text } from 'react-native';
 import Papa from 'papaparse';
 import { TransacaoDAL } from '../Repo/RepositorioTransacao';
-// import { adicionarTransacao } from '../Repo/RepositorioTransacao';	
+import { Transacao } from '../Model/Transacao';
 
-export default function ImportarTransacoes() {
-    const handlePickFile = async () => {
-        console.log("Iniciando a seleção do arquivo...");
-        try {
-          const result: any = await DocumentPicker.getDocumentAsync({ type: 'text/csv' });
-          console.log("DocumentPicker terminou com: ", result.type);
-          if (result.type === 'cancel') {
-            console.log('Seleção de arquivo foi cancelada.');
+const ImportarCsvComponente = () => {
+  const importarCSV = async () => {
+    try {
+      // Abre o seletor de documentos para arquivos CSV
+      const resultado = await DocumentPicker.getDocumentAsync({
+        type: 'text/csv',
+      });
+
+      if (resultado.canceled) {
+        Alert.alert('Importação cancelada', 'A seleção de arquivo foi cancelada.');
+        return;
+      }
+
+      const uri = resultado.assets[0].uri;
+
+      // Lê o texto do arquivo CSV diretamente
+      const csvText = await FileSystem.readAsStringAsync(uri);
+
+      // Analisa a string CSV
+      Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true,
+        complete: async (parseResult) => {
+
+          
+          if (parseResult.errors.length) { 
+            console.error('Erros ao parsear CSV:', parseResult.errors);
+            Alert.alert('Erro de Análise', 'Ocorreram erros ao analisar o arquivo CSV.');
             return;
           }
-      
-          if (result.type === 'success') {
-            console.log("Arquivo selecionado, iniciando a leitura...");
-            const content = await FileSystem.readAsStringAsync(result.uri);
-            parseCSV(content);
-          }
-        } catch (err: any) {
-          console.error("Erro ao ler o arquivo: ", err);
-          Alert.alert('Erro ao ler o arquivo', err.message);
-        }
-      };
-    
-      interface CsvRowData {
-        Valor: string;
-        Data: string;
-        Descricao: string;
-      }
-      
-      const parseCSV = (data: string) => {
-        console.log("Iniciando o processamento do CSV...");
-        Papa.parse<CsvRowData>(data, { 
-          header: true,
-          complete: async (result) => {
-            console.log("Parseamento do CSV completo, processando as linhas...");
-            for (const row of result.data) {
-              if (!row.Valor || !row.Data || !row.Descricao) {
-                console.log("Linha ignorada, dados incompletos.");
-                continue; 
-              }
-      
-              const transacaoTipo = parseFloat(row.Valor) >= 0 ? 'entrada' : 'saida';
-              try {
-                const novaTransacao = {
-                  id: '',
-                  usuarioId: '', 
-                  tipo: transacaoTipo,
-                  valor: parseFloat(row.Valor),
-                  data: new Date(row.Data),
-                  nome: row.Descricao,
-                  moeda: 'BRL',
-                };
-                console.log("Adicionando transação: ", novaTransacao);
-                await TransacaoDAL.adicionarTransacao(novaTransacao);
-                console.log("Transação adicionada com sucesso!");
-              } catch (error: unknown) {
-                console.error("Erro ao adicionar transação: ", error);
-                if (error instanceof Error) {
-                  Alert.alert('Erro ao adicionar transação', error.message);
-                }
-              }
+
+          // Processa cada transação
+          const transacoes = parseResult.data.map((linha : any) => {
+            // Certifique-se de que todos os campos necessários existem e não são undefined
+            if (!linha['Valor'] || !linha['Data'] || !linha['Descrição']) {
+              console.error('Dados incompletos:', linha);
+              return null; // ignora linhas incompletas
             }
-          },
-          skipEmptyLines: true,
-        });
-      };
-    
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Button title="Importar Transações CSV" onPress={handlePickFile} />
-    </View>
+            
+            try {
+              // Supondo que a data esteja no formato DD/MM/YYYY
+              // Você precisa ajustar isso se o formato for diferente
+              const partesDaData = linha['Data'].split('/');
+              // Ajuste o índice do mês ao criar o objeto Date
+              // Note que partesDaData[1] - 1 ajusta o mês para base 0
+              const dataTransacao = new Date(partesDaData[2], partesDaData[1] - 1, partesDaData[0]);
+          
+              // Verifica se a data é válida
+              if (isNaN(dataTransacao.getTime())) {
+                throw new Error(`Data inválida: ${linha['Data']}`);
+              }
+          
+              // Parse e ajuste do valor
+              const valorString = linha['Valor'].replace(',', '.');
+              const valor = parseFloat(valorString);
+              if (isNaN(valor)) {
+                throw new Error(`Valor inválido: ${linha['Valor']}`);
+              }
+              
+              // Determina o tipo com base no valor
+              const tipo = valor < 0 ? 'saída' : 'entrada';
+              
+              // Cria a transação
+              return new Transacao(
+                '', // O ID é gerado no DAL ou no banco de dados
+                '', // O usuarioId será buscado dentro do DAL
+                tipo,
+                Math.abs(valor),
+                dataTransacao,
+                linha['Descrição'],
+                'BRL' // Supondo que a moeda é sempre BRL
+              );
+            } catch (error) {
+              return null;
+            }
+          }).filter(Boolean); // Remove as entradas que retornaram null
+          
+
+          if (transacoes.length === 0) {
+            Alert.alert('Erro de Importação', 'Nenhuma transação válida para importar.');
+            return;
+          }
+
+          // Adiciona transações no banco de dados
+          for (const transacao of transacoes) {
+            if (transacao) { // Check if transacao is not null
+              await TransacaoDAL.adicionarTransacao(transacao);
+            }
+          }
+
+          Alert.alert('Sucesso', 'Todas as transações foram importadas.');
+        },
+      });
+    } catch (erro) {
+      console.error("Ocorreu um erro ao importar o arquivo CSV:", erro);
+      Alert.alert('Erro', 'Ocorreu um erro ao importar o arquivo CSV.');
+    }
+  };
+
+  return (    
+    <Button title="Importar CSV" onPress={importarCSV} />
   );
-}
+};
+
+export default ImportarCsvComponente;

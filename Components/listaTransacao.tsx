@@ -31,7 +31,7 @@ type DateTimePickerMode = "date" | "time" | "datetime";
 
 const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
   dataSelecionada,
-  onTransacaoAlterada
+  onTransacaoAlterada,
 }) => {
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -117,16 +117,35 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
   };
 
   const handleDeletarTransacao = async (transacaoId: string) => {
-    try {
-      await TransacaoDAL.deletarTransacao(transacaoId);
-      alert("Transação deletada com sucesso.");
-      setIsModalVisible(false);
-      setUpdateLista(!updateLista);
-      onTransacaoAlterada(); // Callback chamado aqui
-    } catch (err) {
-      console.error(err);
-    }
+    Alert.alert(
+      "Confirmar Exclusão", // Título do alerta
+      "Você tem certeza que deseja deletar esta transação?", // Mensagem do alerta
+      [
+        {
+          text: "Cancelar",
+          //onPress: () => console.log("Cancelado"), // O que fazer quando "Cancelar" é pressionado
+          style: "cancel",
+        },
+        { 
+          text: "Excluir", 
+          onPress: async () => {
+            try {
+              await TransacaoDAL.deletarTransacao(transacaoId);
+              setIsModalVisible(false);
+              setUpdateLista(!updateLista);
+              onTransacaoAlterada(); // Callback chamado aqui
+            } catch (err) {
+              console.error(err);
+              alert("Erro ao tentar deletar a transação.");
+            }
+          },
+          style: "destructive", // Estilo do botão (somente iOS)
+        }
+      ],
+      { cancelable: false } // Se deve ser possível cancelar o alerta tocando fora dele
+    );
   };
+  
 
   const handleAlterarTransacao = async (transacaoId: string) => {
     const novoValorNumber = isNaN(parseFloat(novoValor))
@@ -142,7 +161,7 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
       alert("Transação alterada com sucesso.");
       setIsModalVisible(false);
       setUpdateLista(!updateLista);
-       onTransacaoAlterada(); // Callback chamado aqui
+      onTransacaoAlterada(); // Callback chamado aqui
     } catch (err) {
       console.error(err);
     }
@@ -185,6 +204,7 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
             <TextInput
               style={styles.input}
               placeholder="Nome"
+              placeholderTextColor="#FFFFFF"
               value={isEditable ? novoNome : selectedItemNome?.toString()}
               editable={isEditable}
               onChangeText={setNovoNome}
@@ -192,6 +212,8 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
             <TextInput
               style={styles.input}
               keyboardType="numeric"
+              placeholder="Valor"
+              placeholderTextColor="#FFFFFF"
               value={
                 isEditable
                   ? novoValor?.toString()
@@ -203,6 +225,7 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
             <TextInput
               style={styles.input}
               placeholder="dd/mm/yyyy"
+              placeholderTextColor="#FFFFFF"
               onPressIn={() => showMode("date")}
               showSoftInputOnFocus={false}
               editable={isEditable}
@@ -212,37 +235,50 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
             <View style={styles.buttonGroup}>
               {isEditable ? (
                 <>
-                  <Button
-                    title="Confirmar"
-                    color="#4CAF50"
-                    onPress={() => {
-                      handleAlterarTransacao(selectedItemId);
-                      setIsEditable(false);
-                    }}
-                  />
-                  <Button
-                    title="Cancelar"
-                    color="#B22222"
-                    onPress={() => setIsEditable(false)}
-                  />
+                  <View style={styles.botoesDivRow}>
+                    <TouchableOpacity
+                      style={[styles.btn, styles.Editar]}
+                      onPress={() => {
+                        handleAlterarTransacao(selectedItemId);
+                        setIsEditable(false);
+                      }}
+                    >
+                      <Text style={styles.labelModal}>Confirmar</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.btn, styles.Excluir]}
+                      onPress={() => setIsEditable(false)}
+                    >
+                      <Text style={styles.labelModal}>Cancelar</Text>
+                    </TouchableOpacity>
+                  </View>
                 </>
               ) : (
                 <>
-                  <Button
-                    title="Editar"
-                    color="#4CAF50"
-                    onPress={() => setIsEditable(true)}
-                  />
-                  <Button
-                    title="Excluir"
-                    color="#B22222"
-                    onPress={() => handleDeletarTransacao(selectedItemId)}
-                  />
-                  <Button
-                    title="Cancelar"
-                    onPress={() => setIsModalVisible(false)}
-                    color="#757575"
-                  />
+                  <View style={styles.botoesDiv}>
+                    <View style={styles.botoesDivRow}>
+                      <TouchableOpacity
+                        style={[styles.btn, styles.Editar]}
+                        onPress={() => setIsEditable(true)}
+                      >
+                        <Text style={styles.labelModal}>Editar</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.btn, styles.Excluir]}
+                        onPress={() => handleDeletarTransacao(selectedItemId)}
+                      >
+                        <Text style={styles.labelModal}>Excluir</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <View>
+                      <Text
+                        style={styles.labelModal}
+                        onPress={() => setIsModalVisible(false)}
+                      >
+                        Cancelar
+                      </Text>
+                    </View>
+                  </View>
                 </>
               )}
             </View>
@@ -299,6 +335,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalView: {
+    width: "90%",
     margin: 20,
     backgroundColor: "#424242",
     borderRadius: 20,
@@ -314,18 +351,49 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   input: {
-    width: "100%",
+    width: "90%",
     padding: 10,
     marginVertical: 10,
     backgroundColor: "#616161",
     borderRadius: 10,
-    color: "white",
+    color: "#ffffff",
+    opacity: 0.7,
   },
   buttonGroup: {
     flexDirection: "row",
     justifyContent: "space-around",
     borderRadius: 20,
     width: "100%",
+  },
+
+  labelModal: {
+    color: "#ffffff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  btn: {
+    alignItems: "center",
+    justifyContent: "center",
+    width: "45%",
+    height: 30,
+    borderRadius: 15,
+    marginVertical: 12,
+    marginHorizontal: 5,
+  },
+  Editar: {
+    backgroundColor: "#4CAF50",
+  },
+  Excluir: {
+    backgroundColor: "#B22222",
+  },
+  botoesDiv: {
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  botoesDivRow: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 });
 export default ListaDeTransacoes;

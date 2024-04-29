@@ -1,91 +1,43 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
 import ListaDeTransacoes from "../../../Components/listaTransacao";
-import SincronizaData, { useAppContext } from "../../../Components/SincronizaData";
+import { DataContext } from "../../../Contexts/DataContext";
 import { Transacao } from "../../../Model/Transacao";
 import { obterSaldoPorMes } from "../../../Controller/TransacaoController";
 import NavigationBar from "../menuNavegation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useContext } from "react";
+import SeletorMesAno from "../../../Components/SeletorMesAno";
 
-type TransacaoScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "Transacao"
->;
+type TransacaoScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Transacao">;
 
 type Props = {
   navigation: TransacaoScreenNavigationProp;
 };
 
 export default function TransacaoScreen({ navigation }: Props) {
-  const { dataSelecionada, setDataSelecionada } = useAppContext();
+  const { dataSelecionada, setDataSelecionada } = useContext(DataContext) as {
+    dataSelecionada: Date;
+    setDataSelecionada: (data: Date) => void;
+  };
   const [saldo, setSaldo] = useState<number | null>(null);
-  const [year, setYear] = useState(dataSelecionada.getFullYear());
   const [isLoading, setIsLoading] = useState(false);
   const saldoCache = useRef<Map<string, number>>(new Map());
 
-  const monthNames = [
-    "Janeiro",
-    "Fevereiro",
-    "Março",
-    "Abril",
-    "Maio",
-    "Junho",
-    "Julho",
-    "Agosto",
-    "Setembro",
-    "Outubro",
-    "Novembro",
-    "Dezembro",
-  ];
-
-  const [monthIndex, setMonthIndex] = useState(dataSelecionada.getMonth());
-
-
-const handlePreviousYear = () => {
-  const newYear = year - 1;
-  setYear(newYear);
-  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-  setDataSelecionada(newData);
-  updateSaldo(newData);
-  updateYear(newYear);
-};
-
-const handleNextYear = () => {
-  const newYear = year + 1;
-  setYear(newYear);
-  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-  setDataSelecionada(newData);
-  updateSaldo(newData);
-  updateYear(newYear);
-};
-
-const updateYear = (newYear: number) => {
-  const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-  setDataSelecionada(newData);
-  setYear(newYear);
-  updateSaldo(newData);
-};
-
-  const updateMonth = (newMonthIndex: number) => {
-    setMonthIndex(newMonthIndex);
-    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex, 1);
-    setDataSelecionada(newData);
-    updateSaldo(newData);
+  const handleOnChangeMonth = (data: Date) => {
+    setDataSelecionada(data);
   };
+
+  const handleOnChangeYear = (data: Date) => {
+    setDataSelecionada(data);
+  };
+
   const onTransacaoAlterada = () => {
     attSaldoDepoisDeAlterarOuDeletar(dataSelecionada); // Atualiza o saldo
   };
 
-
   const attSaldoDepoisDeAlterarOuDeletar = async (date: Date) => {
-    setIsLoading(true); 
+    setIsLoading(true);
     try {
       const resultadoSaldo = await obterSaldoPorMes(date);
       if (resultadoSaldo && typeof resultadoSaldo.saldo === "number") {
@@ -99,16 +51,6 @@ const updateYear = (newYear: number) => {
     } finally {
       setIsLoading(false); // Finaliza o loading
     }
-  };
-
-  const handlePreviousMonth = () => {
-    const newMonthIndex = monthIndex > 0 ? monthIndex - 1 : 11;
-    updateMonth(newMonthIndex);
-  };
-
-  const handleNextMonth = () => {
-    const newMonthIndex = monthIndex < 11 ? monthIndex + 1 : 0;
-    updateMonth(newMonthIndex);
   };
 
   const updateSaldo = async (date: Date) => {
@@ -142,46 +84,32 @@ const updateYear = (newYear: number) => {
   return (
     <View style={styles.container}>
       <View style={styles.menuHeader}>
-        <TouchableOpacity
-          onPress={handlePreviousMonth}
-          style={styles.arrowButton}
-        >
-          <Text style={styles.arrowText}>&lt;</Text>
-        </TouchableOpacity>
-        <Text style={styles.mesLabel}>{monthNames[monthIndex]}</Text>
-        <TouchableOpacity onPress={handleNextMonth} style={styles.arrowButton}>
-          <Text style={styles.arrowText}>&gt;</Text>
-        </TouchableOpacity>
+        <View style={{ marginTop: "20%" }}>
+          <SeletorMesAno
+            seletorMes={true}
+            seletorAno={true}
+            onMonthChange={handleOnChangeMonth}
+            onYearChange={handleOnChangeYear}
+          />
+        </View>
       </View>
-      <View style={styles.yearHeader}>
-                  <TouchableOpacity
-                    onPress={handlePreviousYear}
-                    style={[styles.arrowButton, { marginTop: -100 }]}
-                  >
-                    <Text style={styles.arrowText}>&lt;</Text>
-                  </TouchableOpacity>
-                  <Text style={[styles.mesLabel, { marginTop: -100 }]}>{year}</Text>
-                  <TouchableOpacity
-                    onPress={handleNextYear}
-                    style={[styles.arrowButton, { marginTop: -100 }]}
-                  >
-                    <Text style={styles.arrowText}>&gt;</Text>
-                  </TouchableOpacity>
-                </View>
       <View style={styles.menuBody}>
         <View style={styles.content}>
           {isLoading ? (
-            <ActivityIndicator size="large" color="#ffffff" />
+            <ActivityIndicator
+              size="large"
+              color="#ffffff"
+            />
           ) : (
             <View style={styles.saldoBody}>
               <Text style={styles.saldoText}>Saldo Atual</Text>
-              <Text style={styles.saldoAtual}>
-                R$ {saldo ? saldo.toFixed(2) : "0.00"}
-              </Text>
+              <Text style={styles.saldoAtual}>R$ {saldo ? saldo.toFixed(2) : "0.00"}</Text>
             </View>
           )}
-          <ListaDeTransacoes dataSelecionada={dataSelecionada}
-            onTransacaoAlterada={onTransacaoAlterada} />
+          <ListaDeTransacoes
+            dataSelecionada={dataSelecionada}
+            onTransacaoAlterada={onTransacaoAlterada}
+          />
         </View>
       </View>
       <View style={styles.menuFooter}>
@@ -259,9 +187,9 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: "#ffffff",
   },
-    yearHeader: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: 'center',
-    },
+  yearHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });

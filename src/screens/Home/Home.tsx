@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import {
   View,
   Text,
@@ -19,9 +19,7 @@ import { RootStackParamList } from "../../../shared/config";
 import { Shadow } from "react-native-shadow-2";
 import { adicionarNovaMeta } from "../../../services/testeBanco";
 import { adicionarNovaTransacao } from "../../../services/testeBanco";
-import DateTimePicker, {
-  DateTimePickerEvent,
-} from "@react-native-community/datetimepicker";
+import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { Transacao } from "../../../Model/Transacao";
 import { TransacaoDAL } from "../../../Repo/RepositorioTransacao";
 import ListaDeTransacoes from "../../../Components/listaTransacao";
@@ -29,11 +27,10 @@ import { obterSaldoPorMes } from "../../../Controller/TransacaoController";
 import DropDownPicker from "react-native-dropdown-picker";
 import NavigationBar from "../menuNavegation";
 import CotacaoDolar from "../../../Components/cotacao";
-import SincronizaData, { useAppContext } from "../../../Components/SincronizaData";
-type HomeScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "Home"
->;
+import { DataContext } from "../../../Contexts/DataContext";
+import SeletorMesAno from "../../../Components/SeletorMesAno";
+
+type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Home">;
 
 type Props = {
   navigation: HomeScreenNavigationProp;
@@ -46,17 +43,19 @@ export default function HomeScreen({ navigation }: Props) {
   var [isModalVisible, setModalVisible] = useState(false);
   const [valor, setValor] = useState("");
   const [nome, setNome] = useState("");
-  const [data, setData] = useState(dataSelecionada || new Date());
+  const [data, setData] = useState(new Date());
   const [modo, setModo] = useState<DateTimePickerMode | undefined>(undefined);
   const [show, setShow] = useState(false);
   const [tipoTransacao, setTipoTransacao] = useState("");
   const [dataTextInput, setDataTextInput] = useState("");
-  const { dataSelecionada, setDataSelecionada } = useAppContext();
+  const { dataSelecionada, setDataSelecionada } = useContext(DataContext) as {
+    dataSelecionada: Date;
+    setDataSelecionada: (data: Date) => void;
+  };
   const [checkNovaTransacao, setcheckNovaTransacao] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const saldoCache = useRef<Map<string, SaldoMes>>(new Map());
   const [fData, setFData] = useState(""); // Adicionado estado para fData
-  const [year, setYear] = useState(dataSelecionada.getFullYear());
 
   const [mostrarValores, setMostrarValores] = useState(true);
 
@@ -109,66 +108,15 @@ export default function HomeScreen({ navigation }: Props) {
     }
   };
 
+  const handleOnChangeMonth = (data: Date) => {
+    setDataSelecionada(data);
+  };
+
+  const handleOnChangeYear = (data: Date) => {
+    setDataSelecionada(data);
+  };
+
   const [saldo, setSaldo] = useState<number | null>(null);
-
-  const monthNames = [
-    "Janeiro",
-    "Fevereiro",
-    "Março",
-    "Abril",
-    "Maio",
-    "Junho",
-    "Julho",
-    "Agosto",
-    "Setembro",
-    "Outubro",
-    "Novembro",
-    "Dezembro",
-  ];
-
-  const [monthIndex, setMonthIndex] = useState(dataSelecionada.getMonth());
-
-  const handlePreviousYear = () => {
-    const newYear = year - 1;
-    setYear(newYear);
-    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-    setDataSelecionada(newData);
-    updateSaldo(newData);
-    updateYear(newYear);
-  };
-
-  const handleNextYear = () => {
-    const newYear = year + 1;
-    setYear(newYear);
-    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-    setDataSelecionada(newData);
-    updateSaldo(newData);
-    updateYear(newYear);
-  };
-
-  const updateYear = (newYear: number) => {
-    const newData = new Date(newYear, dataSelecionada.getMonth(), 1);
-    setDataSelecionada(newData);
-    setYear(newYear);
-    updateSaldo(newData);
-  };
-
-  const updateMonth = (newMonthIndex: number) => {
-    setMonthIndex(newMonthIndex);
-    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex, 1);
-    setDataSelecionada(newData);
-    updateSaldo(newData);
-  };
-
-  const handlePreviousMonth = () => {
-    const newMonthIndex = monthIndex > 0 ? monthIndex - 1 : 11;
-    updateMonth(newMonthIndex);
-  };
-
-  const handleNextMonth = () => {
-    const newMonthIndex = monthIndex < 11 ? monthIndex + 1 : 0;
-    updateMonth(newMonthIndex);
-  };
 
   const updateSaldo = async (date: Date) => {
     try {
@@ -217,6 +165,7 @@ export default function HomeScreen({ navigation }: Props) {
       };
 
       await TransacaoDAL.adicionarTransacao(novosDados);
+      toggleModal();
       Alert.alert("Transação adicionada com Sucesso!");
 
       // Invalidate o cache do mês específico da nova transação
@@ -230,10 +179,7 @@ export default function HomeScreen({ navigation }: Props) {
     }
   };
 
-  const onChange = (
-    evento: DateTimePickerEvent,
-    dataSelecionada?: Date | undefined
-  ) => {
+  const onChange = (evento: DateTimePickerEvent, dataSelecionada?: Date | undefined) => {
     if (evento.type === "set" && dataSelecionada) {
       const dataAtual = dataSelecionada || data;
       setShow(Platform.OS === "ios");
@@ -242,11 +188,7 @@ export default function HomeScreen({ navigation }: Props) {
       setfData = dataAtual;
       let tempData = new Date(dataAtual);
       const dataFormatada =
-        tempData.getDate() +
-        "/" +
-        (tempData.getMonth() + 1) +
-        "/" +
-        tempData.getFullYear();
+        tempData.getDate() + "/" + (tempData.getMonth() + 1) + "/" + tempData.getFullYear();
 
       console.log(dataFormatada);
       updateMonth(tempData.getMonth()); // Chama updateMonth para atualizar o mês na tela
@@ -284,52 +226,25 @@ export default function HomeScreen({ navigation }: Props) {
     handleObterSaldoPorMes();
   }, [dataSelecionada]);
 
-  useEffect(() => {
-    setYear(dataSelecionada.getFullYear());
-  }, [dataSelecionada]);
-
   return (
     <View style={styles.container}>
       <View style={styles.menuHeader}>
-        <View style={styles.mesHeader}>
-          <TouchableOpacity
-            onPress={handlePreviousMonth}
-            style={styles.arrowButton}
-          >
-            <Text style={styles.arrowText}>&lt;</Text>
-          </TouchableOpacity>
-          <Text style={styles.mesLabel}>{monthNames[monthIndex]}</Text>
-          <TouchableOpacity
-            onPress={handleNextMonth}
-            style={styles.arrowButton}
-          >
-            <Text style={styles.arrowText}>&gt;</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.yearHeader}>
-          <TouchableOpacity
-            onPress={handlePreviousYear}
-            style={[styles.arrowButton]}
-          >
-            <Text style={styles.arrowText}>&lt;</Text>
-          </TouchableOpacity>
-          <Text style={styles.mesLabel}>{year}</Text>
-          <TouchableOpacity
-            onPress={handleNextYear}
-            style={[styles.arrowButton]}
-          >
-            <Text style={styles.arrowText}>&gt;</Text>
-          </TouchableOpacity>
-        </View>
+        <SeletorMesAno
+          seletorMes={true}
+          seletorAno={true}
+          onMonthChange={handleOnChangeMonth}
+          onYearChange={handleOnChangeYear}
+        />
         <View>
           {isLoading ? (
-            <ActivityIndicator size="large" color="#ffffff" />
+            <ActivityIndicator
+              size="large"
+              color="#ffffff"
+            />
           ) : (
             <Text style={styles.saldoAtual}>
               {mostrarValores
-                ? `R$ ${
-                    valuesObject.saldo ? valuesObject.saldo.toFixed(2) : "0.00"
-                  }`
+                ? `R$ ${valuesObject.saldo ? valuesObject.saldo.toFixed(2) : "0.00"}`
                 : "R$ --"}
             </Text>
           )}
@@ -348,12 +263,13 @@ export default function HomeScreen({ navigation }: Props) {
             </TouchableOpacity>
             <Text style={styles.saldosText}>Rendas</Text>
             {isLoading ? (
-              <ActivityIndicator size="large" color="#ffffff" />
+              <ActivityIndicator
+                size="large"
+                color="#ffffff"
+              />
             ) : (
               <Text style={styles.saldosText}>
-                {mostrarValores
-                  ? `R$ ${String(valuesObject?.totalEntradas)}`
-                  : "R$ --"}
+                {mostrarValores ? `R$ ${String(valuesObject?.totalEntradas)}` : "R$ --"}
               </Text>
             )}
           </View>
@@ -381,12 +297,13 @@ export default function HomeScreen({ navigation }: Props) {
             </TouchableOpacity>
             <Text style={styles.saldosText}>Despesas</Text>
             {isLoading ? (
-              <ActivityIndicator size="large" color="#ffffff" />
+              <ActivityIndicator
+                size="large"
+                color="#ffffff"
+              />
             ) : (
               <Text style={styles.saldosText}>
-                {mostrarValores
-                  ? `R$ ${String(valuesObject?.totalSaidas)}`
-                  : "R$ --"}
+                {mostrarValores ? `R$ ${String(valuesObject?.totalSaidas)}` : "R$ --"}
               </Text>
             )}
           </View>
@@ -454,7 +371,7 @@ export default function HomeScreen({ navigation }: Props) {
         </Modal>
       </View>
       <View style={styles.menuBody}>
-        <View style={styles.content}>{<CotacaoDolar />}</View>
+        {/* <View style={styles.content}>{<CotacaoDolar />}</View> */}
       </View>
       <View style={styles.menuFooter}>
         <NavigationBar />
@@ -487,16 +404,16 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   input: {
-  width: "90%",
-  padding: 10,
-  paddingLeft: 20,
-  marginVertical: 8,
-  backgroundColor: "#616161",  // Fundo do input
-  borderRadius: 25,
-  color: "#ffffff",  // Cor do texto digitado
-  fontSize: 16,  // Tamanho da fonte
-  opacity: 0.7,
-},
+    width: "90%",
+    padding: 10,
+    paddingLeft: 20,
+    marginVertical: 8,
+    backgroundColor: "#616161", // Fundo do input
+    borderRadius: 25,
+    color: "#ffffff", // Cor do texto digitado
+    fontSize: 16, // Tamanho da fonte
+    opacity: 0.7,
+  },
 
   buttonGroup: {
     alignItems: "center",
@@ -646,6 +563,6 @@ const styles = StyleSheet.create({
   yearHeader: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: 'center',
+    justifyContent: "center",
   },
 });
