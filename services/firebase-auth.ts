@@ -11,6 +11,7 @@ import {
   User
 } from "firebase/auth";
 import {app} from "../shared/firebaseConfig"
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 
@@ -58,8 +59,22 @@ export const createAccountWithEmail = async (email: string, password: string) =>
 // Função para fazer login
 export const loginWithEmail = async (email: string, password: string) => {
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    return userCredential.user;
+    const userCredential = await signInWithEmailAndPassword(getAuth(), email, password);
+    const user = userCredential.user;
+
+    // Armazena o token no AsyncStorage
+    await AsyncStorage.setItem('@login_token', user.refreshToken);
+
+    return user;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const checkLogin = async () => {
+  try {
+    const token = await AsyncStorage.getItem('@login_token');
+    return token !== null; // Retorna true se um token for encontrado
   } catch (error) {
     throw error;
   }
@@ -77,12 +92,12 @@ export const resetPasswordWithEmail = async (email: string) => {
 // Função para fazer logout
 export const logout = async () => {
   try {
-    await signOut(auth);
+    await signOut(getAuth());
+    await AsyncStorage.removeItem('@login_token'); // Remove o token ao fazer logout
   } catch (error) {
     throw error;
   }
 };
-
 // Função para acompanhar o estado de autenticação do usuário
 export const observeAuthState = (onUserChanged: (user: User | null) => void) => {
   return onAuthStateChanged(auth, onUserChanged);
@@ -94,3 +109,11 @@ export const getCurrentUserId  = async () =>  {
   return user ? user.uid : null; 
 };
 
+
+const storeRefreshToken = async (refreshToken: string) => {
+  try {
+    await AsyncStorage.setItem('@refreshToken', refreshToken);
+  } catch (error) {
+    throw error;
+  }
+};
