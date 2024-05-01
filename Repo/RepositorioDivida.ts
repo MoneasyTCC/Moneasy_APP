@@ -96,6 +96,49 @@ export const DividaDAL = {
     }
   },
 
+    buscarDividasPorStatusEAno: async (dividaStatus: string, year: string) => {
+      const usuarioId = await getCurrentUserId();
+      if (!usuarioId) throw new Error("Usuário não autenticado.");
+
+      try {
+        const q = query(collection(db, "dividas"), where("usuarioId", "==", usuarioId));
+        const querySnapshot = await getDocs(q);
+        let dividas: any[] = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        const dateSelected = new Date(year);
+
+        dividas = dividas.filter((divida) => {
+            const dataDivida = divida.dataInicio.toDate();
+             if (dataDivida.getFullYear() !== dateSelected.getFullYear()) {
+                      return false;
+                    } else {
+                      return dataDivida.getFullYear() === dateSelected.getFullYear(), divida.status === dividaStatus;
+                    }
+            console.log(divida.status);
+        });
+
+
+for (const divida of dividas) {
+  const dividaPaga = divida.valorPago;
+  if (dividaPaga >= divida.valorTotal) {
+    // Se o valor pago for igual ao valor total, altere o status para "Pago"
+    await DividaDAL.alterarDivida(divida.id, { status: "Pago" });
+    console.log("Dívida Paga: ", divida.id);
+  }
+}
+        return dividas;
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          throw new Error(`Erro ao buscar dividas por data: ${error.message}`);
+        } else {
+          throw new Error("Ocorreu um erro ao buscar dividas por data.");
+        }
+      }
+    },
+
   // Função para deletar uma dívida
   deletarDivida: async (dividaId: string) => {
     try {
