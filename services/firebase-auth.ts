@@ -1,5 +1,8 @@
 import { initializeApp } from 'firebase/app';
-import { initializeAuth } from 'firebase/auth';
+// import {
+//   getReactNativePersistence,
+//   initializeAuth,
+// } from "firebase/auth/react-native";
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 import {
   getAuth,
@@ -14,15 +17,17 @@ import {app} from "../shared/firebaseConfig"
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
-
+import * as firebaseAuth from 'firebase/auth';
 import {
   Alert,
 } from "react-native";
 import { Usuario } from "../Model/Usuario";
 import { UsuariosDAL } from "../Repo/RepositorioUsuario";
 
-// Inicializa o Firebase
-const auth = getAuth(app);
+const auth = firebaseAuth.initializeAuth(app)
+// const auth = initializeAuth(app, {
+//   persistence: getReactNativePersistence(ReactNativeAsyncStorage)
+// });
 
 // Função para registrar um novo usuário
 export const createAccountWithEmail = async (email: string, password: string) => {
@@ -63,22 +68,22 @@ export const loginWithEmail = async (email: string, password: string) => {
     const user = userCredential.user;
 
     // Armazena o token no AsyncStorage
-    await AsyncStorage.setItem('@login_token', user.refreshToken);
-
+    // await AsyncStorage.setItem('@login_token', user.refreshToken);
+    // console.log("token", user.refreshToken)
     return user;
   } catch (error) {
     throw error;
   }
 };
 
-export const checkLogin = async () => {
-  try {
-    const token = await AsyncStorage.getItem('@login_token');
-    return token !== null; // Retorna true se um token for encontrado
-  } catch (error) {
-    throw error;
-  }
-};
+// export const checkLogin = async () => {
+//   try {
+//     const token = await AsyncStorage.getItem('@login_token');
+//     return token !== null; // Retorna true se um token for encontrado
+//   } catch (error) {
+//     throw error;
+//   }
+// };
 
   // Função para resetar a senha
 export const resetPasswordWithEmail = async (email: string) => {

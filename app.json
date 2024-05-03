@@ -21,10 +21,16 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-iconMain.png",
         "backgroundColor": "#0FEC32"
-      }
+      },
+      "package": "com.felps999.APP_Financeiro"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "25b413dd-5d63-4c0f-88d7-754a6bc9ea20"
+      }
     }
   }
 }

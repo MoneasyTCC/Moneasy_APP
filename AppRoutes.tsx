@@ -12,20 +12,34 @@ import CriarConta from "./src/screens/Login/CriarConta";
 import InicioScreen from "./src/screens/Login/Inicio";
 import RedefineSenhaScreen from "./src/screens/Login/RedefineSenha";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const Stack = createNativeStackNavigator();
 
 function AppRoutes() {
-  const [initialRoute, setInitialRoute] = useState<string>('Inicio'); 
+  // const [initialRoute, setInitialRoute] = useState('Inicio'); // Estado inicial definido para 'Inicio'
 
-  useEffect(() => {
-    const checkLogin = async () => {
-      const token = await AsyncStorage.getItem('@login_token');
-      setInitialRoute(token ? 'Home' : 'Inicio'); // Se tiver token vai para 'Home', se não vai para 'Inicio'
-    };
+  // useEffect(() => {
+  //   const checkUserStatus = async () => {
+  //     const auth = getAuth();
+  //     onAuthStateChanged(auth, async (user:any) => {
+  //       if (user) {
+  //         // Usuário está logado
+  //         setInitialRoute('Home');
+  //       } else {
+  //         // Usuário não está logado ou a sessão expirou
+  //         const token = await AsyncStorage.getItem('@login_token');
+  //         if (token) {
+  //           // Aqui você pode tentar reautenticar o usuário com o refreshToken
+  //           // Esta parte depende de como você gerencia a autenticação com tokens no Firebase
+  //         }
+  //         setInitialRoute('Inicio');
+  //       }
+  //     });
+  //   };
 
-    checkLogin();
-  }, []);
+  //   checkUserStatus();
+  // }, []);
 
   return (
     <NavigationContainer>
