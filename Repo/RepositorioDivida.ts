@@ -120,15 +120,6 @@ export const DividaDAL = {
             console.log(divida.status);
         });
 
-
-for (const divida of dividas) {
-  const dividaPaga = divida.valorPago;
-  if (dividaPaga >= divida.valorTotal) {
-    // Se o valor pago for igual ao valor total, altere o status para "Pago"
-    await DividaDAL.alterarDivida(divida.id, { status: "Pago" });
-    console.log("Dívida Paga: ", divida.id);
-  }
-}
         return dividas;
       } catch (error: unknown) {
         if (error instanceof Error) {

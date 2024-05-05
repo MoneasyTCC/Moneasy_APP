@@ -121,17 +121,18 @@
         try {
           const novosDados: Partial<Divida> = {
             valorPago: novoValorPagoNumber,
-            status: isDividaPaga ? "Pendente" : "Pago",
+            status: isDividaPaga ? "Pago" : "Pendente",
           };
-          if (novoValorPago === selectedItemValorTotal) {
+          if (novoValorPago >= selectedItemValorTotal) {
             novosDados.status = "Pago";
           }
-          if (isDividaPaga && novoValorPagoNumber !== oldValorAtualNumber) {
+          if (novoValorPagoNumber !== oldValorAtualNumber) {
             novosDados.valorPago = novoValorPagoNumber;
           }
-          if (isDividaPaga && novoValorPagoNumber === 0) {
+          if (novoValorPagoNumber === 0) {
             novosDados.valorPago = oldValorAtualNumber;
           }
+          console.log(novosDados)
           await DividaDAL.alterarDivida(dividaId, novosDados);
           alert("Valor atual atualizado com sucesso!");
           setIsModalVisible(false);
@@ -169,34 +170,34 @@
           console.error(err);
         }
       };
-
-      const handleAlterarDivida = async (dividaId: string) => {
-        const novoValorPagoNumber = isNaN(parseFloat(novoValorPago)) ? 0 : parseFloat(novoValorPago);
-        const novoValorTotalNumber = isNaN(parseFloat(novoValorTotal))
-          ? 0
-          : parseFloat(novoValorTotal);
-        try {
-          const novosDados: Partial<Divida> = {
-            titulo: novoTitulo,
-            valorPago: novoValorPagoNumber,
-            valorTotal: novoValorTotalNumber,
-            dataInicio: novaDataInicio,
-            dataVencimento: novaDataFim,
-            status: isDividaPaga ? "Pendente" : "Pago",
-          };
-          if (novoValorPago === novoValorTotal) {
-            novosDados.status = "Pago";
+       const handleAlterarDivida = async (dividaId: string) => {
+          const novoValorPagoNumber = isNaN(parseFloat(novoValorPago)) ? 0 : parseFloat(novoValorPago);
+          const novoValorTotalNumber = isNaN(parseFloat(novoValorTotal))
+            ? 0
+            : parseFloat(novoValorTotal);
+          try {
+            const novosDados: Partial<Divida> = {
+              titulo: novoTitulo,
+              valorPago: novoValorPagoNumber,
+              valorTotal: novoValorTotalNumber,
+              dataInicio: novaDataInicio,
+              dataVencimento: novaDataFim,
+              status: isDividaPaga ? "Pago" : "Pendente",
+            };
+            console.log(novosDados)
+            if (novoValorPago >= novoValorTotal) {
+              novosDados.status = "Pago";
+            }
+            await DividaDAL.alterarDivida(dividaId, novosDados);
+            alert("Divida alterada com sucesso!");
+            setIsModalVisible(false);
+            setIsEditable(false);
+            limparEstados();
+            setUpdateLista(!updateLista);
+          } catch (err) {
+            console.error(err);
           }
-          await DividaDAL.alterarDivida(dividaId, novosDados);
-          alert("Divida alterada com sucesso!");
-          setIsModalVisible(false);
-          setIsEditable(false);
-          limparEstados();
-          setUpdateLista(!updateLista);
-        } catch (err) {
-          console.error(err);
-        }
-      };
+        };
 
       const handleDeletarDivida = async (dividaId: string) => {
         try {
@@ -338,24 +339,8 @@
        </View>
      );
       let dataMenorQueDataAtual = null;
-       if (!(selectedItemDataVencimento < new Date())) {
-         dataMenorQueDataAtual = (
-           <>
-             {isEditable ? (
-               <></>
-             ) : (
-               <>
-                 <Text style={styles.text}>{isDividaPaga ? "Pagar" : "Ativar"}</Text>
-                 <Switch
-                   value={isDividaPaga}
-                   onValueChange={() => setisDividaPaga((prevState) => !prevState)}
-                 ></Switch>
-               </>
-             )}
-           </>
-         );
-       } else {
-         dataMenorQueDataAtual = (
+       if (!(selectedItemDataVencimento >= new Date())) {
+           dataMenorQueDataAtual = (
            <>
              <Text style={styles.text}>Atualize a data</Text>
              <SeletorData
@@ -366,11 +351,11 @@
          );
        }
        let itemStatusIgualPago = null;
-       if (selectedItemStatus === "Pago") {
+       if (switchDividaStatus === "Pago") {
          itemStatusIgualPago = (
            <>
              <Text style={styles.text}>Titulo: {selectedItemTitulo}</Text>
-             <Text style={styles.text}>Valor Alcancado: {selectedItemValorTotal}</Text>
+             <Text style={styles.text}>Valor Alcancado: R${selectedItemValorTotal},00</Text>
              <Text style={styles.text}>
                Comecou em: {selectedItemDataInicio.toLocaleDateString("pt-br")}
              </Text>
@@ -393,7 +378,7 @@
              <Text style={styles.text}>{isDividaPaga ? "Pago" : "Pendente"}</Text>
              <Switch
                value={isDividaPaga}
-               onValueChange={() => setisDividaPaga((prevState) => !prevState)}
+               onValueChange={() => setIsDividaPaga((prevState) => !prevState)}
              ></Switch>
            </>
          );
@@ -446,6 +431,7 @@
            </>
          );
        }
+
       return (
       <>
         <View style={styles.dividaStatusSwitch}>
@@ -494,7 +480,7 @@
             >
               <View style={styles.centeredView}>
                 <View style={styles.modalView}>
-                  {selectedItemStatus === "Pago" ? (
+                  {switchDividaStatus === "Pago" ? (
                     <></>
                   ) : (
                     <Text style={styles.modalTitle}>
@@ -512,7 +498,7 @@
                           style={{ width: 25, height: 25 }}
                         />
                       </TouchableOpacity>
-                      {selectedItemStatus === "Pago" ? (
+                      {switchDividaStatus === "Pago" ? (
                         <></>
                       ) : (
                         <TouchableOpacity
@@ -543,7 +529,7 @@
                       ></TextInput>
                       <View style={styles.inputValorDataGroup}>
                         <TextInput
-                          style={styles.inputATualizarValorPago}
+                          style={styles.inputAtualizarValorPago}
                           placeholder={`R$${selectedItemValorPago},00`}
                           placeholderTextColor={"#fff"}
                           keyboardType="numeric"
@@ -572,7 +558,7 @@
                       </View>
                     </>
                   )}
-                  {selectedItemStatus === "Pago" ? <></> : <>{btnSuccessCase}</>}
+                  {switchDividaStatus === "Pago" ? <></> : <>{btnSuccessCase}</>}
                   <TouchableOpacity
                     onPress={() => {
                       setIsModalVisible(!isModalVisible), setIsEditable(false), setIsDividaPaga(false);

@@ -103,6 +103,7 @@ export default function MetasScreen({ navigation }: Props) {
         status: !isDividaPendente ? "Pendente" : "Pago",
       };
       await DividaDAL.adicionarDivida(novosDados);
+      setUpdateLista(!updateLista);
       setIsModalVisible(false);
       alert("Divida adicionada com sucesso!");
     } catch (err) {
@@ -146,7 +147,9 @@ export default function MetasScreen({ navigation }: Props) {
             novaMeta={updateLista}
           />
         ) : (
-          <ListaDeDividas dataSelecionada={dataSelecionada} />
+          <ListaDeDividas
+          dataSelecionada={dataSelecionada}
+          novaDivida={updateLista}/>
         )}
         {!isTelaDivida ? (
           <TouchableOpacity onPress={() => setIsModalVisible(true)}>
