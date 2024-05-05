@@ -24,7 +24,7 @@
       const [selectedItemValorPago, setSelectedItemValorPago] = useState("");
       const [selectedItemDataInicio, setSelectedItemDataInicio] = useState(new Date());
       const [selectedItemDataVencimento, setSelectedItemDataVencimento] = useState(new Date());
-      const [selectedItemStatus, setSelectedItemStatus] = useState("");
+      const [selectedItemStatus, setSelectedItemStatus] = useState("Pendente");
       const [novaDataInicio, setNovaDataInicio] = useState(new Date());
       const [novaDataFim, setNovaDataFim] = useState(new Date());
       const [novoValorTotal, setNovoValorTotal] = useState("");
@@ -402,7 +402,7 @@
        } else if (!isEditable) {
          btnSuccessCase = (
            <>
-             {selectedItemStatus === "Pendente" ? (
+             {switchDividaStatus === "Pendente" ? (
                <TouchableOpacity
                  style={[styles.btnModalSuccess, { width: 160 }]}
                  onPress={() => handleDividaPendente(selectedItemId)}
@@ -513,7 +513,7 @@
                       )}
                     </>
                   )}
-                  {selectedItemStatus === "Pendente" ? (
+                  {selectedItemDataVencimento < new Date() ? (
                     <>{dataMenorQueDataAtual}</>
                   ) : (
                     <>{itemStatusIgualPago}</>
