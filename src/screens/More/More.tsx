@@ -14,6 +14,9 @@ import { RootStackParamList } from "../../../shared/config";
 import ImportTransactions from "../../../Components/documentPicker";
 import NavigationBar from "../menuNavegation";
 import ImportarCsvComponente from "../../../Components/documentPicker";
+import Cotacao from "../../../Components/cotacao";
+import Conversoes from "../../../Components/cotacoes_variasMoedas";
+import ConversorMoedas from "../../../Components/converterValor";
 
 type MoreScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -31,8 +34,10 @@ export default function MoreScreen({ navigation }: Props) {
       <View style={styles.menuHeader}>
         <Button title="Sair" onPress={() => navigation.replace("Inicio")} />
       </View>
+     
       <View style={styles.menuBody}>
-        <View style={styles.content}></View>
+      <Conversoes></Conversoes>
+      {/* <ConversorMoedas></ConversorMoedas> */}
         <ImportarCsvComponente />
       </View>
       <View style={styles.menuFooter}>
