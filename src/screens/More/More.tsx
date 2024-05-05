@@ -14,9 +14,9 @@ import { RootStackParamList } from "../../../shared/config";
 import ImportTransactions from "../../../Components/documentPicker";
 import NavigationBar from "../menuNavegation";
 import ImportarCsvComponente from "../../../Components/documentPicker";
-import Cotacao from "../../../Components/cotacao";
-import Conversoes from "../../../Components/cotacoes_variasMoedas";
-import ConversorMoedas from "../../../Components/converterValor";
+
+import CurrencyConverter from "../../../Components/ConverterMoedas";
+import ConversorMoeda from "../../../Components/ConverterMoedas";
 
 type MoreScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -36,8 +36,7 @@ export default function MoreScreen({ navigation }: Props) {
       </View>
      
       <View style={styles.menuBody}>
-      <Conversoes></Conversoes>
-      {/* <ConversorMoedas></ConversorMoedas> */}
+      <ConversorMoeda></ConversorMoeda>
         <ImportarCsvComponente />
       </View>
       <View style={styles.menuFooter}>
