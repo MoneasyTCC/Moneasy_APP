@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity, Switch, TextInput, Image } from "react-native";
+import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity, Switch, TextInput, Image, Modal } from "react-native";
 import { obterDividasPorData } from "../Controller/DividaController";
 import { DividaDAL } from "../Repo/RepositorioDivida";
 import { Divida } from "../Model/Divida";
@@ -15,6 +15,7 @@ const ListaDeDividas: React.FC<ListaDeDividasProps> = ({ dataSelecionada, novaDi
   const [dividas, setDividas] = useState<Divida[]>([]);
   const [isDividaPaga, setIsDividaPaga] = useState(false);
   const [isEditable, setIsEditable] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const [updateLista, setUpdateLista] = useState(false);
   const [switchDividaStatus, setSwitchDividaStatus] = useState("Pendente");
   const [selectedItemTitulo, setSelectedItemTitulo] = useState("");
@@ -91,342 +92,271 @@ const ListaDeDividas: React.FC<ListaDeDividasProps> = ({ dataSelecionada, novaDi
   };
 
   const converterTimestampParaData = (timestamp: string) => {
-  if (timestamp) {
-    let seconds = 0;
-    let nanoseconds = 0;
-    const matches = timestamp.toString().match(/\d+/g);
-    if (matches && matches.length >= 2) {
-      seconds = parseInt(matches[0]);
-      nanoseconds = parseInt(matches[1]);
+    if (timestamp) {
+      let seconds = 0;
+      let nanoseconds = 0;
+      const matches = timestamp.toString().match(/\d+/g);
+      if (matches && matches.length >= 2) {
+        seconds = parseInt(matches[0]);
+        nanoseconds = parseInt(matches[1]);
+      }
+      const timestampConvertido = new Date(seconds * 1000 + nanoseconds / 1000000);
+      const formattedDate = timestampConvertido;
+      return formattedDate;
+    } else {
+      console.error("O timestamp é undefined");
+      return null;
     }
-    const timestampConvertido = new Date(seconds * 1000 + nanoseconds / 1000000);
-    const formattedDate = timestampConvertido;
-    return formattedDate;
-  } else {
-    // Trate o caso em que timestamp é undefined
-    console.error("O timestamp é undefined");
-    // Aqui você pode retornar um valor padrão, lançar um erro ou tratar de acordo com a lógica do seu aplicativo
-    // Neste exemplo, estou retornando null
-    return null;
-  }
   };
 
 
-  const handleATualizarValorAtual = async (dividaId: string) => {
-    const oldValorAtualNumber = isNaN(parseFloat(selectedItemValorAtual))
+  const handleATualizarValorPago = async (dividaId: string) => {
+    const oldValorAtualNumber = isNaN(parseFloat(selectedItemValorPago))
       ? 0
-      : parseFloat(selectedItemValorAtual);
-    const novoValorAtualNumber = isNaN(parseFloat(novoValorAtual)) ? 0 : parseFloat(novoValorAtual);
-    try {
-      const novosDados: Partial<Divida> = {
-        valorAtual: novoValorAtualNumber,
-        status: isDividaPaga ? "Pendente" : "Paga",
-      };
-      if (novoValorAtual === selectedItemValorObjetivo) {
-        novosDados.status = "Pago";
-      }
-      if (isDividaPaga && novoValorAtualNumber !== oldValorAtualNumber) {
-        novosDados.valorAtual = novoValorAtualNumber;
-      }
-      if (isDigidaPaga && novoValorAtualNumber === 0) {
-        novosDados.valorAtual = oldValorAtualNumber;
-      }
-      await DividaDAL.alterarDivida(dividaId, novosDados);
-      alert("Valor atual atualizado com sucesso!");
-      setIsModalVisible(false);
-      limparEstados();
-      setUpdateLista(!updateLista);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleAtualizarDataFim = async (dividaId: string) => {
-    try {
-      const novosDados: Partial<Divida> = {
-        dataFimPrevista: novaDataFim,
-      };
-      await DividaDAL.alterarDivida(dividaId, novosDados);
-      setIsModalVisible(false);
-      limparEstados();
-      setUpdateLista(!updateLista);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleAlterarDivida = async (dividaId: string) => {
-    const novoValorAtualNumber = isNaN(parseFloat(novoValorAtual)) ? 0 : parseFloat(novoValorAtual);
-    const novoValorObjetivoNumber = isNaN(parseFloat(novoValorObjetivo))
+      : parseFloat(selectedItemValorPago);
+    const novoValorPagoNumber = isNaN(parseFloat(novoValorPago)) ? 0 : parseFloat(novoValorPago);
+    const novoValorTotalNumber = isNaN(parseFloat(novoValorTotal))
       ? 0
-      : parseFloat(novoValorObjetivo);
-    try {
-      const novosDados: Partial<Divida> = {
-        titulo: novoTitulo,
-        valorAtual: novoValorAtualNumber,
-        valorObjetivo: novoValorObjetivoNumber,
-        dataInicio: novaDataInicio,
-        dataFimPrevista: novaDataFim,
-        status: isDividaPaga ? "Pendente" : "Pago",
-      };
-      if (novoValorAtual === novoValorObjetivo) {
-        novosDados.status = "Pago";
-      }
-      await DividaDAL.alterarDivida(dividaId, novosDados);
-      alert("Divida alterada com sucesso!");
-      setIsModalVisible(false);
-      setIsEditable(false);
-      limparEstados();
-      setUpdateLista(!updateLista);
-    } catch (err) {
-      console.error(err);
-    }
+      : parseFloat(novoValorTotal);
+    const novaDataInicioTimestamp = novaDataInicio.getTime().toString();
+    const novaDataFimTimestamp = novaDataFim.getTime().toString();
+    const objetoDivida = new Divida(
+      dividaId,
+      novoTitulo,
+      novoValorTotalNumber,
+      novoValorPagoNumber,
+      novaDataInicioTimestamp,
+      novaDataFimTimestamp,
+      switchDividaStatus
+    );
+    await DividaDAL.atualizarDivida(dividaId, objetoDivida);
+    setSelectedItemId("");
+    setSelectedItemTitulo("");
+    setSelectedItemValorTotal("");
+    setSelectedItemValorPago("");
+    setSelectedItemDataInicio(new Date());
+    setSelectedItemDataVencimento(new Date());
+    setIsEditable(false);
+    setIsDividaPaga(false);
+    setUpdateLista(true);
+    setIsModalVisible(false);
+    setNovoValorPago("");
+    setNovoValorTotal("");
+    setNovoTitulo("");
+    setNovaDataInicio(new Date());
+    setNovaDataFim(new Date());
   };
 
   const handleDeletarDivida = async (dividaId: string) => {
-    try {
-      await Divida.deletarDivida(dividaId);
-      alert("Divida deletada com sucesso!");
-      setIsModalVisible(false);
-      setUpdateLista(!updateLista);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-
-const dividaPorcentagem = (valorTotal: number, valorPago: number) => {
-  if (valorPago <= 0) {
-    return 0; // Retorna 0 se o valor pago for menor ou igual a 0
-  }
-  if (valorPago >= valorTotal) {
-    return 100; // Retorna 100 se o valor pago for maior ou igual ao total
-  }
-  const porcentagem = (valorPago / valorTotal) * 100;
-  return porcentagem.toFixed();
-};
-
-
-const diasRestantes = (status: string, dataFim: Date) => {
-  let dias = 0;
-  if (!dataFim) {
-    return status;
-  }
-  const dataFimConvertida = converterTimestampParaData(dataFim.toString());
-  const dataAtual = new Date();
-  if (status === "Ativo") {
-    const diferenca = dataFimConvertida.getTime() - dataAtual.getTime();
-    dias = Math.ceil(diferenca / (1000 * 3600 * 24));
-    return `${dias} ${dias > 1 ? "dias restantes" : "dia restante"}`;
-  } else {
-    return status;
-  }
-};
-
-  const limparEstados = () => {
-    setNovoTitulo("");
-    setNovoValorTotal("");
-    setNovoValorPago("");
-    setNovaDataInicio(new Date());
-    setNovaDataFim(new Date());
+    await DividaDAL.deletarDivida(dividaId);
+    setSelectedItemId("");
+    setSelectedItemTitulo("");
+    setSelectedItemValorTotal("");
+    setSelectedItemValorPago("");
+    setSelectedItemDataInicio(new Date());
+    setSelectedItemDataVencimento(new Date());
+    setIsEditable(false);
     setIsDividaPaga(false);
+    setUpdateLista(true);
+    setIsModalVisible(false);
   };
 
-  const toggleModal = (
-    itemTitulo: string,
-    itemId: string,
-    itemValorTotal: number,
-    itemValorPago: number,
-    itemDataInicio: Date,
-    itemDataVencimento: Date
-  ) => {
-    setSelectedItemTitulo(itemTitulo);
-    setSelectedItemId(itemId);
-    setSelectedItemValorTotal(itemValorTotal.toString());
-    setSelectedItemValorPago(itemValorPago.toString());
-    setSelectedItemDataInicio(converterTimestampParaData(itemDataInicio.toString()));
-    setSelectedItemDataVencimento(converterTimestampParaData(itemDataVencimento.toString()));
+  const renderItem = ({ item }: { item: Divida }) => {
+    return (
+      <TouchableOpacity
+        style={styles.item}
+        onPress={() => {
+          setSelectedItemTitulo(item.titulo);
+          setSelectedItemValorTotal(item.valorTotal.toString());
+          setSelectedItemValorPago(item.valorPago.toString());
+          setSelectedItemDataInicio(
+            converterTimestampParaData(item.dataInicio.toString()) || new Date()
+          );
+          setSelectedItemDataVencimento(
+            converterTimestampParaData(item.dataVencimento.toString()) || new Date()
+          );
+          setSelectedItemStatus(item.status);
+          setSelectedItemId(item.id);
+          setIsModalVisible(true);
+          setNovoTitulo(item.titulo);
+          setNovoValorTotal(item.valorTotal.toString());
+          setNovoValorPago(item.valorPago.toString());
+          setNovaDataInicio(
+            converterTimestampParaData(item.dataInicio.toString()) || new Date()
+          );
+          setNovaDataFim(converterTimestampParaData(item.dataVencimento.toString()) || new Date());
+        }}
+      >
+        <Text style={styles.title}>{item.titulo}</Text>
+        <Text style={styles.valorTotal}>R${item.valorTotal},00</Text>
+        <Text style={styles.dataInicio}>
+          Inicio: {converterTimestampParaData(item.dataInicio.toString())?.toLocaleDateString()}
+        </Text>
+        <Text style={styles.dataVencimento}>
+          Fim: {converterTimestampParaData(item.dataVencimento.toString())?.toLocaleDateString()}
+        </Text>
+      </TouchableOpacity>
+    );
   };
 
- const renderItem = ({ item }: { item: Divida }) => (
-   <View style={styles.container}>
-     <View style={styles.tituloETempoWrapper}>
-       <View style={styles.tituloETempo}>
-         <Text style={styles.text}>{item.titulo}</Text>
-         <TouchableOpacity
-           onPress={() =>
-             toggleModal(
-               item.titulo,
-               item.id,
-               item.valorTotal,
-               item.valorPago,
-               item.dataInicio,
-               item.dataVencimento
-             )
-           }
-         >
-           <Image source={require("../assets/hamburguerMenu.png")} />
-         </TouchableOpacity>
-       </View>
-       <View style={styles.tituloETempo}>
-         <Text style={styles.textOpaco}>{diasRestantes(item.status, item.dataVencimento)}</Text>
-         {item.status === "Ativo" ? (
-           <Text style={styles.textOpaco}>
-             {`Começou em: ${converterTimestampParaData(
-               item.dataInicio.toString()
-             ).toLocaleDateString("pt-br")}`}
-           </Text>
-         ) : (
-           <></>
-         )}
-       </View>
-     </View>
-     {item.status === "Pago" ? (
-       <View style={styles.textoEValorWrapper}>
-         <Text style={styles.text}>Divida Concluída</Text>
-         <Text style={styles.text}>Valor Total: R${item.valorTotal},00</Text>
-         <View style={{ marginTop: 10 }}>
-           <Text style={styles.porcentagemEData}>
-             Finalizada em:{" "}
-             {converterTimestampParaData(item.dataVencimento?.toString()).toLocaleDateString(
-               "pt-br"
-             )}
-           </Text>
-         </View>
-       </View>
-     ) : (
-       <>
-         <View style={styles.valoresContainer}>
-           <View style={styles.textoEValorWrapper}>
-             <Text style={styles.text}>Valor Total</Text>
-             <Text style={styles.textValor}>R${item.valorTotal},00</Text>
-           </View>
-           <View style={styles.separador}></View>
-           <View style={styles.textoEValorWrapper}>
-             <Text style={styles.text}>Valor Pago</Text>
-             <Text style={styles.textValor}>R${item.valorPago},00</Text>
-           </View>
-         </View>
-         <View style={styles.porcentagemEDataWrapper}>
-           <Text style={styles.porcentagemEData}>
-             Divida {dividaPorcentagem(item.valorTotal, item.valorPago)}% concluída
-           </Text>
-           <Text style={styles.porcentagemEData}>
-             {`Finaliza em: ${converterTimestampParaData(
-               item.dataVencimento?.toString()
-             ).toLocaleDateString("pt-br")}`}
-           </Text>
-         </View>
-       </>
-     )}
-   </View>
- );
   return (
-  <>
-    <View style={styles.dividaStatusSwitch}>
-      <TouchableOpacity onPress={() => setSwitchDividaStatus("Pendente")}>
-        <Text style={switchDividaStatus === "Pendente" ? { color: "#0fec32" } : { color: "#fff" }}>
-          Pendente
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => setSwitchDividaStatus("Pago")}>
-        <Text style={switchDividaStatus === "Pago" ? { color: "#0fec32" } : { color: "#fff" }}>
-          Pago
-        </Text>
-      </TouchableOpacity>
+    <View style={styles.container}>
+      <FlatList
+        data={dividas}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        extraData={updateLista}
+      />
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => {
+          setIsModalVisible(!isModalVisible);
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            {selectedItemStatus === "Pago" ? (
+              <>
+                <Text style={styles.text}>Titulo: {selectedItemTitulo}</Text>
+                <Text style={styles.text}>Valor Alcancado: {selectedItemValorTotal}</Text>
+                <Text style={styles.text}>
+                  Comecou em: {selectedItemDataInicio.toLocaleDateString("pt-br")}
+                </Text>
+                <Text style={styles.text}>
+                  Finalizada em: {selectedItemDataVencimento.toLocaleDateString("pt-br")}
+                </Text>
+              </>
+            ) : (
+              <>
+                {!isEditable && (
+                  <>
+                    <TouchableOpacity
+                      style={{ position: "absolute", top: 20, left: 20 }}
+                      onPress={() => handleDeletarDivida(selectedItemId)}
+                    >
+                      <Image
+                        source={require("../assets/trashcan.png")}
+                        style={{ width: 25, height: 25 }}
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={{ position: "absolute", top: 20, right: 20 }}
+                      onPress={() => setIsEditable(!isEditable)}
+                    >
+                      <Image
+                        source={require("../assets/edit.png")}
+                        style={{ width: 25, height: 25 }}
+                      />
+                    </TouchableOpacity>
+                  </>
+                )}
+                <TextInput
+                  style={styles.inputAtualizarValorPago}
+                  placeholder={`R$${selectedItemValorPago},00`}
+                  placeholderTextColor={"#ffffff"}
+                  keyboardType="numeric"
+                  value={novoValorPago}
+                  onChangeText={(text) => setNovoValorPago(text)}
+                ></TextInput>
+                <Text style={styles.text}>{isDividaPaga ? "Pago" : "Pendente"}</Text>
+                <Switch
+                  value={isDividaPaga}
+                  onValueChange={() => setisDividaPaga((prevState) => !prevState)}
+                ></Switch>
+                <TouchableOpacity
+                  style={[styles.btnModalSuccess, { width: 160 }]}
+                  onPress={() => handleATualizarValorPago(selectedItemId)}
+                >
+                  <Text style={styles.labelModal}>Atualizar Valor</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    setIsModalVisible(!isModalVisible), setIsEditable(false), setIsDividaPaga(false);
+                  }}
+                >
+                  <Text style={styles.labelModal}>Cancelar</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
-{switchDividaStatus === "Pendente" && (
-  <View style={styles.totalERestanteGroup}>
-    <View>
-      <Text style={styles.totalERestanteText}>Total em Dívidas</Text>
-      <Text style={styles.totalERestanteValor}>R${calcularValorTotalDividasPendentes()},00</Text>
-    </View>
-    <View>
-      <Text style={styles.totalERestanteText}>Restante</Text>
-      <Text style={styles.totalERestanteValor}>R${calcularValorRestanteDividasPendentes()},00</Text>
-    </View>
-  </View>
-)}
-{switchDividaStatus === "Pago" && (
-  <View style={styles.TotalGroup}>
-    <View>
-      <Text style={styles.TotalText}>Total</Text>
-      <Text style={styles.TotalValor}>R${calcularValorTotalDasDividasPagas(dividas)},00</Text>
-    </View>
-  </View>
-)}
-
-    <FlatList
-      data={dividas}
-      keyExtractor={(item) => item.id.toString()}
-      renderItem={renderItem}
-    />
-  </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 10,
-    flexDirection: "column",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#3a3e3a",
-    //backgroundColor: "#2a2a2a",
-    elevation: 5,
-    borderColor: "rgba(0, 0, 0, 0.1)",
-    borderWidth: 1,
-    borderRadius: 15,
+    flex: 1,
+    marginTop: 22,
   },
-
-    dividaStatusSwitch: {
-      flexDirection: "row",
-      width: "90%",
-      height: 50,
-      backgroundColor: "#2a2a2a",
-      borderRadius: 30,
-      alignItems: "center",
-      justifyContent: "space-evenly",
-      marginBottom: 20,
+  item: {
+    backgroundColor: "#f9c2ff",
+    padding: 20,
+    marginVertical: 8,
+    marginHorizontal: 16,
+    borderRadius: 10,
+  },
+  title: {
+    fontSize: 20,
+  },
+  valorTotal: {
+    fontSize: 15,
+    fontWeight: "bold",
+  },
+  dataInicio: {
+    fontSize: 10,
+  },
+  dataVencimento: {
+    fontSize: 10,
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22,
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
     },
-      editDeletePosition: {
-        position: "absolute",
-        top: 20,
-        right: 20,
-      },
-     totalERestanteGroup: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        width: 320,
-      },
-       totalERestanteText: {
-          color: "#fff",
-          fontSize: 18  ,
-        },
-        totalERestanteValor: {
-          color: "#fff",
-          fontSize: 20,
-          fontWeight: "bold",
-        },
-        TotalGroup: {
-          flexDirection: "row",
-          justifyContent: "space-evenly", // Alterado para "space-evenly" para centralizar
-          width: 320,
-        },
-        TotalText: {
-          color: "#fff",
-          fontSize: 18,
-          textAlign: "center", // Adicionado para centralizar o texto
-        },
-        TotalValor: {
-          color: "#fff",
-          fontSize: 20,
-          fontWeight: "bold",
-          textAlign: "center", // Adicionado para centralizar o valor
-        },
-
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  text: {
+    marginBottom: 15,
+    textAlign: "center",
+  },
+  inputAtualizarValorPago: {
+    marginBottom: 15,
+    width: 160,
+    textAlign: "center",
+    backgroundColor: "#03DAC6",
+    color: "#ffffff",
+    borderRadius: 10,
+  },
+  btnModalSuccess: {
+    backgroundColor: "#32CD32",
+    padding: 10,
+    borderRadius: 5,
+    alignItems: "center",
+    justifyContent: "center",
+    margin: 5,
+  },
+  labelModal: {
+    color: "#ffffff",
+    fontSize: 16,
+  },
 });
-
-
 
 export default ListaDeDividas;
