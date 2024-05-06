@@ -129,7 +129,7 @@ export default function MetasScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.textOrcamento}>Metas</Text>
+  <Text style={styles.textOrcamento}>{isTelaDivida ? 'Dívida' : 'Metas'}</Text>
       <View style={styles.menuHeader}>
         <SeletorMesAno
           seletorAno={true}
@@ -137,6 +137,7 @@ export default function MetasScreen({ navigation }: Props) {
         />
       </View>
       <View style={styles.menuBody}>
+      <Text style={ styles.textSecondary }>Alterne entre Divida e Meta </Text>
         <Switch
           value={isTelaDivida}
           onValueChange={() => setIsTelaDivida((prevState) => !prevState)}
@@ -294,6 +295,12 @@ const styles = StyleSheet.create({
     marginTop: 35,
     marginLeft: 20,
     fontSize: 26,
+    color: "#ffffff",
+    fontWeight: "bold",
+  },
+  textSecondary: {
+
+    fontSize: 20,
     color: "#ffffff",
     fontWeight: "bold",
   },
