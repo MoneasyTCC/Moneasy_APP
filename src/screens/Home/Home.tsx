@@ -17,8 +17,6 @@ import {
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
 import { Shadow } from "react-native-shadow-2";
-import { adicionarNovaMeta } from "../../../services/testeBanco";
-import { adicionarNovaTransacao } from "../../../services/testeBanco";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { Transacao } from "../../../Model/Transacao";
 import { TransacaoDAL } from "../../../Repo/RepositorioTransacao";
@@ -26,7 +24,6 @@ import ListaDeTransacoes from "../../../Components/listaTransacao";
 import { obterSaldoPorMes } from "../../../Controller/TransacaoController";
 import DropDownPicker from "react-native-dropdown-picker";
 import NavigationBar from "../menuNavegation";
-import CotacaoDolar from "../../../Components/cotacao";
 import { DataContext } from "../../../Contexts/DataContext";
 import SeletorMesAno from "../../../Components/SeletorMesAno";
 
