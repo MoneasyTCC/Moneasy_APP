@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
+  Animated,
   View,
   Text,
   FlatList,
@@ -20,9 +21,14 @@ interface ListaDeMetasProps {
   novaMeta: boolean;
 }
 
-const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }) => {
+const ListaDeMetas: React.FC<ListaDeMetasProps> = ({
+  dataSelecionada,
+  novaMeta,
+}) => {
   const [metas, setMetas] = useState<Meta[]>([]);
-  const [switchMetaStatus, setSwitchMetaStatus] = useState("Ativo");
+  const [switchMetaStatus, setSwitchMetaStatus] = useState<
+    "Ativo" | "Pausado" | "Concluído"
+  >("Ativo");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [updateLista, setUpdateLista] = useState(false);
   const [isEditable, setIsEditable] = useState(false);
@@ -30,15 +36,56 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
   const [selectedItemTitulo, setSelectedItemTitulo] = useState("");
   const [selectedItemId, setSelectedItemId] = useState("");
   const [selectedItemValorAtual, setSelectedItemValorAtual] = useState("");
-  const [selectedItemValorObjetivo, setSelectedItemValorObjetivo] = useState("");
-  const [selectedItemDataInicio, setSelectedItemDataInicio] = useState(new Date());
-  const [selectedItemDataFimPrevista, setSelectedItemDataFimPrevista] = useState(new Date());
+  const [selectedItemValorObjetivo, setSelectedItemValorObjetivo] =
+    useState("");
+  const [selectedItemDataInicio, setSelectedItemDataInicio] = useState(
+    new Date()
+  );
+  const [selectedItemDataFimPrevista, setSelectedItemDataFimPrevista] =
+    useState(new Date());
   const [selectedItemStatus, setSelectedItemStatus] = useState("");
   const [novaDataInicio, setNovaDataInicio] = useState(new Date());
   const [novaDataFim, setNovaDataFim] = useState(new Date());
   const [novoValorAtual, setNovoValorAtual] = useState("");
   const [novoValorObjetivo, setNovoValorObjetivo] = useState("");
   const [novoTitulo, setNovoTitulo] = useState("");
+  const backgroundColors = {
+    Ativo: useRef(new Animated.Value(0)).current,
+    Pausado: useRef(new Animated.Value(0)).current,
+    Concluído: useRef(new Animated.Value(0)).current,
+  };
+
+  useEffect(() => {
+    Animated.timing(backgroundColors[switchMetaStatus], {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+
+    // Reset the others
+    (
+      Object.keys(backgroundColors) as (keyof typeof backgroundColors)[]
+    ).forEach((status) => {
+      if (status !== switchMetaStatus) {
+        Animated.timing(backgroundColors[status], {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: false,
+        }).start();
+      }
+    });
+  }, [switchMetaStatus, backgroundColors]);
+
+  const getStatusStyle = (status: "Ativo" | "Pausado" | "Concluído") => {
+    const backgroundColor = backgroundColors[status].interpolate({
+      inputRange: [0, 1],
+      outputRange: ["#616161", "#0fec32"], // Default color to Active color
+    });
+
+    return {
+      backgroundColor,
+    };
+  };
 
   useEffect(() => {
     const buscarMetasPorStatus = async () => {
@@ -49,7 +96,8 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
         );
         setMetas(metasObtidas);
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Um erro ocorreu";
+        const errorMessage =
+          error instanceof Error ? error.message : "Um erro ocorreu";
         Alert.alert("Erro", errorMessage);
       }
     };
@@ -73,7 +121,9 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
       seconds = parseInt(matches[0]);
       nanoseconds = parseInt(matches[1]);
     }
-    const timestampConvertido = new Date(seconds * 1000 + nanoseconds / 1000000);
+    const timestampConvertido = new Date(
+      seconds * 1000 + nanoseconds / 1000000
+    );
     const formattedDate = timestampConvertido;
     return formattedDate;
   };
@@ -82,7 +132,9 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
     const oldValorAtualNumber = isNaN(parseFloat(selectedItemValorAtual))
       ? 0
       : parseFloat(selectedItemValorAtual);
-    const novoValorAtualNumber = isNaN(parseFloat(novoValorAtual)) ? 0 : parseFloat(novoValorAtual);
+    const novoValorAtualNumber = isNaN(parseFloat(novoValorAtual))
+      ? 0
+      : parseFloat(novoValorAtual);
     try {
       const novosDados: Partial<Meta> = {
         valorAtual: novoValorAtualNumber,
@@ -137,7 +189,9 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
   };
 
   const handleAlterarMeta = async (metaId: string) => {
-    const novoValorAtualNumber = isNaN(parseFloat(novoValorAtual)) ? 0 : parseFloat(novoValorAtual);
+    const novoValorAtualNumber = isNaN(parseFloat(novoValorAtual))
+      ? 0
+      : parseFloat(novoValorAtual);
     const novoValorObjetivoNumber = isNaN(parseFloat(novoValorObjetivo))
       ? 0
       : parseFloat(novoValorObjetivo);
@@ -215,8 +269,12 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
     setSelectedItemId(itemId);
     setSelectedItemValorAtual(itemValorAtual.toString());
     setSelectedItemValorObjetivo(itemValorObjetivo.toString());
-    setSelectedItemDataInicio(converterTimestampParaData(itemDataInicio.toString()));
-    setSelectedItemDataFimPrevista(converterTimestampParaData(itemDataFimPrevista.toString()));
+    setSelectedItemDataInicio(
+      converterTimestampParaData(itemDataInicio.toString())
+    );
+    setSelectedItemDataFimPrevista(
+      converterTimestampParaData(itemDataFimPrevista.toString())
+    );
     setSelectedItemStatus(itemStatus);
     setIsModalVisible(!isModalVisible);
   };
@@ -243,7 +301,9 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
           </TouchableOpacity>
         </View>
         <View style={styles.tituloETempo}>
-          <Text style={styles.textOpaco}>{diasRestantes(item.status, item.dataFimPrevista)}</Text>
+          <Text style={styles.textOpaco}>
+            {diasRestantes(item.status, item.dataFimPrevista)}
+          </Text>
           {item.status === "Ativo" ? (
             <Text style={styles.textOpaco}>
               {`Começou em: ${converterTimestampParaData(
@@ -262,9 +322,9 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
           <View style={{ marginTop: 10 }}>
             <Text style={styles.porcentagemEData}>
               Finalizada em:{" "}
-              {converterTimestampParaData(item.dataFimPrevista?.toString()).toLocaleDateString(
-                "pt-br"
-              )}
+              {converterTimestampParaData(
+                item.dataFimPrevista?.toString()
+              ).toLocaleDateString("pt-br")}
             </Text>
           </View>
         </View>
@@ -283,7 +343,8 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
           </View>
           <View style={styles.porcentagemEDataWrapper}>
             <Text style={styles.porcentagemEData}>
-              Meta {metaPorcentagem(item.valorAtual, item.valorObjetivo)}% concluída
+              Meta {metaPorcentagem(item.valorAtual, item.valorObjetivo)}%
+              concluída
             </Text>
             <Text style={styles.porcentagemEData}>
               {item.status === "Pausado"
@@ -307,7 +368,9 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
           <></>
         ) : (
           <>
-            <Text style={styles.text}>{isMetaPausada ? "Pausar" : "Ativar"}</Text>
+            <Text style={styles.text}>
+              {isMetaPausada ? "Pausar" : "Ativar"}
+            </Text>
             <Switch
               value={isMetaPausada}
               onValueChange={() => setIsMetaPausada((prevState) => !prevState)}
@@ -332,12 +395,15 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
     itemStatusIgualConcluido = (
       <>
         <Text style={styles.text}>Titulo: {selectedItemTitulo}</Text>
-        <Text style={styles.text}>Valor Alcancado: {selectedItemValorObjetivo}</Text>
+        <Text style={styles.text}>
+          Valor Alcancado: {selectedItemValorObjetivo}
+        </Text>
         <Text style={styles.text}>
           Comecou em: {selectedItemDataInicio.toLocaleDateString("pt-br")}
         </Text>
         <Text style={styles.text}>
-          Finalizada em: {selectedItemDataFimPrevista.toLocaleDateString("pt-br")}
+          Finalizada em:{" "}
+          {selectedItemDataFimPrevista.toLocaleDateString("pt-br")}
         </Text>
       </>
     );
@@ -411,21 +477,26 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
   return (
     <>
       <View style={styles.metaStatusSwitch}>
-        <TouchableOpacity onPress={() => setSwitchMetaStatus("Ativo")}>
-          <Text style={switchMetaStatus === "Ativo" ? { color: "#0fec32" } : { color: "#fff" }}>
-            Ativo
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setSwitchMetaStatus("Pausado")}>
-          <Text style={switchMetaStatus === "Pausado" ? { color: "#0fec32" } : { color: "#fff" }}>
-            Pausado
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setSwitchMetaStatus("Concluído")}>
-          <Text style={switchMetaStatus === "Concluído" ? { color: "#0fec32" } : { color: "#fff" }}>
-            Concluído
-          </Text>
-        </TouchableOpacity>
+        {(["Ativo", "Pausado", "Concluído"] as const).map((status) => (
+          <TouchableOpacity
+            key={status}
+            onPress={() => setSwitchMetaStatus(status)}
+            style={styles.statusButton}
+          >
+            <Animated.View
+              style={[styles.animatedButton, getStatusStyle(status)]}
+            >
+              <Text
+                style={{
+                  color: switchMetaStatus === status ? "#ffffff" : "#b0b0b0",
+                  fontWeight: "bold",
+                }}
+              >
+                {status}
+              </Text>
+            </Animated.View>
+          </TouchableOpacity>
+        ))}
       </View>
       <FlatList
         style={{ width: "90%" }}
@@ -434,11 +505,7 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
         renderItem={renderItem}
         ItemSeparatorComponent={() => <View style={{ marginBottom: 10 }} />}
       />
-      <Modal
-        visible={isModalVisible}
-        transparent={true}
-        animationType="slide"
-      >
+      <Modal visible={isModalVisible} transparent={true} animationType="slide">
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
             {selectedItemStatus === "Concluído" ? (
@@ -522,7 +589,9 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({ dataSelecionada, novaMeta }
             {selectedItemStatus === "Concluído" ? <></> : <>{btnSuccessCase}</>}
             <TouchableOpacity
               onPress={() => {
-                setIsModalVisible(!isModalVisible), setIsEditable(false), setIsMetaPausada(false);
+                setIsModalVisible(!isModalVisible),
+                  setIsEditable(false),
+                  setIsMetaPausada(false);
               }}
             >
               <Text style={styles.labelModal}>Cancelar</Text>
@@ -664,7 +733,7 @@ const styles = StyleSheet.create({
   textoEValorWrapper: {
     flexDirection: "column",
     alignItems: "center",
-  },
+  } /* ,
   metaStatusSwitch: {
     flexDirection: "row",
     width: "90%",
@@ -674,11 +743,33 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-evenly",
     marginBottom: 20,
-  },
+  } */,
   editDeletePosition: {
     position: "absolute",
     top: 20,
     right: 20,
+  },
+  metaStatusSwitch: {
+    flexDirection: "row",
+    justifyContent: "center",
+    width: "90%",
+    height: "12%",
+    alignItems: "center",
+    padding: 10,
+    backgroundColor: "#3a3e3a",
+    borderRadius: 20,
+    marginBottom: 20,
+  },
+  statusButton: {
+    flex: 1,
+    marginHorizontal: 4,
+    borderRadius: 10,
+    overflow: "hidden", // Important to clip the animated view
+  },
+  animatedButton: {
+    flex: 1, 
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
 
