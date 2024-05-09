@@ -106,8 +106,8 @@ const SeletorMesAno: React.FC<SeletorMesAnoProps> = ({
 
   return (
     <View>
-      {ano}
       {mes}
+      {ano}
     </View>
   );
 };
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 26,
     marginHorizontal: 5, 
-    width: 70, // Largura fixa para o rótulo do mês ou ano
+    width: 130, // Largura fixa para o rótulo do mês ou ano
   },
   iconLeft: {
     width: 18,

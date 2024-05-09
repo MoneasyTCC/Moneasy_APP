@@ -159,7 +159,7 @@ export default function MetasScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.textOrcamento}>
+      <Text style={styles.textMetas}>
         {isTelaDivida ? "Dívida" : "Metas"}
       </Text>
       <View style={styles.menuHeader}>
@@ -365,11 +365,11 @@ const styles = StyleSheet.create({
     height: "15%",
     backgroundColor: "#3A3E3A",
   },
-  textOrcamento: {
+  textMetas: {
     position: "absolute",
     marginTop: 35,
     marginLeft: 20,
-    fontSize: 26,
+    fontSize: 24,
     color: "#ffffff",
     fontWeight: "bold",
   },

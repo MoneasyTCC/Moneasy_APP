@@ -89,7 +89,8 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: "#ffffff",
     fontWeight: "bold",
-    marginBottom: 20,
+    marginBottom: 30,
+    marginLeft: 10
   },
   menuItem: {
     flexDirection: "row",
