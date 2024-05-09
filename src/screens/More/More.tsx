@@ -1,22 +1,8 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  Button,
-  StyleSheet,
-  Image,
-  Modal,
-  TextInput,
-  Alert,
-} from "react-native";
+import React from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
-import ImportTransactions from "../../../Components/documentPicker";
 import NavigationBar from "../menuNavegation";
-import ImportarCsvComponente from "../../../Components/documentPicker";
-
-import CurrencyConverter from "../../../Components/ConverterMoedas";
-import ConversorMoeda from "../../../Components/ConverterMoedas";
 
 type MoreScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -27,20 +13,41 @@ type Props = {
   navigation: MoreScreenNavigationProp;
 };
 
-// Use as props na definição do seu componente
 export default function MoreScreen({ navigation }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.menuHeader}>
-        <Button title="Sair" onPress={() => navigation.replace("Inicio")} />
+        <Text style={styles.headerText}>Mais opções</Text>
       </View>
-     
       <View style={styles.menuBody}>
-      <ConversorMoeda></ConversorMoeda>
-        <ImportarCsvComponente />
+        {/* A implementar */}
+        <TouchableOpacity style={styles.menuItem} onPress={() => {}}>
+          <Image
+            source={require("../../../assets/settings.png")}
+            style={styles.icon}
+          />
+          <Text style={styles.menuItemText}>Configurações</Text>
+        </TouchableOpacity>
+        {/* Abrir Modal que está no Figma que tem botão, depois de clicar neste botão "Importar", abrir o Componente abaixo */
+        /* <ImportarCsvComponente /> */}
+        <TouchableOpacity style={styles.menuItem} onPress={() => {}}>
+          <Image
+            source={require("../../../assets/csv.png")}
+            style={styles.icon}
+          />
+          <Text style={styles.menuItemText}>Importar CSV</Text>
+        </TouchableOpacity>
+        {/* <ConversorMoeda></ConversorMoeda> */}
+        <TouchableOpacity style={styles.menuItem} onPress={() => {}}>
+          <Image
+            source={require("../../../assets/coinConf.png")}
+            style={styles.icon}
+          />
+          <Text style={styles.menuItemText}>Conversor de Moeda</Text>
+        </TouchableOpacity>
       </View>
       <View style={styles.menuFooter}>
-        <NavigationBar></NavigationBar>
+        <NavigationBar />
       </View>
     </View>
   );
@@ -49,54 +56,59 @@ export default function MoreScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
     backgroundColor: "#2B2B2B",
+    alignItems: "center",
+    justifyContent: "center",
   },
   menuHeader: {
-    borderBottomLeftRadius: 50,
-    borderBottomRightRadius: 50,
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "flex-start",
+    marginLeft: 20,
     width: "100%",
-    height: "35%",
-    backgroundColor: "#3A3E3A",
+    height: "12%",
   },
   menuBody: {
-    width: "80%",
-    height: "50%",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  content: {
-    borderRadius: 50,
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
     width: "100%",
-    height: "80%",
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 20,
     backgroundColor: "#3A3E3A",
   },
   menuFooter: {
-    borderTopLeftRadius: 50,
-    borderTopRightRadius: 50,
-    flexDirection: "column",
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "space-around",
     width: "100%",
     height: "15%",
     backgroundColor: "#3A3E3A",
   },
-  text: {
-    fontSize: 60,
+  headerText: {
+    fontSize: 24,
+    color: "#ffffff",
+    fontWeight: "bold",
     marginBottom: 20,
   },
-  menuNavegation: {
-    borderRadius: 50,
-    backgroundColor: "#2B2B2B",
-    width: "80%",
-    height: "50%",
-    justifyContent: "space-around",
-    alignItems: "center",
+  menuItem: {
     flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#2B2B2B",
+    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+    width: "80%",
+    marginVertical: 10,
   },
-  img: {},
+  menuItemText: {
+    color: "#ffffff",
+    fontSize: 16,
+    marginLeft: 10,
+  },
+  icon: {
+    width: 25,
+    height: 25,
+  },
 });
