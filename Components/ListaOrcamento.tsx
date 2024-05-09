@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Orcamento } from "../Model/Orcamento";
 import { obterOrcamentosPorData } from "../Controller/OrcamentoController";
 import {
+  Image,
   Alert,
   FlatList,
   Text,
@@ -200,33 +201,73 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
       }
     >
       <View style={styles.container}>
-        {/* Exibe a categoria do item */}
-        <Text style={styles.text}>{item.categoria}</Text>
+        {/* Container para imagem e conteúdo */}
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          {/* Container para texto e valores */}
+          <View>
+            {/* Exibe a categoria do item */}
+            <View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-around",
+                }}
+              >
+                {/* Container para a imagem */}
+                <View>
+                  <Image
+                    style={{ width: 50, height: 50 }}
+                    source={
+                      item.categoria === "Roupas"
+                        ? require("../assets/orcamento/roupa.png")
+                        : item.categoria === "Educação"
+                        ? require("../assets/orcamento/educacao.png")
+                        : item.categoria === "Eletrodomésticos"
+                        ? require("../assets/orcamento/eletrodomestico.png")
+                        : item.categoria === "Saúde"
+                        ? require("../assets/orcamento/saude.png")
+                        : item.categoria === "Mercado"
+                        ? require("../assets/orcamento/mercado.png")
+                        : require("../assets/orcamento/other.png")
+                    }
+                  />
+                </View>
+                <View>
+                  <Text style={styles.text}>{item.categoria}</Text>
 
-        {/* Calcula e exibe a porcentagem do orçamento concluído */}
-        <Text style={{ color: "#fff", fontSize: 15 }}>
-          Orçamento {orcamentoPorcentagem(item.valorAtual, item.valorDefinido)}%
-          concluído
-        </Text>
+                  {/* Calcula e exibe a porcentagem do orçamento concluído */}
+                  <Text style={{ color: "#fff", fontSize: 15 }}>
+                    Orçamento{" "}
+                    {orcamentoPorcentagem(item.valorAtual, item.valorDefinido)}%
+                    concluído
+                  </Text>
+                </View>
+              </View>
+            </View>
 
-        {/* Container para os valores atual e total */}
-        <View style={styles.valoresContainer}>
-          {/* Coluna para o valor atual */}
-          <View style={{ flexDirection: "column" }}>
-            <Text style={styles.text}>Valor Atual</Text>
-            {/* Formata o valor atual para duas casas decimais */}
-            <Text style={styles.textValor}>R${item.valorAtual.toFixed(2)}</Text>
-          </View>
+            {/* Container para os valores atual e total */}
+            <View style={styles.valoresContainer}>
+              {/* Coluna para o valor atual */}
+              <View style={{ flexDirection: "column" }}>
+                <Text style={styles.text}>Valor Atual</Text>
+                {/* Formata o valor atual para duas casas decimais */}
+                <Text style={styles.textValor}>
+                  R${item.valorAtual.toFixed(2)}
+                </Text>
+              </View>
 
-          <View style={styles.separador}></View>
+              <View style={styles.separador}></View>
 
-          {/* Coluna para o valor total */}
-          <View style={{ flexDirection: "column" }}>
-            <Text style={styles.text}>Valor Total</Text>
-            {/* Formata o valor definido para duas casas decimais */}
-            <Text style={styles.textValor}>
-              R${item.valorDefinido.toFixed(2)}
-            </Text>
+              {/* Coluna para o valor total */}
+              <View style={{ flexDirection: "column" }}>
+                <Text style={styles.text}>Valor Total</Text>
+                {/* Formata o valor definido para duas casas decimais */}
+                <Text style={styles.textValor}>
+                  R${item.valorDefinido.toFixed(2)}
+                </Text>
+              </View>
+            </View>
           </View>
         </View>
       </View>

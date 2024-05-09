@@ -20,7 +20,10 @@ import { obterTotalERestantePorMes } from "../../../Controller/OrcamentoControll
 import SeletorMesAno from "../../../Components/SeletorMesAno";
 import { DataContext } from "../../../Contexts/DataContext";
 
-type OrcamentoScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Orcamento">;
+type OrcamentoScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "Orcamento"
+>;
 
 type Props = {
   navigation: OrcamentoScreenNavigationProp;
@@ -48,7 +51,9 @@ export default function MenuScreen({ navigation }: Props) {
     { label: "Mercado", value: "Mercado" },
     { label: "Outros", value: "Outros" },
   ]);
-  const [categoriaSelecionada, setCategoriaSelecionada] = useState(categorias[5].value);
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState(
+    categorias[5].value
+  );
   const [dataOrcamento, setDataOrcamento] = useState(new Date());
 
   const [openMes, setOpenMes] = useState(false);
@@ -91,8 +96,12 @@ export default function MenuScreen({ navigation }: Props) {
 
   const handleOrcamento = async () => {
     try {
-      const valorDefinidoFloat = isNaN(parseFloat(valorDefinido)) ? 0 : parseFloat(valorDefinido);
-      const valorAtualFloat = isNaN(parseFloat(valorAtual)) ? 0 : parseFloat(valorAtual);
+      const valorDefinidoFloat = isNaN(parseFloat(valorDefinido))
+        ? 0
+        : parseFloat(valorDefinido);
+      const valorAtualFloat = isNaN(parseFloat(valorAtual))
+        ? 0
+        : parseFloat(valorAtual);
       setMonthData();
       const novosDados = {
         id: "",
@@ -114,7 +123,9 @@ export default function MenuScreen({ navigation }: Props) {
 
   const handleObterTotalERestantePorMes = async () => {
     try {
-      const result: TotalERestanteMes = await obterTotalERestantePorMes(dataSelecionada);
+      const result: TotalERestanteMes = await obterTotalERestantePorMes(
+        dataSelecionada
+      );
       setValuesObject(result);
     } catch (err) {
       console.error("Erro ao obter total e restante por mês: ", err);
@@ -152,29 +163,37 @@ export default function MenuScreen({ navigation }: Props) {
       </View>
       <View style={styles.menuBody}>
         <View style={styles.totalERestanteGroup}>
+          {/* Container para o valor total */}
           <View>
             <Text style={styles.totalERestanteText}>Total</Text>
-            <Text style={styles.totalERestanteValor}>R${valuesObject.valorDefinidoTotal},00</Text>
+            {/* Formata o valor total definido para duas casas decimais */}
+            <Text style={styles.totalERestanteValor}>
+              R${valuesObject.valorDefinidoTotal.toFixed(2)}
+            </Text>
           </View>
+
+          {/* Container para o valor restante */}
           <View>
             <Text style={styles.totalERestanteText}>Restante</Text>
-            <Text style={styles.totalERestanteValor}>R${valuesObject.valorAtualTotal},00</Text>
+            {/* Formata o valor atual total para duas casas decimais */}
+            <Text style={styles.totalERestanteValor}>
+              R${valuesObject.valorAtualTotal.toFixed(2)}
+            </Text>
           </View>
         </View>
+
         <ListaDeOrcamentos
           dataSelecionada={dataSelecionada}
           novoOrcamento={updateLista}
           onInteraction={handleInteractionInListaDeOrcamentos}
         />
         <TouchableOpacity onPress={() => setIsModalVisible(true)}>
-          <Text style={{ color: "#0fec32", fontSize: 18, fontWeight: 800 }}>Novo Orçamento</Text>
+          <Text style={{ color: "#0fec32", fontSize: 18, fontWeight: 800 }}>
+            Novo Orçamento
+          </Text>
         </TouchableOpacity>
       </View>
-      <Modal
-        visible={isModalVisible}
-        transparent={true}
-        animationType="slide"
-      >
+      <Modal visible={isModalVisible} transparent={true} animationType="slide">
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
             <View style={styles.inputContainer}>
@@ -202,7 +221,9 @@ export default function MenuScreen({ navigation }: Props) {
                   setOpen={setOpenCategoria}
                   setValue={setCategoriaSelecionada}
                   setItems={setCategorias}
-                  onChangeValue={() => setCategoriaSelecionada(categoriaSelecionada)}
+                  onChangeValue={() =>
+                    setCategoriaSelecionada(categoriaSelecionada)
+                  }
                   style={styles.dropdownStyle}
                   dropDownContainerStyle={{
                     backgroundColor: "#616161",
