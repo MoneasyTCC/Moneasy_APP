@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useContext } from "react";
 import {
+  Image,
   View,
   Text,
   Button,
   StyleSheet,
-  Image,
   Modal,
   TextInput,
   Alert,
@@ -161,33 +161,60 @@ export default function MenuScreen({ navigation }: Props) {
           onYearChange={handleOnChangeYear}
         />
       </View>
-      <View style={styles.menuBody}>
-        <View style={styles.totalERestanteGroup}>
-          {/* Container para o valor total */}
-          <View>
-            <Text style={styles.totalERestanteText}>Total</Text>
-            {/* Formata o valor total definido para duas casas decimais */}
-            <Text style={styles.totalERestanteValor}>
-              R${valuesObject.valorDefinidoTotal.toFixed(2)}
-            </Text>
+      <View style={styles.menuBody}>{/* 
+        <View style={styles.totalERestanteGroup}> 
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-around",
+            }}
+          >
+            <View>
+              <Image
+                style={{ width: 32, height: 32 }}
+                source={require("../../../assets/orcamento/dinheiro.png")}
+              />
+            </View>
+            <View style={{ paddingLeft: 10 }}>
+              <Text style={styles.totalERestanteText}>Total</Text> 
+              <Text style={styles.totalERestanteValor}>
+                R${valuesObject.valorDefinidoTotal.toFixed(2)}
+              </Text>
+            </View>
           </View>
-
-          {/* Container para o valor restante */}
-          <View>
-            <Text style={styles.totalERestanteText}>Restante</Text>
-            {/* Formata o valor atual total para duas casas decimais */}
-            <Text style={styles.totalERestanteValor}>
-              R${valuesObject.valorAtualTotal.toFixed(2)}
-            </Text>
+ 
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-around",
+            }}
+          >
+            <View>
+              <Image
+                style={{ width: 32, height: 32 }}
+                source={require("../../../assets/orcamento/coin2.png")}
+              />
+            </View>
+            <View style={{ paddingLeft: 10 }}>
+              <Text style={styles.totalERestanteText}>Restante</Text> 
+              <Text style={styles.totalERestanteValor}>
+                R${valuesObject.valorAtualTotal.toFixed(2)}
+              </Text>
+            </View>
           </View>
         </View>
-
+ */}
         <ListaDeOrcamentos
           dataSelecionada={dataSelecionada}
           novoOrcamento={updateLista}
           onInteraction={handleInteractionInListaDeOrcamentos}
         />
-        <TouchableOpacity style={styles.btnCriar} onPress={() => setIsModalVisible(true)}>
+        <TouchableOpacity
+          style={styles.btnCriar}
+          onPress={() => setIsModalVisible(true)}
+        >
           <Text style={styles.criarOrcamento}>Novo Orçamento</Text>
         </TouchableOpacity>
       </View>

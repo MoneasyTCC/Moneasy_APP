@@ -280,7 +280,7 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         ItemSeparatorComponent={() => (
-          <View style={{ borderBottomWidth: 1, borderBottomColor: "#fff" }} />
+          <View style={{ borderBottomWidth: 1, borderBottomColor: "#656865" }} />
         )}
       />
       <Modal visible={isModalVisible} animationType="slide" transparent={true}>
