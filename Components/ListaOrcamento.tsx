@@ -200,20 +200,33 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
       }
     >
       <View style={styles.container}>
+        {/* Exibe a categoria do item */}
         <Text style={styles.text}>{item.categoria}</Text>
+
+        {/* Calcula e exibe a porcentagem do orçamento concluído */}
         <Text style={{ color: "#fff", fontSize: 15 }}>
-          Orcamento {orcamentoPorcentagem(item.valorAtual, item.valorDefinido)}%
-          concluido
+          Orçamento {orcamentoPorcentagem(item.valorAtual, item.valorDefinido)}%
+          concluído
         </Text>
+
+        {/* Container para os valores atual e total */}
         <View style={styles.valoresContainer}>
+          {/* Coluna para o valor atual */}
           <View style={{ flexDirection: "column" }}>
             <Text style={styles.text}>Valor Atual</Text>
-            <Text style={styles.textValor}>R${item.valorAtual},00</Text>
+            {/* Formata o valor atual para duas casas decimais */}
+            <Text style={styles.textValor}>R${item.valorAtual.toFixed(2)}</Text>
           </View>
+
           <View style={styles.separador}></View>
+
+          {/* Coluna para o valor total */}
           <View style={{ flexDirection: "column" }}>
             <Text style={styles.text}>Valor Total</Text>
-            <Text style={styles.textValor}>R${item.valorDefinido},00</Text>
+            {/* Formata o valor definido para duas casas decimais */}
+            <Text style={styles.textValor}>
+              R${item.valorDefinido.toFixed(2)}
+            </Text>
           </View>
         </View>
       </View>
