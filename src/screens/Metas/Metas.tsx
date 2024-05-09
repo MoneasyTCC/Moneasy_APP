@@ -167,12 +167,9 @@ export default function MetasScreen({ navigation }: Props) {
       </View>
       <View style={styles.menuBody}>
         <View style={styles.switchContainer}>
-          <Animated.View
-            style={{
-              flexDirection: "row",
-              width: "55%",
-              justifyContent: "center",
-            }}
+          <TouchableOpacity
+            style={styles.statusButton}
+            onPress={() => setIsTelaDivida(false)}
           >
             <Animated.View
               style={[
@@ -186,10 +183,13 @@ export default function MetasScreen({ navigation }: Props) {
                 },
               ]}
             >
-              <TouchableOpacity onPress={() => setIsTelaDivida(false)}>
-                <Text style={styles.buttonText}>Metas</Text>
-              </TouchableOpacity>
+              <Text style={styles.buttonText}>Metas</Text>
             </Animated.View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.statusButton}
+            onPress={() => setIsTelaDivida(true)}
+          >
             <Animated.View
               style={[
                 styles.button,
@@ -202,11 +202,9 @@ export default function MetasScreen({ navigation }: Props) {
                 },
               ]}
             >
-              <TouchableOpacity onPress={() => setIsTelaDivida(true)}>
-                <Text style={styles.buttonText}>Dívidas</Text>
-              </TouchableOpacity>
+              <Text style={styles.buttonText}>Dívidas</Text>
             </Animated.View>
-          </Animated.View>
+          </TouchableOpacity>
         </View>
         {!isTelaDivida ? (
           <ListaDeMetas
@@ -479,12 +477,21 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 20,
-    height: 50, // Altura fixa para o container dos botões
+    width: "60%",
+    height: 40, // Altura fixa para o container dos botões
   },
   button: {
     flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 10,
     paddingHorizontal: 20,
+  },
+  statusButton: {
+    flex: 1,
+    /* marginHorizontal: 4, */
+    /*  borderRadius: 10, */
+    overflow: "hidden", // Important to clip the animated view
   },
   buttonText: {
     color: "#ffffff",

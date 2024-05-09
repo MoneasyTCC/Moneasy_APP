@@ -481,7 +481,14 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({
           <TouchableOpacity
             key={status}
             onPress={() => setSwitchMetaStatus(status)}
-            style={styles.statusButton}
+            style={[
+              styles.statusButton,
+              status === "Ativo"
+                ? { borderTopLeftRadius: 10, borderBottomLeftRadius: 10 }
+                : status === "Pausado"
+                ? { borderRadius: 2 }
+                : { borderTopRightRadius: 10, borderBottomRightRadius: 10 },
+            ]}
           >
             <Animated.View
               style={[styles.animatedButton, getStatusStyle(status)]}
@@ -762,12 +769,12 @@ const styles = StyleSheet.create({
   },
   statusButton: {
     flex: 1,
-    marginHorizontal: 4,
-    borderRadius: 10,
+    /* marginHorizontal: 4, */
+    /*  borderRadius: 10, */
     overflow: "hidden", // Important to clip the animated view
   },
   animatedButton: {
-    flex: 1, 
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
   },
