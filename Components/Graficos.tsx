@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { LineChart } from "react-native-chart-kit";
-import { Dimensions, TouchableOpacity, View, Text, StyleSheet } from "react-native";
+import { LineChart, StackedBarChart } from "react-native-chart-kit";
+import { Dimensions, TouchableOpacity, View, Text, StyleSheet, ScrollView } from "react-native";
 import { obterEntradasESaidasPorAno } from "../Controller/TransacaoController";
 
 interface GraficosProps {
@@ -17,7 +17,7 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
     saldoPorMes: [],
   });
   const [show, setShow] = useState(false);
-  const [isSaldoPorMes, setIsSaldoPorMes] = useState(true);
+  const [selectedChart, setSelectedChart] = useState<string>("");
   const screenWidth = Dimensions.get("window").width;
 
   const chartConfig = {
@@ -62,7 +62,7 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
   const filteredData = filterZeroSaldo();
   const filteredDataDetalhado = filterZeroSaldoDetalhado();
 
-  const data = {
+  const saldoData = {
     labels: filteredData.meses,
     datasets: [
       {
@@ -74,7 +74,7 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
     legend: ["Saldo Por Mes"], // optional
   };
 
-  const data2 = {
+  const entradasSaidaData = {
     labels: filteredDataDetalhado.meses,
     datasets: [
       {
@@ -113,6 +113,75 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
     }
   };
 
+  const orcamentoData = {
+    labels: ["Roupa", "Saude"],
+    legend: ["Atual", "Restante", "Estourado"],
+    data: [
+      [60, 60, 60],
+      [30, 30, 60],
+    ],
+    barColors: ["#14fc3d", "#3a3d3a", "#ff0000"],
+  };
+
+  let stackedBarChart = null;
+  stackedBarChart = (
+    <View>
+      <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
+        <View style={styles.bolinhaGroup}>
+          <View style={[styles.bolinha, { backgroundColor: "#14fc3d" }]}></View>
+          <Text style={styles.legendaText}>Atual</Text>
+        </View>
+        <View style={styles.bolinhaGroup}>
+          <View style={[styles.bolinha, { backgroundColor: "#3a3d3a" }]}></View>
+          <Text style={styles.legendaText}>Restante</Text>
+        </View>
+        <View style={styles.bolinhaGroup}>
+          <View style={[styles.bolinha, { backgroundColor: "#ff0000" }]}></View>
+          <Text style={styles.legendaText}>Estourado</Text>
+        </View>
+      </View>
+      <StackedBarChart
+        data={orcamentoData}
+        width={screenWidth}
+        height={220}
+        chartConfig={chartConfig}
+        hideLegend={true}
+      />
+    </View>
+  );
+  let lineChartSaldo = null;
+  lineChartSaldo = (
+    <LineChart
+      data={saldoData}
+      width={screenWidth}
+      height={220}
+      chartConfig={chartConfig}
+      withShadow={false}
+    />
+  );
+  let lineChartEntradasSaidas = null;
+  lineChartEntradasSaidas = (
+    <LineChart
+      data={entradasSaidaData}
+      width={screenWidth}
+      height={220}
+      chartConfig={chartConfig}
+      withShadow={false}
+    />
+  );
+
+  const handleChartSelection = () => {
+    if (selectedChart === "saldo") {
+      return lineChartSaldo;
+    }
+    if (selectedChart === "entradasSaidas") {
+      return lineChartEntradasSaidas;
+    }
+    if (selectedChart === "orcamento") {
+      return stackedBarChart;
+    }
+  };
+
   useEffect(() => {
     handleObterEntradasESaidasPorAno();
   }, [dataSelecionada, novaTransacao]);
@@ -120,42 +189,63 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
   return (
     <View style={styles.container}>
       <View style={styles.buttonGroup}>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => {
-            setShow(true);
-            setIsSaldoPorMes(true);
-          }}
+        <ScrollView
+          horizontal
+          style={{ marginHorizontal: 15 }}
         >
-          <Text
-            style={[styles.buttonText, isSaldoPorMes ? { color: "#14fc3d" } : { color: "#fff" }]}
-          >
-            Saldo Por Mes
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => {
-            setShow(true);
-            setIsSaldoPorMes(false);
-          }}
-        >
-          <Text
-            style={[styles.buttonText, !isSaldoPorMes ? { color: "#14fc3d" } : { color: "#fff" }]}
-          >
-            Entradas e Saidas
-          </Text>
-        </TouchableOpacity>
+          <View style={styles.buttonGroup}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => {
+                setSelectedChart("saldo");
+                setShow(true);
+              }}
+            >
+              <Text
+                style={[
+                  styles.buttonText,
+                  { color: selectedChart === "saldo" ? "#14fc3d" : "#fff" },
+                ]}
+              >
+                Saldo Por Mes
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => {
+                setSelectedChart("entradasSaidas");
+                setShow(true);
+              }}
+            >
+              <Text
+                style={[
+                  styles.buttonText,
+                  { color: selectedChart === "entradasSaidas" ? "#14fc3d" : "#fff" },
+                ]}
+              >
+                Entradas e Saidas
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => {
+                setSelectedChart("orcamento");
+                setShow(true);
+              }}
+            >
+              <Text
+                style={[
+                  styles.buttonText,
+                  { color: selectedChart === "orcamento" ? "#14fc3d" : "#fff" },
+                ]}
+              >
+                Orcamento
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
       </View>
-      {show && (
-        <LineChart
-          data={isSaldoPorMes ? data : data2}
-          width={screenWidth}
-          height={220}
-          chartConfig={chartConfig}
-          withShadow={false}
-        />
-      )}
+      {show && handleChartSelection()}
     </View>
   );
 };
@@ -168,7 +258,7 @@ const styles = StyleSheet.create({
   },
   buttonGroup: {
     flexDirection: "row",
-    gap: 10,
+    gap: 5,
   },
   button: {
     backgroundColor: "#3a3d3a",
@@ -179,6 +269,20 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "white",
     fontSize: 16,
+  },
+  bolinha: {
+    width: 15,
+    height: 15,
+    borderRadius: 10,
+    marginHorizontal: 5,
+  },
+  bolinhaGroup: {
+    alignItems: "center",
+    flexDirection: "row",
+  },
+  legendaText: {
+    color: "white",
+    fontSize: 14,
   },
 });
 
