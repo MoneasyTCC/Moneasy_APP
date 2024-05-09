@@ -280,7 +280,9 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         ItemSeparatorComponent={() => (
-          <View style={{ borderBottomWidth: 1, borderBottomColor: "#656865" }} />
+          <View
+            style={{ borderBottomWidth: 1, borderBottomColor: "#656865" }}
+          />
         )}
       />
       <Modal visible={isModalVisible} animationType="slide" transparent={true}>
@@ -382,16 +384,16 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
                   <View style={styles.botoesDivRow}>
                     <TouchableOpacity
                       onPress={() => handleAlterarOrcamento(selectedItemId)}
-                      style={[styles.btn, styles.Adicionar]}
+                      style={[styles.btn, styles.btnAdicionar]}
                     >
-                      <Text style={styles.labelModal}>Atualizar</Text>
+                      <Text style={styles.labelModal}>Salvar</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => {
                         setIsModalVisible(false);
                         setIsEditable(false);
                       }}
-                      style={[styles.btn, styles.Cancelar]}
+                      style={[styles.btn, styles.btnCancelar]}
                     >
                       <Text style={styles.labelModal}>Cancelar</Text>
                     </TouchableOpacity>
@@ -403,33 +405,41 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
                 <TextInput
                   style={styles.input}
                   placeholder={
-                    selectedItemValorAtual != "0"
+                    selectedItemValorAtual !== "0"
                       ? selectedItemValorAtual
-                      : `Valor Atual`
+                      : "Valor Atual"
                   }
                   placeholderTextColor="#FFFFFF"
                   value={novoValorAtual}
                   onChangeText={setNovoValorAtual}
                   keyboardType="numeric"
                 />
-                <View style={{ flexDirection: "row", gap: 5 }}>
-                  <View style={{ flexDirection: "column", gap: 5 }}>
+                <View style={styles.botoesDiv}>
+                  <View style={styles.botoesColuna}>
                     <TouchableOpacity
+                      style={[styles.btn, styles.btnAdicionar]}
                       onPress={() => handleAtualizarValorAtual(selectedItemId)}
                     >
                       <Text style={styles.labelModal}>Atualizar</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setIsEditable(true)}>
+                    <TouchableOpacity
+                      style={[styles.btn, , styles.btnEditar]}
+                      onPress={() => setIsEditable(true)}
+                    >
                       <Text style={styles.labelModal}>Editar</Text>
                     </TouchableOpacity>
                   </View>
-                  <View style={{ flexDirection: "column", gap: 5 }}>
+                  <View style={styles.botoesColuna}>
                     <TouchableOpacity
+                      style={[styles.btn, styles.btnExcluir]}
                       onPress={() => handleDeletarOrcamento(selectedItemId)}
                     >
                       <Text style={styles.labelModal}>Excluir</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setIsModalVisible(false)}>
+                    <TouchableOpacity
+                      style={styles.btn}
+                      onPress={() => setIsModalVisible(false)}
+                    >
                       <Text style={styles.labelModal}>Cancelar</Text>
                     </TouchableOpacity>
                   </View>
@@ -492,26 +502,6 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-  btn: {
-    alignItems: "center",
-    justifyContent: "center",
-    width: "45%",
-    height: 30,
-    borderRadius: 15,
-    marginVertical: 12,
-    marginHorizontal: 5,
-  },
-  Adicionar: {
-    backgroundColor: "#4CAF50",
-  },
-  Cancelar: {
-    backgroundColor: "#B22222",
-  },
-
-  botoesDivRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
   input: {
     width: "90%",
     padding: 10,
@@ -521,17 +511,53 @@ const styles = StyleSheet.create({
     color: "white",
     opacity: 0.7,
   },
+  botoesDiv: {
+    flexDirection: "row",
+    justifyContent: "space-around", // Espaça uniformemente os botões na linha
+  },
+  botoesColuna: {
+    flexDirection: "column",
+    alignItems: "center", // Centraliza os botões na coluna
+  },
+  btn: {
+    padding: 10,
+    width: 120, // Largura fixa para uniformidade
+    height: 40,
+    borderRadius: 20,
+    marginVertical: 5,
+    marginHorizontal: 5,
+    alignItems: "center",
+  },
+  btnExcluir: {
+    backgroundColor: "#EC0F0F", // Vermelho para botões de 'Excluir'
+  },
+  btnCancelar: {
+    backgroundColor: "#EC0F0F", // Vermelho escuro para botões 'Cancelar'
+  },
+  btnAdicionar: {
+    backgroundColor: "#0FEC32", // Vermelho escuro para botões 'Cancelar'
+  },
+  btnEditar: {},
+  labelModal: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  botoesDivRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   inputContainer: {
     width: "100%",
     flexDirection: "column",
     alignItems: "center",
   },
 
-  labelModal: {
+  /* labelModal: {
     color: "#ffffff",
     fontWeight: "bold",
     fontSize: 16,
-  },
+  }, */
   dropdownStyle: {
     backgroundColor: "#616161",
     borderWidth: 0,

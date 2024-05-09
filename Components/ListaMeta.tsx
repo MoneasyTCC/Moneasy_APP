@@ -595,6 +595,7 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({
             )}
             {selectedItemStatus === "Concluído" ? <></> : <>{btnSuccessCase}</>}
             <TouchableOpacity
+              style={[styles.btn, styles.btnCancelar]}
               onPress={() => {
                 setIsModalVisible(!isModalVisible),
                   setIsEditable(false),
@@ -777,6 +778,18 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  btn: {
+    padding: 10,
+    width: 120, // Largura fixa para uniformidade
+    height: 40,
+    borderRadius: 20,
+    marginVertical: 5,
+    marginHorizontal: 5,
+    alignItems: "center",
+  },
+  btnCancelar: {
+    backgroundColor: "#EC0F0F", // Vermelho para botões de 'Excluir'
   },
 });
 
