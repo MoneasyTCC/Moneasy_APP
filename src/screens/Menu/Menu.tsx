@@ -187,10 +187,8 @@ export default function MenuScreen({ navigation }: Props) {
           novoOrcamento={updateLista}
           onInteraction={handleInteractionInListaDeOrcamentos}
         />
-        <TouchableOpacity onPress={() => setIsModalVisible(true)}>
-          <Text style={{ color: "#0fec32", fontSize: 18, fontWeight: 800 }}>
-            Novo Orçamento
-          </Text>
+        <TouchableOpacity style={styles.btnCriar} onPress={() => setIsModalVisible(true)}>
+          <Text style={styles.criarOrcamento}>Novo Orçamento</Text>
         </TouchableOpacity>
       </View>
       <Modal visible={isModalVisible} transparent={true} animationType="slide">
@@ -450,5 +448,18 @@ const styles = StyleSheet.create({
   },
   dropdownStyle2: {
     zIndex: 0,
+  },
+
+  criarOrcamento: {
+    color: "#0fec32",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  btnCriar: {
+    borderWidth: 2,
+    borderColor: "#0fec32",
+    borderRadius: 10,
+    padding: 6,
+    marginBottom: -20,
   },
 });
