@@ -836,7 +836,7 @@ const styles = StyleSheet.create({
   dividaStatusSwitch: {
     flexDirection: "row",
     justifyContent: "center",
-    width: "75%",
+    width: "60%",
     height: "12%",
     alignItems: "center",
     padding: 10,

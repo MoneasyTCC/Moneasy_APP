@@ -218,12 +218,18 @@ export default function MetasScreen({ navigation }: Props) {
           />
         )}
         {!isTelaDivida ? (
-          <TouchableOpacity onPress={() => setIsModalVisible(true)}>
-            <Text style={{ color: "#0fec32", fontSize: 18 }}>Nova Meta</Text>
+          <TouchableOpacity
+            style={styles.btnCriar}
+            onPress={() => setIsModalVisible(true)}
+          >
+            <Text style={styles.labelCriar}>Nova Meta</Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity onPress={() => setIsModalVisible(true)}>
-            <Text style={{ color: "#0fec32", fontSize: 18 }}>Nova Divida</Text>
+          <TouchableOpacity
+            style={styles.btnCriar}
+            onPress={() => setIsModalVisible(true)}
+          >
+            <Text style={styles.labelCriar}>Nova Divida</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -498,5 +504,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
+  },
+  labelCriar: {
+    color: "#0fec32",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  btnCriar: {
+    borderWidth: 2,
+    borderColor: "#0fec32", 
+    borderRadius: 10, 
+    padding: 6,
+    marginBottom: -20
   },
 });
