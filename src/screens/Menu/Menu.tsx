@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     justifyContent: "center",
     width: "100%",
-    height: "20%",
+    height: "18%",
   },
   menuBody: {
     borderTopLeftRadius: 50,
@@ -367,23 +367,6 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontWeight: "bold",
   },
-  /* Select dos meses */
-
-  arrowButton: { marginBottom: 10 },
-  arrowText: {
-    color: "#ffffff",
-    fontSize: 30,
-    fontWeight: "bold",
-    lineHeight: 30,
-  },
-  mesLabel: {
-    color: "#ffffff",
-    width: "35%",
-    textAlign: "center",
-    fontSize: 26,
-    marginBottom: 10,
-  },
-  /* Fim Select dos meses */
   centeredView: {
     flex: 1,
     justifyContent: "center",

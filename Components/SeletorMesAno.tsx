@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
-import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
+import { View, TouchableOpacity, Text, StyleSheet, Image } from "react-native";
 import { DataContext } from "../Contexts/DataContext";
 
 interface SeletorMesAnoProps {
@@ -38,81 +38,67 @@ const SeletorMesAno: React.FC<SeletorMesAnoProps> = ({
 
   const updateMonth = (newMonthIndex: number) => {
     setMonthIndex(newMonthIndex);
-    const newData = new Date(dataSelecionada.getFullYear(), newMonthIndex + 1, 0);
+    const newData = new Date(year, newMonthIndex, dataSelecionada.getDate());
     onMonthChange && onMonthChange(newData);
     setDataSelecionada(newData);
   };
 
   const updateYear = (newYear: number) => {
-    const newData = new Date(newYear, dataSelecionada.getMonth() + 1, 0);
     setYear(newYear);
+    const newData = new Date(newYear, monthIndex, dataSelecionada.getDate());
     onYearChange && onYearChange(newData);
     setDataSelecionada(newData);
   };
-
-  const handlePreviousMonth = () => {
-    const newMonthIndex = monthIndex > 0 ? monthIndex - 1 : 11;
-    updateMonth(newMonthIndex);
-  };
-
-  const handleNextMonth = () => {
-    const newMonthIndex = monthIndex < 11 ? monthIndex + 1 : 0;
-    updateMonth(newMonthIndex);
-  };
-
-  const handlePreviousYear = () => {
-    const newYear = year - 1;
-    setYear(newYear);
-    updateYear(newYear);
-  };
-
-  const handleNextYear = () => {
-    const newYear = year + 1;
-    setYear(newYear);
-    updateYear(newYear);
-  };
-
-  useEffect(() => {
-    setMonthIndex(dataSelecionada.getMonth());
-    setYear(dataSelecionada.getFullYear());
-  }, [dataSelecionada]);
 
   let mes = null;
   if (seletorMes) {
     mes = (
       <View style={styles.mesHeader}>
         <TouchableOpacity
-          style={styles.arrowButton}
-          onPress={() => handlePreviousMonth()}
+          style={styles.arrowLeftButton}
+          onPress={updateMonth.bind(null, monthIndex - 1)}
         >
-          <Text style={styles.arrowText}>&lt;</Text>
+          <Image
+            source={require("../assets/seta.png")}
+            style={styles.iconLeft}
+          />
         </TouchableOpacity>
         <Text style={styles.mesLabel}>{monthNames[monthIndex]}</Text>
         <TouchableOpacity
-          style={styles.arrowButton}
-          onPress={() => handleNextMonth()}
+          style={styles.arrowRightButton}
+          onPress={updateMonth.bind(null, monthIndex + 1)}
         >
-          <Text style={styles.arrowText}>&gt;</Text>
+          <Image
+            source={require("../assets/seta.png")}
+            style={styles.iconRight}
+          />
         </TouchableOpacity>
       </View>
     );
   }
+
   let ano = null;
   if (seletorAno) {
     ano = (
       <View style={styles.yearHeader}>
         <TouchableOpacity
-          style={styles.arrowButton}
-          onPress={() => handlePreviousYear()}
+          style={styles.arrowLeftButton}
+          onPress={updateYear.bind(null, year - 1)}
         >
-          <Text style={styles.arrowText}>&lt;</Text>
+          <Image
+            source={require("../assets/seta.png")}
+            style={styles.iconLeft}
+          />
         </TouchableOpacity>
-        <Text style={styles.mesLabel}>{year}</Text>
+        <Text style={styles.anoLabel}>{year}</Text>
         <TouchableOpacity
-          style={styles.arrowButton}
-          onPress={() => handleNextYear()}
+          style={styles.arrowRightButton}
+          onPress={updateYear.bind(null, year + 1)}
         >
-          <Text style={styles.arrowText}>&gt;</Text>
+          <Image
+            source={require("../assets/seta.png")}
+            style={styles.iconRight}
+          />
         </TouchableOpacity>
       </View>
     );
@@ -130,25 +116,43 @@ const styles = StyleSheet.create({
   mesHeader: {
     flexDirection: "row",
     justifyContent: "center",
+    alignItems: "center",
   },
   yearHeader: {
     flexDirection: "row",
     justifyContent: "center",
+    alignItems: "center",
   },
   arrowButton: {
     padding: 5,
-    paddingBottom: 15,
   },
-  arrowText: {
-    color: "#ffffff",
-    fontSize: 30,
-    fontWeight: "bold",
-    lineHeight: 30,
+  arrowLeftButton: {
+    transform: [{ rotate: "180deg" }],
   },
+  arrowRightButton: {},
   mesLabel: {
     color: "#ffffff",
     textAlign: "center",
     fontSize: 26,
+    marginHorizontal: 5, 
+    width: 130, // Largura fixa para o rótulo do mês ou ano
+  },
+  anoLabel: {
+    color: "#ffffff",
+    textAlign: "center",
+    fontSize: 26,
+    marginHorizontal: 5, 
+    width: 70, // Largura fixa para o rótulo do mês ou ano
+  },
+  iconLeft: {
+    width: 18,
+    height: 12,
+    transform: [{ rotate: "-90deg" }], // Rotação para a seta esquerda
+  },
+  iconRight: {
+    width: 18,
+    height: 12, // Sem rotação para a seta direita
+    transform: [{ rotate: "-90deg" }],
   },
 });
 
