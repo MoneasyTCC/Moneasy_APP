@@ -160,7 +160,7 @@ export default function MetasScreen({ navigation }: Props) {
   return (
     <View style={styles.container}>
       <Text style={styles.textMetas}>
-        {isTelaDivida ? "Dívida" : "Metas"}
+        {isTelaDivida ? "Dívidas" : "Metas"}
       </Text>
       <View style={styles.menuHeader}>
         <SeletorMesAno seletorAno={true} onYearChange={handleOnYearChange} />
