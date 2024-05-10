@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useContext } from "react";
 import {
+  Image,
   View,
   Text,
   Button,
   StyleSheet,
-  Image,
   Modal,
   TextInput,
   Alert,
@@ -20,7 +20,10 @@ import { obterTotalERestantePorMes } from "../../../Controller/OrcamentoControll
 import SeletorMesAno from "../../../Components/SeletorMesAno";
 import { DataContext } from "../../../Contexts/DataContext";
 
-type OrcamentoScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Orcamento">;
+type OrcamentoScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "Orcamento"
+>;
 
 type Props = {
   navigation: OrcamentoScreenNavigationProp;
@@ -48,7 +51,9 @@ export default function MenuScreen({ navigation }: Props) {
     { label: "Mercado", value: "Mercado" },
     { label: "Outros", value: "Outros" },
   ]);
-  const [categoriaSelecionada, setCategoriaSelecionada] = useState(categorias[5].value);
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState(
+    categorias[5].value
+  );
   const [dataOrcamento, setDataOrcamento] = useState(new Date());
 
   const [openMes, setOpenMes] = useState(false);
@@ -91,8 +96,12 @@ export default function MenuScreen({ navigation }: Props) {
 
   const handleOrcamento = async () => {
     try {
-      const valorDefinidoFloat = isNaN(parseFloat(valorDefinido)) ? 0 : parseFloat(valorDefinido);
-      const valorAtualFloat = isNaN(parseFloat(valorAtual)) ? 0 : parseFloat(valorAtual);
+      const valorDefinidoFloat = isNaN(parseFloat(valorDefinido))
+        ? 0
+        : parseFloat(valorDefinido);
+      const valorAtualFloat = isNaN(parseFloat(valorAtual))
+        ? 0
+        : parseFloat(valorAtual);
       setMonthData();
       const novosDados = {
         id: "",
@@ -114,7 +123,9 @@ export default function MenuScreen({ navigation }: Props) {
 
   const handleObterTotalERestantePorMes = async () => {
     try {
-      const result: TotalERestanteMes = await obterTotalERestantePorMes(dataSelecionada);
+      const result: TotalERestanteMes = await obterTotalERestantePorMes(
+        dataSelecionada
+      );
       setValuesObject(result);
     } catch (err) {
       console.error("Erro ao obter total e restante por mês: ", err);
@@ -150,31 +161,64 @@ export default function MenuScreen({ navigation }: Props) {
           onYearChange={handleOnChangeYear}
         />
       </View>
-      <View style={styles.menuBody}>
-        <View style={styles.totalERestanteGroup}>
-          <View>
-            <Text style={styles.totalERestanteText}>Total</Text>
-            <Text style={styles.totalERestanteValor}>R${valuesObject.valorDefinidoTotal},00</Text>
+      <View style={styles.menuBody}>{/* 
+        <View style={styles.totalERestanteGroup}> 
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-around",
+            }}
+          >
+            <View>
+              <Image
+                style={{ width: 32, height: 32 }}
+                source={require("../../../assets/orcamento/dinheiro.png")}
+              />
+            </View>
+            <View style={{ paddingLeft: 10 }}>
+              <Text style={styles.totalERestanteText}>Total</Text> 
+              <Text style={styles.totalERestanteValor}>
+                R${valuesObject.valorDefinidoTotal.toFixed(2)}
+              </Text>
+            </View>
           </View>
-          <View>
-            <Text style={styles.totalERestanteText}>Restante</Text>
-            <Text style={styles.totalERestanteValor}>R${valuesObject.valorAtualTotal},00</Text>
+ 
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-around",
+            }}
+          >
+            <View>
+              <Image
+                style={{ width: 32, height: 32 }}
+                source={require("../../../assets/orcamento/coin2.png")}
+              />
+            </View>
+            <View style={{ paddingLeft: 10 }}>
+              <Text style={styles.totalERestanteText}>Restante</Text> 
+              <Text style={styles.totalERestanteValor}>
+                R${valuesObject.valorAtualTotal.toFixed(2)}
+              </Text>
+            </View>
           </View>
         </View>
+ */}
         <ListaDeOrcamentos
           dataSelecionada={dataSelecionada}
           novoOrcamento={updateLista}
           onInteraction={handleInteractionInListaDeOrcamentos}
         />
-        <TouchableOpacity onPress={() => setIsModalVisible(true)}>
-          <Text style={{ color: "#0fec32", fontSize: 18, fontWeight: 800 }}>Novo Orçamento</Text>
+        <TouchableOpacity
+          style={styles.btnCriar}
+          onPress={() => setIsModalVisible(true)}
+        >
+          <Text style={styles.criarOrcamento}>Novo Orçamento</Text>
         </TouchableOpacity>
       </View>
-      <Modal
-        visible={isModalVisible}
-        transparent={true}
-        animationType="slide"
-      >
+      <Modal visible={isModalVisible} transparent={true} animationType="slide">
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
             <View style={styles.inputContainer}>
@@ -202,7 +246,9 @@ export default function MenuScreen({ navigation }: Props) {
                   setOpen={setOpenCategoria}
                   setValue={setCategoriaSelecionada}
                   setItems={setCategorias}
-                  onChangeValue={() => setCategoriaSelecionada(categoriaSelecionada)}
+                  onChangeValue={() =>
+                    setCategoriaSelecionada(categoriaSelecionada)
+                  }
                   style={styles.dropdownStyle}
                   dropDownContainerStyle={{
                     backgroundColor: "#616161",
@@ -293,7 +339,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     justifyContent: "center",
     width: "100%",
-    height: "20%",
+    height: "18%",
   },
   menuBody: {
     borderTopLeftRadius: 50,
@@ -317,27 +363,10 @@ const styles = StyleSheet.create({
     position: "absolute",
     marginTop: 35,
     marginLeft: 20,
-    fontSize: 26,
+    fontSize: 24,
     color: "#ffffff",
     fontWeight: "bold",
   },
-  /* Select dos meses */
-
-  arrowButton: { marginBottom: 10 },
-  arrowText: {
-    color: "#ffffff",
-    fontSize: 30,
-    fontWeight: "bold",
-    lineHeight: 30,
-  },
-  mesLabel: {
-    color: "#ffffff",
-    width: "35%",
-    textAlign: "center",
-    fontSize: 26,
-    marginBottom: 10,
-  },
-  /* Fim Select dos meses */
   centeredView: {
     flex: 1,
     justifyContent: "center",
@@ -429,5 +458,18 @@ const styles = StyleSheet.create({
   },
   dropdownStyle2: {
     zIndex: 0,
+  },
+
+  criarOrcamento: {
+    color: "#0fec32",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  btnCriar: {
+    borderWidth: 2,
+    borderColor: "#0fec32",
+    borderRadius: 10,
+    padding: 6,
+    marginBottom: -20,
   },
 });

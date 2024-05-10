@@ -159,9 +159,7 @@ export default function MetasScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.textOrcamento}>
-        {isTelaDivida ? "Dívida" : "Metas"}
-      </Text>
+      <Text style={styles.textMetas}>{isTelaDivida ? "Dívidas" : "Metas"}</Text>
       <View style={styles.menuHeader}>
         <SeletorMesAno seletorAno={true} onYearChange={handleOnYearChange} />
       </View>
@@ -304,7 +302,7 @@ export default function MetasScreen({ navigation }: Props) {
             )}
             <View style={styles.buttonGroup}>
               <TouchableOpacity
-                style={styles.btnModalSuccess}
+                style={[styles.btn, styles.btnAdicionar]}
                 onPress={
                   !isTelaDivida
                     ? () => {
@@ -321,7 +319,10 @@ export default function MetasScreen({ navigation }: Props) {
               >
                 <Text style={styles.labelModal}>Concluir</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setIsModalVisible(false)}>
+              <TouchableOpacity
+                style={[styles.btn, styles.btnCancelar]}
+                onPress={() => setIsModalVisible(false)}
+              >
                 <Text style={styles.labelModal}>Cancelar</Text>
               </TouchableOpacity>
             </View>
@@ -345,7 +346,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     justifyContent: "center",
     width: "100%",
-    height: "16%",
+    height: "14%",
   },
   menuBody: {
     borderTopLeftRadius: 50,
@@ -365,11 +366,11 @@ const styles = StyleSheet.create({
     height: "15%",
     backgroundColor: "#3A3E3A",
   },
-  textOrcamento: {
+  textMetas: {
     position: "absolute",
     marginTop: 35,
     marginLeft: 20,
-    fontSize: 26,
+    fontSize: 24,
     color: "#ffffff",
     fontWeight: "bold",
   },
@@ -444,15 +445,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     width: 230,
   },
-  btnModalSuccess: {
-    borderRadius: 20,
-    backgroundColor: "#0fec32",
-    width: 230,
-    height: 45,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 15,
-  },
   labelModal: {
     color: "#ffffff",
     fontWeight: "bold",
@@ -460,7 +452,7 @@ const styles = StyleSheet.create({
   },
   buttonGroup: {
     alignItems: "center",
-    flexDirection: "column",
+    flexDirection: "row",
     justifyContent: "center",
     borderRadius: 20,
     width: "100%",
@@ -512,9 +504,24 @@ const styles = StyleSheet.create({
   },
   btnCriar: {
     borderWidth: 2,
-    borderColor: "#0fec32", 
-    borderRadius: 10, 
+    borderColor: "#0fec32",
+    borderRadius: 10,
     padding: 6,
-    marginBottom: -20
+    marginBottom: -20,
+  },
+  btn: {
+    padding: 10,
+    width: 120, // Largura fixa para uniformidade
+    height: 40,
+    borderRadius: 20,
+    marginVertical: 5,
+    marginHorizontal: 5,
+    alignItems: "center",
+  },
+  btnCancelar: {
+    backgroundColor: "#EC0F0F", // Vermelho para botões de 'Excluir'
+  },
+  btnAdicionar: {
+    backgroundColor: "#0FEC32", // Vermelho para botões de 'Excluir'
   },
 });

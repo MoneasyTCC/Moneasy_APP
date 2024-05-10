@@ -375,16 +375,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     width: "45%",
-    height: 30,
-    borderRadius: 15,
+    height: 40,
+    borderRadius: 20,
     marginVertical: 12,
     marginHorizontal: 5,
   },
   Editar: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#0FEC32", // Verde para editar
   },
   Excluir: {
-    backgroundColor: "#B22222",
+    backgroundColor: "#EC0F0F", // Vermelho para excluir
+  },
+  Cancelar: {
+    backgroundColor: "#EC0F0F", // Vermelho escuro para cancelar
   },
   botoesDiv: {
     flexDirection: "column",
