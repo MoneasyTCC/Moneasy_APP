@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     justifyContent: "center",
     width: "100%",
-    height: "20%",
+    height: "18%",
   },
   menuBody: {
     borderTopLeftRadius: 50,
