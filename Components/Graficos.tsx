@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { LineChart, StackedBarChart } from "react-native-chart-kit";
+import { LineChart, PieChart, ProgressChart } from "react-native-chart-kit";
 import { Dimensions, TouchableOpacity, View, Text, StyleSheet, ScrollView } from "react-native";
 import { obterEntradasESaidasPorAno } from "../Controller/TransacaoController";
 
@@ -9,7 +9,7 @@ interface GraficosProps {
 }
 
 const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) => {
-  const [valuesObject, setValuesObject] = useState<{
+  const [transacaoObject, settransacaoObject] = useState<{
     entradasESaidasPorMes: { mes: string; entradas: number; saidas: number }[];
     saldoPorMes: number[];
   }>({
@@ -29,11 +29,18 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
     strokeWidth: 2, // optional, default 3
   };
 
+  const todasEntradasESaidas = () => {
+    return transacaoObject.entradasESaidasPorMes.map(({ entradas, saidas }) => ({
+      entradas,
+      saidas,
+    }));
+  };
+
   const filterZeroSaldo = () => {
-    const filteredData = valuesObject.entradasESaidasPorMes.filter(
-      (_, index) => valuesObject.saldoPorMes[index] !== 0
+    const filteredData = transacaoObject.entradasESaidasPorMes.filter(
+      (_, index) => transacaoObject.saldoPorMes[index] !== 0
     );
-    const filteredSaldoPorMes = valuesObject.saldoPorMes.filter((saldo) => saldo !== 0);
+    const filteredSaldoPorMes = transacaoObject.saldoPorMes.filter((saldo) => saldo !== 0);
     const filteredMeses = filteredData.map(({ mes }) => mes);
 
     return {
@@ -44,8 +51,8 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
   };
 
   const filterZeroSaldoDetalhado = () => {
-    const filteredData = valuesObject.entradasESaidasPorMes.filter(
-      (_, index) => valuesObject.saldoPorMes[index] !== 0
+    const filteredData = transacaoObject.entradasESaidasPorMes.filter(
+      (_, index) => transacaoObject.saldoPorMes[index] !== 0
     );
 
     const filteredMeses = filteredData.map(({ mes }) => mes);
@@ -61,6 +68,7 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
 
   const filteredData = filterZeroSaldo();
   const filteredDataDetalhado = filterZeroSaldoDetalhado();
+  const filteredPieData = todasEntradasESaidas();
 
   const saldoData = {
     labels: filteredData.meses,
@@ -106,48 +114,41 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
         saldoPorMes: saldoPorMes,
       };
 
-      setValuesObject(formattedData);
+      settransacaoObject(formattedData);
       //console.log(formattedData);
     } catch (error) {
       console.error("Erro ao obter entradas e saídas por ano: ", error);
     }
   };
 
-  const orcamentoData = {
-    labels: ["Roupa", "Saude"],
-    legend: ["Atual", "Restante", "Estourado"],
-    data: [
-      [60, 60, 60],
-      [30, 30, 60],
-    ],
-    barColors: ["#14fc3d", "#3a3d3a", "#ff0000"],
-  };
+  const pieData = [
+    {
+      name: "Entradas",
+      population: filteredPieData.map(({ entradas }) => entradas).reduce((a, b) => a + b, 0),
+      color: "#14fc3d",
+      legendFontColor: "#fff",
+      legendFontSize: 15,
+    },
+    {
+      name: "Saidas",
+      population: filteredPieData.map(({ saidas }) => saidas).reduce((a, b) => a + b, 0),
+      color: "#ff0000",
+      legendFontColor: "#fff",
+      legendFontSize: 15,
+    },
+  ];
 
-  let stackedBarChart = null;
-  stackedBarChart = (
-    <View>
-      <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
-        <View style={styles.bolinhaGroup}>
-          <View style={[styles.bolinha, { backgroundColor: "#14fc3d" }]}></View>
-          <Text style={styles.legendaText}>Atual</Text>
-        </View>
-        <View style={styles.bolinhaGroup}>
-          <View style={[styles.bolinha, { backgroundColor: "#3a3d3a" }]}></View>
-          <Text style={styles.legendaText}>Restante</Text>
-        </View>
-        <View style={styles.bolinhaGroup}>
-          <View style={[styles.bolinha, { backgroundColor: "#ff0000" }]}></View>
-          <Text style={styles.legendaText}>Estourado</Text>
-        </View>
-      </View>
-      <StackedBarChart
-        data={orcamentoData}
-        width={screenWidth}
-        height={220}
-        chartConfig={chartConfig}
-        hideLegend={true}
-      />
-    </View>
+  let pieChart = null;
+  pieChart = (
+    <PieChart
+      data={pieData}
+      width={screenWidth}
+      height={220}
+      chartConfig={chartConfig}
+      accessor={"population"}
+      backgroundColor={"transparent"}
+      paddingLeft="15"
+    />
   );
   let lineChartSaldo = null;
   lineChartSaldo = (
@@ -169,6 +170,24 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
       withShadow={false}
     />
   );
+  const data = {
+    labels: filteredData.meses, // optional
+    data: filteredData.saldoPorMes, // optional
+    colors: ["#14fc3d", "#ff0000", "#e2e2e2", "#a23232", "#e42323"], // optional
+  };
+  let progressRing = null;
+  progressRing = (
+    <ProgressChart
+      data={data}
+      width={screenWidth}
+      height={220}
+      strokeWidth={12}
+      radius={32}
+      chartConfig={chartConfig}
+      hideLegend={false}
+      withCustomBarColorFromData={true}
+    />
+  );
 
   const handleChartSelection = () => {
     if (selectedChart === "saldo") {
@@ -177,8 +196,11 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
     if (selectedChart === "entradasSaidas") {
       return lineChartEntradasSaidas;
     }
-    if (selectedChart === "orcamento") {
-      return stackedBarChart;
+    if (selectedChart === "pie") {
+      return pieChart;
+    }
+    if (selectedChart === "ring") {
+      return progressRing;
     }
   };
 
@@ -229,17 +251,30 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
             <TouchableOpacity
               style={styles.button}
               onPress={() => {
-                setSelectedChart("orcamento");
+                setSelectedChart("pie");
+                setShow(true);
+              }}
+            >
+              <Text
+                style={[styles.buttonText, { color: selectedChart === "pie" ? "#14fc3d" : "#fff" }]}
+              >
+                PieChart
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => {
+                setSelectedChart("ring");
                 setShow(true);
               }}
             >
               <Text
                 style={[
                   styles.buttonText,
-                  { color: selectedChart === "orcamento" ? "#14fc3d" : "#fff" },
+                  { color: selectedChart === "ring" ? "#14fc3d" : "#fff" },
                 ]}
               >
-                Orcamento
+                Progress Ring
               </Text>
             </TouchableOpacity>
           </View>
