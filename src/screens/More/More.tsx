@@ -6,6 +6,7 @@ import NavigationBar from "../menuNavegation";
 import ImportarCsvComponente from "../../../Components/documentPicker";
 import ConversorMoeda from "../../../Components/ConverterMoedas";
 import ChangePassword from "../../../Components/alterarSenha";
+import LogoutComponent from "../../../Components/sair";
 
 type MoreScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -27,11 +28,13 @@ export default function MoreScreen({ navigation }: Props) {
     setModalVisible(!isModalVisible);
   };
   return (
+    
     <View style={styles.container}>
       <View style={styles.menuHeader}>
         <Text style={styles.headerText}>Mais opções</Text>
       </View>
       <View style={styles.menuBody}>
+      <LogoutComponent />
         {/* A implementar */}
         <TouchableOpacity style={styles.menuItem} onPress={() => {}}>
           <Image
