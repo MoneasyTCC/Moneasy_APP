@@ -19,7 +19,7 @@ const ConversorMoeda: React.FC = () => {
     const [convertidoParaBRL, setConvertidoParaBRL] = useState<string>('');
 
     const buscarTaxas = async () => {
-        const chaveApi = 'f527e073e8652f8c0bbf733cd12e861f';  // Use sua chave real aqui
+        const chaveApi = 'f527e073e8652f8c0bbf733cd12e861f';  
         const url = `http://api.currencylayer.com/live?access_key=${chaveApi}&currencies=BRL&format=1`;
         try {
             const resposta = await fetch(url);

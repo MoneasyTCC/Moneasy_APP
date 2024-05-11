@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { initializeAuth } from 'firebase/auth';
+import { EmailAuthProvider, initializeAuth, reauthenticateWithCredential } from 'firebase/auth';
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 import {
   getAuth,
@@ -115,5 +115,25 @@ const storeRefreshToken = async (refreshToken: string) => {
     await AsyncStorage.setItem('@refreshToken', refreshToken);
   } catch (error) {
     throw error;
+  }
+};
+
+
+export const reauthenticate = async (currentPassword : any) => {
+  const auth = getAuth();
+  const user = auth.currentUser;
+
+  if (!user || !user.email) {
+    Alert.alert('Erro', 'Nenhum usuário ou e-mail encontrado para reautenticação');
+    return false;
+  }
+
+  const cred = EmailAuthProvider.credential(user.email, currentPassword);
+  try {
+    await reauthenticateWithCredential(user, cred);
+    return true; 
+  } catch (error) {
+    Alert.alert('Erro de Reautenticação', (error as Error).message);
+    return false; 
   }
 };
