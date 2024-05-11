@@ -20,12 +20,17 @@ type Props = {
 export default function MoreScreen({ navigation }: Props) {
   const [isModalVisible, setModalVisible] = useState(false);
   const [isCurrencyModalVisible, setCurrencyModalVisible] = useState(false);
+  const [isChangePasswordModalVisible, setChangePasswordModalVisible] = useState(false);
 
   const toggleCurrencyModal = () => {
     setCurrencyModalVisible(!isCurrencyModalVisible);
   };
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
+  };
+
+  const toggleChangePasswordModal = () => {
+    setChangePasswordModalVisible(!isChangePasswordModalVisible);
   };
   return (
     
@@ -99,8 +104,27 @@ export default function MoreScreen({ navigation }: Props) {
         </View>
       </Modal>
 
-      <ChangePassword/>
+      <TouchableOpacity style={styles.menuItem} onPress={toggleChangePasswordModal}>
+      
+      <Text style={styles.menuItemText}>Alterar Senha</Text>
+    </TouchableOpacity>
+
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={isChangePasswordModalVisible}
+      onRequestClose={toggleChangePasswordModal}
+    >
+      <View style={styles.centeredView}>
+        <View style={styles.modalView}>
+          <ChangePassword />
+          <TouchableOpacity style={styles.buttonClose} onPress={toggleChangePasswordModal}>
+            <Text style={styles.textStyle}>Fechar</Text>
+          </TouchableOpacity>
+        </View>
       </View>
+    </Modal>
+     </View>
       <View style={styles.menuFooter}>
         <NavigationBar />
       </View>
