@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { LineChart, PieChart, ProgressChart } from "react-native-chart-kit";
 import { Dimensions, TouchableOpacity, View, Text, StyleSheet, ScrollView } from "react-native";
 import { obterEntradasESaidasPorAno } from "../Controller/TransacaoController";
+import { obterMetasPorAno } from "../Controller/MetaController";
 
 interface GraficosProps {
   dataSelecionada: Date;
@@ -16,6 +17,11 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
     entradasESaidasPorMes: [],
     saldoPorMes: [],
   });
+  const [metaObject, setMetaObject] = useState<{
+    metas: { titulo: string; valorAtual: number; valorObjetivo: number }[];
+  }>({
+    metas: [],
+  });
   const [show, setShow] = useState(false);
   const [selectedChart, setSelectedChart] = useState<string>("");
   const screenWidth = Dimensions.get("window").width;
@@ -27,6 +33,46 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
     backgroundGradientToOpacity: 1,
     color: (opacity = 1) => `rgba(255,255,255, ${opacity})`,
     strokeWidth: 2, // optional, default 3
+  };
+
+  const handleObterMetasPorAno = async () => {
+    try {
+      const metas = await obterMetasPorAno("Ativo", dataSelecionada);
+
+      const formattedData = {
+        metas: metas.map(({ titulo, valorAtual, valorObjetivo }) => ({
+          titulo,
+          valorAtual,
+          valorObjetivo,
+        })),
+      };
+
+      setMetaObject(formattedData);
+    } catch (error) {
+      console.error("Erro ao obter metas por ano: ", error);
+    }
+  };
+
+  const handleObterEntradasESaidasPorAno = async () => {
+    try {
+      const { entradasESaidasPorMes, saldoPorMes } = await obterEntradasESaidasPorAno(
+        dataSelecionada
+      );
+
+      const formattedData = {
+        entradasESaidasPorMes: entradasESaidasPorMes.map(({ mes, totalEntradas, totalSaidas }) => ({
+          mes,
+          entradas: totalEntradas,
+          saidas: totalSaidas,
+        })),
+        saldoPorMes: saldoPorMes,
+      };
+
+      settransacaoObject(formattedData);
+      //console.log(formattedData);
+    } catch (error) {
+      console.error("Erro ao obter entradas e saídas por ano: ", error);
+    }
   };
 
   const todasEntradasESaidas = () => {
@@ -66,9 +112,29 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
     };
   };
 
+  const filterZeroMeta = () => {
+    const filteredMetas = metaObject.metas.filter((meta) => meta.valorAtual !== 0);
+
+    const sortedMetas = filteredMetas.sort(
+      (a, b) =>
+        Math.abs(a.valorAtual / a.valorObjetivo - 1) - Math.abs(b.valorAtual / b.valorObjetivo - 1)
+    );
+
+    const closestToCompletion = sortedMetas.slice(0, 5).map((meta) => ({
+      titulo: meta.titulo,
+      porcentagemConclusao: meta.valorAtual / meta.valorObjetivo,
+    }));
+
+    return {
+      titulos: closestToCompletion.map((meta) => meta.titulo),
+      porcentagensConclusao: closestToCompletion.map((meta) => meta.porcentagemConclusao),
+    };
+  };
+
   const filteredData = filterZeroSaldo();
   const filteredDataDetalhado = filterZeroSaldoDetalhado();
   const filteredPieData = todasEntradasESaidas();
+  const filteredRingData = filterZeroMeta();
 
   const saldoData = {
     labels: filteredData.meses,
@@ -99,28 +165,6 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
     legend: ["Entradas", "Saidas"], // optional
   };
 
-  const handleObterEntradasESaidasPorAno = async () => {
-    try {
-      const { entradasESaidasPorMes, saldoPorMes } = await obterEntradasESaidasPorAno(
-        dataSelecionada
-      );
-
-      const formattedData = {
-        entradasESaidasPorMes: entradasESaidasPorMes.map(({ mes, totalEntradas, totalSaidas }) => ({
-          mes,
-          entradas: totalEntradas,
-          saidas: totalSaidas,
-        })),
-        saldoPorMes: saldoPorMes,
-      };
-
-      settransacaoObject(formattedData);
-      //console.log(formattedData);
-    } catch (error) {
-      console.error("Erro ao obter entradas e saídas por ano: ", error);
-    }
-  };
-
   const pieData = [
     {
       name: "Entradas",
@@ -137,6 +181,12 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
       legendFontSize: 15,
     },
   ];
+
+  const ringData = {
+    labels: filteredRingData.titulos,
+    data: filteredRingData.porcentagensConclusao,
+    colors: ["#FF0000", "#FF7F00", "#FFFF00", "#00FF00", "#0000FF"],
+  };
 
   let pieChart = null;
   pieChart = (
@@ -170,18 +220,13 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
       withShadow={false}
     />
   );
-  const data = {
-    labels: filteredData.meses, // optional
-    data: filteredData.saldoPorMes, // optional
-    colors: ["#14fc3d", "#ff0000", "#e2e2e2", "#a23232", "#e42323"], // optional
-  };
   let progressRing = null;
   progressRing = (
     <ProgressChart
-      data={data}
+      data={ringData}
       width={screenWidth}
       height={220}
-      strokeWidth={12}
+      strokeWidth={10}
       radius={32}
       chartConfig={chartConfig}
       hideLegend={false}
@@ -206,7 +251,8 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
 
   useEffect(() => {
     handleObterEntradasESaidasPorAno();
-  }, [dataSelecionada, novaTransacao]);
+    handleObterMetasPorAno();
+  }, [dataSelecionada, novaTransacao, selectedChart]);
 
   return (
     <View style={styles.container}>
@@ -274,7 +320,7 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
                   { color: selectedChart === "ring" ? "#14fc3d" : "#fff" },
                 ]}
               >
-                Progress Ring
+                Metas
               </Text>
             </TouchableOpacity>
           </View>
