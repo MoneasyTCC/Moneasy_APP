@@ -1,22 +1,12 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  Button,
-  StyleSheet,
-  Image,
-  Modal,
-  TextInput,
-  Alert,
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image, Modal } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
-import ImportTransactions from "../../../Components/documentPicker";
 import NavigationBar from "../menuNavegation";
 import ImportarCsvComponente from "../../../Components/documentPicker";
-
-import CurrencyConverter from "../../../Components/ConverterMoedas";
 import ConversorMoeda from "../../../Components/ConverterMoedas";
+import ChangePassword from "../../../Components/alterarSenha";
+import LogoutComponent from "../../../Components/sair";
 
 type MoreScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -27,20 +17,116 @@ type Props = {
   navigation: MoreScreenNavigationProp;
 };
 
-// Use as props na definição do seu componente
 export default function MoreScreen({ navigation }: Props) {
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [isCurrencyModalVisible, setCurrencyModalVisible] = useState(false);
+  const [isChangePasswordModalVisible, setChangePasswordModalVisible] = useState(false);
+
+  const toggleCurrencyModal = () => {
+    setCurrencyModalVisible(!isCurrencyModalVisible);
+  };
+  const toggleModal = () => {
+    setModalVisible(!isModalVisible);
+  };
+
+  const toggleChangePasswordModal = () => {
+    setChangePasswordModalVisible(!isChangePasswordModalVisible);
+  };
   return (
+    
     <View style={styles.container}>
       <View style={styles.menuHeader}>
-        <Button title="Sair" onPress={() => navigation.replace("Inicio")} />
+        <Text style={styles.headerText}>Mais opções</Text>
       </View>
-     
       <View style={styles.menuBody}>
-      <ConversorMoeda></ConversorMoeda>
-        <ImportarCsvComponente />
+      <LogoutComponent />
+        {/* A implementar */}
+        <TouchableOpacity style={styles.menuItem} onPress={() => {}}>
+          <Image
+            source={require("../../../assets/settings.png")}
+            style={styles.icon}
+          />
+          <Text style={styles.menuItemText}>Configurações</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.menuItem} onPress={toggleModal}>
+        <Image
+          source={require("../../../assets/csv.png")}
+          style={styles.icon}
+        />
+        <Text style={styles.menuItemText}>Importar CSV</Text>
+      </TouchableOpacity>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={toggleModal}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+     
+
+          <Text style={styles.menuItemText}>Importe o extrato do seu banco do dia a dia para que as transações sejam preenchidas automaticamente!</Text>
+          <Text style={styles.menuItemText}>- O arquivo precisa ser do formato CSV</Text>
+          <Text style={styles.menuItemText}>- Atualmente suportamos o extrato da Nubank</Text>
+          <Text style={styles.menuItemText}>- Nós não armazenamos o seu arquivo!</Text>  
+            <ImportarCsvComponente />
+            <TouchableOpacity style={styles.btnCriar} onPress={toggleModal}>
+              <Text style={styles.criarOrcamento}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      
+
+
+      <TouchableOpacity style={styles.menuItem} onPress={toggleCurrencyModal}>
+        <Image
+          source={require("../../../assets/coinConf.png")}
+          style={styles.icon}
+        />
+        <Text style={styles.menuItemText}>Conversor de Moeda</Text>
+      </TouchableOpacity>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isCurrencyModalVisible}
+        onRequestClose={toggleCurrencyModal}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <ConversorMoeda />
+            <TouchableOpacity style={styles.buttonClose} onPress={toggleCurrencyModal}>
+              <Text style={styles.textStyle}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <TouchableOpacity style={styles.menuItem} onPress={toggleChangePasswordModal}>
+      
+      <Text style={styles.menuItemText}>Alterar Senha</Text>
+    </TouchableOpacity>
+
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={isChangePasswordModalVisible}
+      onRequestClose={toggleChangePasswordModal}
+    >
+      <View style={styles.centeredView}>
+        <View style={styles.modalView}>
+          <ChangePassword />
+          <TouchableOpacity style={styles.buttonClose} onPress={toggleChangePasswordModal}>
+            <Text style={styles.textStyle}>Fechar</Text>
+          </TouchableOpacity>
+        </View>
       </View>
+    </Modal>
+     </View>
       <View style={styles.menuFooter}>
-        <NavigationBar></NavigationBar>
+        <NavigationBar />
       </View>
     </View>
   );
@@ -49,54 +135,104 @@ export default function MoreScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
     backgroundColor: "#2B2B2B",
+    alignItems: "center",
+    justifyContent: "center",
   },
   menuHeader: {
-    borderBottomLeftRadius: 50,
-    borderBottomRightRadius: 50,
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "flex-start",
+    marginLeft: 20,
     width: "100%",
-    height: "35%",
-    backgroundColor: "#3A3E3A",
+    height: "12%",
   },
   menuBody: {
-    width: "80%",
-    height: "50%",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  content: {
-    borderRadius: 50,
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
     width: "100%",
-    height: "80%",
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 20,
     backgroundColor: "#3A3E3A",
   },
   menuFooter: {
-    borderTopLeftRadius: 50,
-    borderTopRightRadius: 50,
-    flexDirection: "column",
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "space-around",
     width: "100%",
     height: "15%",
     backgroundColor: "#3A3E3A",
   },
-  text: {
-    fontSize: 60,
-    marginBottom: 20,
+  headerText: {
+    fontSize: 24,
+    color: "#ffffff",
+    fontWeight: "bold",
+    marginBottom: 30,
+    marginLeft: 10
   },
-  menuNavegation: {
-    borderRadius: 50,
-    backgroundColor: "#2B2B2B",
-    width: "80%",
-    height: "50%",
-    justifyContent: "space-around",
-    alignItems: "center",
+  menuItem: {
     flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#2B2B2B",
+    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+    width: "80%",
+    marginVertical: 10,
   },
-  img: {},
+  menuItemText: {
+    color: "#ffffff",
+    fontSize: 16,
+    marginLeft: 10,
+  },
+  icon: {
+    width: 25,
+    height: 25,
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 22,
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "gray",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5
+  },
+  buttonClose: {
+    backgroundColor: "#2196F3",
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2
+  },
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center"
+  },
+  criarOrcamento: {
+    color: "#0fec32",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  btnCriar: {
+    borderWidth: 2,
+    borderColor: "#0fec32",
+    borderRadius: 10,
+    padding: 6,
+    marginBottom: -20,
+  },
 });

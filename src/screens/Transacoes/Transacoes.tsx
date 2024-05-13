@@ -83,6 +83,7 @@ export default function TransacaoScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
+    <Text style={styles.textTransacoes}>Transações</Text>
       <View style={styles.menuHeader}>
         <View style={{ marginTop: "20%" }}>
           <SeletorMesAno
@@ -124,23 +125,39 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#2B2B2B",
   },
+  
   menuHeader: {
-    overflow: "scroll",
-    borderBottomLeftRadius: 50,
-    borderBottomRightRadius: 50,
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-end",
     justifyContent: "center",
     width: "100%",
-    height: "20%",
-    backgroundColor: "#3A3E3A",
+    height: "18%",
   },
   menuBody: {
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
     width: "100%",
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 20,
+    backgroundColor: "#3A3E3A",
+  },
+  menuFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
+    width: "100%",
+    height: "15%",
+    backgroundColor: "#3A3E3A",
+  },
+  textTransacoes: {
+    position: "absolute",
+    marginTop: 35,
+    marginLeft: 20,
+    fontSize: 24,
+    color: "#ffffff",
+    fontWeight: "bold",
   },
   content: {
     borderRadius: 40,
@@ -148,16 +165,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#3A3E3A",
     padding: 20,
-  },
-  menuFooter: {
-    borderTopLeftRadius: 50,
-    borderTopRightRadius: 50,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-around",
-    width: "100%",
-    height: "15%",
-    backgroundColor: "#3A3E3A",
   },
   arrowButton: {
     /* padding: 10 */

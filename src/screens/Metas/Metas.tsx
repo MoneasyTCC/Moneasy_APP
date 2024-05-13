@@ -1,5 +1,6 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import {
+  Animated,
   View,
   Text,
   Button,
@@ -22,7 +23,10 @@ import ListaDeDividas from "../../../Components/ListaDivida";
 import SeletorMesAno from "../../../Components/SeletorMesAno";
 import { DataContext } from "../../../Contexts/DataContext";
 
-type MetasScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Metas">;
+type MetasScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "Metas"
+>;
 
 type Props = {
   navigation: MetasScreenNavigationProp;
@@ -37,7 +41,6 @@ export default function MetasScreen({ navigation }: Props) {
   const [updateLista, setUpdateLista] = useState(false);
   const [dataInicio, setDataInicio] = useState(new Date());
   const [dataFim, setDataFim] = useState(new Date());
-  const [isTelaDivida, setIsTelaDivida] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [tituloMeta, setTituloMeta] = useState("");
   const [valorAtualMeta, setValorAtualMeta] = useState("");
@@ -46,6 +49,29 @@ export default function MetasScreen({ navigation }: Props) {
   const [valorPagoDivida, setValorPagoDivida] = useState("");
   const [valorTotalDivida, setValorTotalDivida] = useState("");
   const [isDividaPendente, setIsDividaPendente] = useState(false);
+  const [isTelaDivida, setIsTelaDivida] = useState(false);
+  const colorAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(colorAnim, {
+      toValue: isTelaDivida ? 1 : 0,
+      duration: 300,
+      useNativeDriver: false, // Estamos animando propriedades não suportadas pelo driver nativo
+    }).start();
+  }, [isTelaDivida]);
+
+  // Animação para a cor de fundo
+
+  // Interpolação para cores e borderRadius
+  const metaButtonColor = colorAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["#0fec32", "#616161"], // Metas ativo para inativo
+  });
+
+  const dividaButtonColor = colorAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["#616161", "#0fec32"], // Dívidas inativo para ativo
+  });
 
   const handleOnChangeDataInicio = (data: Date) => {
     setDataInicio(data);
@@ -60,7 +86,9 @@ export default function MetasScreen({ navigation }: Props) {
       const valorObjetivoFloat = isNaN(parseFloat(valorObjetivoMeta))
         ? 0
         : parseFloat(valorObjetivoMeta);
-      const valorAtualFloat = isNaN(parseFloat(valorAtualMeta)) ? 0 : parseFloat(valorAtualMeta);
+      const valorAtualFloat = isNaN(parseFloat(valorAtualMeta))
+        ? 0
+        : parseFloat(valorAtualMeta);
       const novosDados = {
         id: "",
         usuarioId: "",
@@ -91,7 +119,9 @@ export default function MetasScreen({ navigation }: Props) {
       const valorTotalFloat = isNaN(parseFloat(valorTotalDivida))
         ? 0
         : parseFloat(valorTotalDivida);
-      const valorPagoFloat = isNaN(parseFloat(valorPagoDivida)) ? 0 : parseFloat(valorPagoDivida);
+      const valorPagoFloat = isNaN(parseFloat(valorPagoDivida))
+        ? 0
+        : parseFloat(valorPagoDivida);
       const novosDados = {
         id: "",
         usuarioId: "",
@@ -129,19 +159,51 @@ export default function MetasScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-  <Text style={styles.textOrcamento}>{isTelaDivida ? 'Dívida' : 'Metas'}</Text>
+      <Text style={styles.textMetas}>{isTelaDivida ? "Dívidas" : "Metas"}</Text>
       <View style={styles.menuHeader}>
-        <SeletorMesAno
-          seletorAno={true}
-          onYearChange={handleOnYearChange}
-        />
+        <SeletorMesAno seletorAno={true} onYearChange={handleOnYearChange} />
       </View>
       <View style={styles.menuBody}>
-      <Text style={ styles.textSecondary }>Alterne entre Divida e Meta </Text>
-        <Switch
-          value={isTelaDivida}
-          onValueChange={() => setIsTelaDivida((prevState) => !prevState)}
-        ></Switch>
+        <View style={styles.switchContainer}>
+          <TouchableOpacity
+            style={styles.statusButton}
+            onPress={() => setIsTelaDivida(false)}
+          >
+            <Animated.View
+              style={[
+                styles.button,
+                {
+                  backgroundColor: metaButtonColor,
+                  borderTopRightRadius: 0, // Sempre zero para "Metas"
+                  borderBottomRightRadius: 0, // Sempre zero para "Metas"
+                  borderTopLeftRadius: 15,
+                  borderBottomLeftRadius: 15,
+                },
+              ]}
+            >
+              <Text style={styles.buttonText}>Metas</Text>
+            </Animated.View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.statusButton}
+            onPress={() => setIsTelaDivida(true)}
+          >
+            <Animated.View
+              style={[
+                styles.button,
+                {
+                  backgroundColor: dividaButtonColor,
+                  borderTopLeftRadius: 0, // Sempre zero para "Dívidas"
+                  borderBottomLeftRadius: 0, // Sempre zero para "Dívidas"
+                  borderTopRightRadius: 15,
+                  borderBottomRightRadius: 15,
+                },
+              ]}
+            >
+              <Text style={styles.buttonText}>Dívidas</Text>
+            </Animated.View>
+          </TouchableOpacity>
+        </View>
         {!isTelaDivida ? (
           <ListaDeMetas
             dataSelecionada={dataSelecionada}
@@ -149,34 +211,41 @@ export default function MetasScreen({ navigation }: Props) {
           />
         ) : (
           <ListaDeDividas
-          dataSelecionada={dataSelecionada}
-          novaDivida={updateLista}/>
+            dataSelecionada={dataSelecionada}
+            novaDivida={updateLista}
+          />
         )}
         {!isTelaDivida ? (
-          <TouchableOpacity onPress={() => setIsModalVisible(true)}>
-            <Text style={{ color: "#0fec32", fontSize: 18 }}>Nova Meta</Text>
+          <TouchableOpacity
+            style={styles.btnCriar}
+            onPress={() => setIsModalVisible(true)}
+          >
+            <Text style={styles.labelCriar}>Nova Meta</Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity onPress={() => setIsModalVisible(true)}>
-            <Text style={{ color: "#0fec32", fontSize: 18 }}>Nova Divida</Text>
+          <TouchableOpacity
+            style={styles.btnCriar}
+            onPress={() => setIsModalVisible(true)}
+          >
+            <Text style={styles.labelCriar}>Nova Divida</Text>
           </TouchableOpacity>
         )}
       </View>
-      <Modal
-        visible={isModalVisible}
-        transparent={true}
-        animationType="slide"
-      >
+      <Modal visible={isModalVisible} transparent={true} animationType="slide">
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <Text style={styles.modalTitle}>{!isTelaDivida ? "Nova Meta" : "Nova Divida"}</Text>
+            <Text style={styles.modalTitle}>
+              {!isTelaDivida ? "Nova Meta" : "Nova Divida"}
+            </Text>
             <TextInput
               style={styles.inputTitulo}
               placeholder="Titulo"
               placeholderTextColor={"#ffffff"}
               value={!isTelaDivida ? tituloMeta : tituloDivida}
               onChangeText={
-                !isTelaDivida ? (text) => setTituloMeta(text) : (text) => setTituloDivida(text)
+                !isTelaDivida
+                  ? (text) => setTituloMeta(text)
+                  : (text) => setTituloDivida(text)
               }
             />
             <View style={styles.inputValorDataGroup}>
@@ -218,18 +287,22 @@ export default function MetasScreen({ navigation }: Props) {
             </View>
             {isTelaDivida && (
               <>
-                <Text style={{ fontSize: 16, fontWeight: "bold", color: "#fff" }}>
+                <Text
+                  style={{ fontSize: 16, fontWeight: "bold", color: "#fff" }}
+                >
                   {!isDividaPendente ? "Pendente" : "Pago"}
                 </Text>
                 <Switch
                   value={isDividaPendente}
-                  onValueChange={() => setIsDividaPendente((prevState) => !prevState)}
+                  onValueChange={() =>
+                    setIsDividaPendente((prevState) => !prevState)
+                  }
                 ></Switch>
               </>
             )}
             <View style={styles.buttonGroup}>
               <TouchableOpacity
-                style={styles.btnModalSuccess}
+                style={[styles.btn, styles.btnAdicionar]}
                 onPress={
                   !isTelaDivida
                     ? () => {
@@ -246,7 +319,10 @@ export default function MetasScreen({ navigation }: Props) {
               >
                 <Text style={styles.labelModal}>Concluir</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setIsModalVisible(false)}>
+              <TouchableOpacity
+                style={[styles.btn, styles.btnCancelar]}
+                onPress={() => setIsModalVisible(false)}
+              >
                 <Text style={styles.labelModal}>Cancelar</Text>
               </TouchableOpacity>
             </View>
@@ -270,7 +346,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     justifyContent: "center",
     width: "100%",
-    height: "16%",
+    height: "14%",
   },
   menuBody: {
     borderTopLeftRadius: 50,
@@ -290,16 +366,15 @@ const styles = StyleSheet.create({
     height: "15%",
     backgroundColor: "#3A3E3A",
   },
-  textOrcamento: {
+  textMetas: {
     position: "absolute",
     marginTop: 35,
     marginLeft: 20,
-    fontSize: 26,
+    fontSize: 24,
     color: "#ffffff",
     fontWeight: "bold",
   },
   textSecondary: {
-
     fontSize: 20,
     color: "#ffffff",
     fontWeight: "bold",
@@ -370,15 +445,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     width: 230,
   },
-  btnModalSuccess: {
-    borderRadius: 20,
-    backgroundColor: "#0fec32",
-    width: 230,
-    height: 45,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 15,
-  },
   labelModal: {
     color: "#ffffff",
     fontWeight: "bold",
@@ -386,7 +452,7 @@ const styles = StyleSheet.create({
   },
   buttonGroup: {
     alignItems: "center",
-    flexDirection: "column",
+    flexDirection: "row",
     justifyContent: "center",
     borderRadius: 20,
     width: "100%",
@@ -397,5 +463,65 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#fff",
     marginBottom: 10,
+  },
+  buttonActive: {
+    backgroundColor: "#0fec32",
+  },
+  buttonInactive: {
+    backgroundColor: "#616161",
+  },
+  switchContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+    width: "60%",
+    height: 40, // Altura fixa para o container dos botões
+  },
+  button: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  statusButton: {
+    flex: 1,
+    /* marginHorizontal: 4, */
+    /*  borderRadius: 10, */
+    overflow: "hidden", // Important to clip the animated view
+  },
+  buttonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  labelCriar: {
+    color: "#0fec32",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  btnCriar: {
+    borderWidth: 2,
+    borderColor: "#0fec32",
+    borderRadius: 10,
+    padding: 6,
+    marginBottom: -20,
+  },
+  btn: {
+    padding: 10,
+    width: 120, // Largura fixa para uniformidade
+    height: 40,
+    borderRadius: 20,
+    marginVertical: 5,
+    marginHorizontal: 5,
+    alignItems: "center",
+  },
+  btnCancelar: {
+    backgroundColor: "#EC0F0F", // Vermelho para botões de 'Excluir'
+  },
+  btnAdicionar: {
+    backgroundColor: "#0FEC32", // Vermelho para botões de 'Excluir'
   },
 });
