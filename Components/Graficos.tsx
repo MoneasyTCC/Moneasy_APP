@@ -3,6 +3,7 @@ import { LineChart, PieChart, ProgressChart } from "react-native-chart-kit";
 import { Dimensions, TouchableOpacity, View, Text, StyleSheet, ScrollView } from "react-native";
 import { obterEntradasESaidasPorAno } from "../Controller/TransacaoController";
 import { obterMetasPorAno } from "../Controller/MetaController";
+import { BarChart } from "react-native-gifted-charts";
 
 interface GraficosProps {
   dataSelecionada: Date;
@@ -10,7 +11,7 @@ interface GraficosProps {
 }
 
 const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) => {
-  const [transacaoObject, settransacaoObject] = useState<{
+  const [transacaoObject, setTransacaoObject] = useState<{
     entradasESaidasPorMes: { mes: string; entradas: number; saidas: number }[];
     saldoPorMes: number[];
   }>({
@@ -68,7 +69,7 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
         saldoPorMes: saldoPorMes,
       };
 
-      settransacaoObject(formattedData);
+      setTransacaoObject(formattedData);
       //console.log(formattedData);
     } catch (error) {
       console.error("Erro ao obter entradas e saídas por ano: ", error);
@@ -131,10 +132,37 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
     };
   };
 
+  function criarArrayDeObjetos(entradas: number[], saidas: number[], meses: string[]) {
+    const objeto1 = {
+      spacing: 2,
+      labelWidth: 30,
+      labelTextStyle: { color: "gray" },
+      frontColor: "#177AD5",
+    };
+    const objeto2 = {
+      frontColor: "#ED6665",
+    };
+    const arrayDeObjetos = [];
+    for (let i = 0; i < Math.max(entradas.length, saidas.length); i++) {
+      if (entradas[i] !== undefined) {
+        arrayDeObjetos.push({ value: entradas[i], label: meses[i], ...objeto1 });
+      }
+      if (saidas[i] !== undefined) {
+        arrayDeObjetos.push({ value: saidas[i], ...objeto2 });
+      }
+    }
+    return arrayDeObjetos;
+  }
+
   const filteredData = filterZeroSaldo();
   const filteredDataDetalhado = filterZeroSaldoDetalhado();
   const filteredPieData = todasEntradasESaidas();
   const filteredRingData = filterZeroMeta();
+  const filteredBarData = criarArrayDeObjetos(
+    filteredDataDetalhado.entradas,
+    filteredDataDetalhado.saidas,
+    filteredDataDetalhado.meses
+  );
 
   const saldoData = {
     labels: filteredData.meses,
@@ -233,6 +261,35 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
       withCustomBarColorFromData={true}
     />
   );
+  let barChart = null;
+  barChart = (
+    <View style={{ width: screenWidth, alignItems: "center" }}>
+      <Text style={styles.chartTitle}>Entradas e Saidas</Text>
+      <View style={styles.bolinhaWrapper}>
+        <View style={styles.bolinhaGroup}>
+          <View style={[styles.bolinha, { backgroundColor: "#147ad5" }]}></View>
+          <Text style={styles.legendaText}>Entradas</Text>
+        </View>
+        <View style={styles.bolinhaGroup}>
+          <View style={[styles.bolinha, { backgroundColor: "#ed6665" }]}></View>
+          <Text style={styles.legendaText}>Saidas</Text>
+        </View>
+      </View>
+      <BarChart
+        data={filteredBarData}
+        barWidth={8}
+        spacing={24}
+        roundedTop
+        roundedBottom
+        hideRules
+        xAxisThickness={0}
+        yAxisThickness={0}
+        yAxisTextStyle={{ color: "gray" }}
+        noOfSections={3}
+        disablePress={true}
+      />
+    </View>
+  );
 
   const handleChartSelection = () => {
     if (selectedChart === "saldo") {
@@ -246,6 +303,9 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
     }
     if (selectedChart === "ring") {
       return progressRing;
+    }
+    if (selectedChart === "bar") {
+      return barChart;
     }
   };
 
@@ -323,6 +383,19 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
                 Metas
               </Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => {
+                setSelectedChart("bar");
+                setShow(true);
+              }}
+            >
+              <Text
+                style={[styles.buttonText, { color: selectedChart === "bar" ? "#14fc3d" : "#fff" }]}
+              >
+                BarChart
+              </Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </View>
@@ -361,9 +434,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
   },
+  bolinhaWrapper: {
+    flexDirection: "row",
+    width: "100%",
+    justifyContent: "space-evenly",
+    marginTop: 20,
+  },
   legendaText: {
     color: "white",
     fontSize: 14,
+  },
+  chartTitle: {
+    color: "white",
+    fontSize: 20,
+    textAlign: "center",
   },
 });
 
