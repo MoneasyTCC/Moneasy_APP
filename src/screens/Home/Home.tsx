@@ -26,6 +26,7 @@ import DropDownPicker from "react-native-dropdown-picker";
 import NavigationBar from "../menuNavegation";
 import { DataContext } from "../../../Contexts/DataContext";
 import SeletorMesAno from "../../../Components/SeletorMesAno";
+import Graficos from "../../../Components/Graficos";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Home">;
 
@@ -69,6 +70,7 @@ export default function HomeScreen({ navigation }: Props) {
     totalSaidas: 0,
     saldo: 0,
   });
+  const [updateGraph, setUpdateGraph] = useState(false);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
@@ -162,6 +164,8 @@ export default function HomeScreen({ navigation }: Props) {
       };
 
       await TransacaoDAL.adicionarTransacao(novosDados);
+      setUpdateGraph(!updateGraph);
+      limparEstados();
       toggleModal();
       Alert.alert("Transação adicionada com Sucesso!");
 
@@ -216,6 +220,12 @@ export default function HomeScreen({ navigation }: Props) {
     setTipoTransacao("");
     setDataTextInput("");
     toggleModal();
+  };
+
+  const limparEstados = () => {
+    setNome("");
+    setValor("");
+    setDataTextInput("");
   };
 
   useEffect(() => {
@@ -369,6 +379,10 @@ export default function HomeScreen({ navigation }: Props) {
       </View>
       <View style={styles.menuBody}>
         {/* <View style={styles.content}>{<CotacaoDolar />}</View> */}
+        <Graficos
+          dataSelecionada={dataSelecionada}
+          novaTransacao={updateGraph}
+        />
       </View>
       <View style={styles.menuFooter}>
         <NavigationBar />
