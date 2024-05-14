@@ -140,14 +140,16 @@ export default function MoreScreen({ navigation }: Props) {
           onRequestClose={toggleChangePasswordModal}
         >
           <View style={styles.centeredView}>
-            <View style={styles.modalView}>
+            <View style={styles.modalView}> 
+              <View></View>
+              <Text style={styles.modalTitle}>Alterar a senha</Text>
               <ChangePassword />
-              <TouchableOpacity
-                style={styles.buttonClose}
+              {/* <TouchableOpacity
+                style={styles.btnClose}
                 onPress={toggleChangePasswordModal}
               >
-                <Text style={styles.textStyle}>Cancelar</Text>
-              </TouchableOpacity>
+                <Text style={styles.textBtnClose}>Cancelar</Text>
+              </TouchableOpacity>   */}
             </View>
           </View>
         </Modal>
