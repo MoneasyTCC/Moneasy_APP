@@ -71,23 +71,30 @@ export default function MoreScreen({ navigation }: Props) {
         >
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
-              <Text style={styles.menuItemText}>
+              <Text style={styles.modalTitle}>Importar extrato</Text>
+              <Text style={[styles.modalText, styles.centered]}>
                 Importe o extrato do seu banco do dia a dia para que as
                 transações sejam preenchidas automaticamente!
               </Text>
-              <Text style={styles.menuItemText}>
-                - O arquivo precisa ser do formato CSV
-              </Text>
-              <Text style={styles.menuItemText}>
-                - Atualmente suportamos o extrato da Nubank
-              </Text>
-              <Text style={styles.menuItemText}>
-                - Nós não armazenamos o seu arquivo!
-              </Text>
-              <ImportarCsvComponente />
-              <TouchableOpacity style={styles.btnCriar} onPress={toggleModal}>
-                <Text style={styles.criarOrcamento}>Fechar</Text>
-              </TouchableOpacity>
+              <View>
+                <Text style={styles.modalText}>
+                  - O arquivo precisa ser do formato CSV
+                </Text>
+                <Text style={styles.modalText}>
+                  - Atualmente suportamos o extrato da Nubank
+                </Text>
+                <Text style={styles.modalText}>
+                  - Nós não armazenamos o seu arquivo!
+                </Text>
+              </View>
+              <View>
+                <ImportarCsvComponente />
+                <TouchableOpacity style={styles.btnClose}>
+                  <Text onPress={toggleModal} style={styles.textBtnClose}>
+                    Cancelar
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </Modal>
@@ -113,7 +120,7 @@ export default function MoreScreen({ navigation }: Props) {
                 style={styles.buttonClose}
                 onPress={toggleCurrencyModal}
               >
-                <Text style={styles.textStyle}>Fechar</Text>
+                <Text style={styles.textStyle}>Cancelar</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -139,7 +146,7 @@ export default function MoreScreen({ navigation }: Props) {
                 style={styles.buttonClose}
                 onPress={toggleChangePasswordModal}
               >
-                <Text style={styles.textStyle}>Fechar</Text>
+                <Text style={styles.textStyle}>Cancelar</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -211,17 +218,20 @@ const styles = StyleSheet.create({
     width: 25,
     height: 25,
   },
+  //*Modal
   centeredView: {
     flex: 1,
+    flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 22,
   },
   modalView: {
-    margin: 20,
-    backgroundColor: "gray",
+    justifyContent: "space-around",
+    marginHorizontal: 20,
+    backgroundColor: "#2B2B2B",
+    height: "50%",
     borderRadius: 20,
-    padding: 35,
+    paddingHorizontal: 35,
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: {
@@ -231,6 +241,42 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 24,
+    color: "#FFFFFF",
+    fontWeight: "bold",
+  },
+  modalText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  centered: {
+    textAlign: "center",
+    alignContent: "center",
+    justifyContent: "center",
+  },
+  btnCriar: {
+    borderWidth: 2,
+    borderColor: "#0fec32",
+    borderRadius: 10,
+    padding: 6,
+    marginBottom: -20,
+  },
+  btnClose: {
+    marginTop: -10,
+    alignItems: "center",
+  },
+  textBtnClose: {
+    color: "#ffffff",
+    fontWeight: "bold",
+    fontSize: 18,
+  },
+  criarOrcamento: {
+    color: "#0fec32",
+    fontSize: 18,
+    fontWeight: "bold",
   },
   buttonClose: {
     backgroundColor: "#2196F3",
@@ -243,16 +289,5 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
   },
-  criarOrcamento: {
-    color: "#0fec32",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  btnCriar: {
-    borderWidth: 2,
-    borderColor: "#0fec32",
-    borderRadius: 10,
-    padding: 6,
-    marginBottom: -20,
-  },
+  //*Modal
 });
