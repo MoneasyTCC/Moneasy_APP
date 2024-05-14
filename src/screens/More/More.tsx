@@ -116,12 +116,12 @@ export default function MoreScreen({ navigation }: Props) {
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
               <ConversorMoeda />
-              <TouchableOpacity
-                style={styles.buttonClose}
+              {/* <TouchableOpacity
+                style={styles.btnClose}
                 onPress={toggleCurrencyModal}
               >
-                <Text style={styles.textStyle}>Cancelar</Text>
-              </TouchableOpacity>
+                <Text style={styles.textBtnClose}>Cancelar</Text>
+              </TouchableOpacity> */}
             </View>
           </View>
         </Modal>
@@ -227,11 +227,11 @@ const styles = StyleSheet.create({
   },
   modalView: {
     justifyContent: "space-around",
-    marginHorizontal: 20,
+    margin: 20,
     backgroundColor: "#2B2B2B",
-    height: "50%",
+    height: "60%",
     borderRadius: 20,
-    paddingHorizontal: 35,
+    padding: 35,
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: {
