@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image, Modal } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Modal,
+} from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
 import NavigationBar from "../menuNavegation";
@@ -20,7 +27,8 @@ type Props = {
 export default function MoreScreen({ navigation }: Props) {
   const [isModalVisible, setModalVisible] = useState(false);
   const [isCurrencyModalVisible, setCurrencyModalVisible] = useState(false);
-  const [isChangePasswordModalVisible, setChangePasswordModalVisible] = useState(false);
+  const [isChangePasswordModalVisible, setChangePasswordModalVisible] =
+    useState(false);
 
   const toggleCurrencyModal = () => {
     setCurrencyModalVisible(!isCurrencyModalVisible);
@@ -33,98 +41,110 @@ export default function MoreScreen({ navigation }: Props) {
     setChangePasswordModalVisible(!isChangePasswordModalVisible);
   };
   return (
-    
     <View style={styles.container}>
       <View style={styles.menuHeader}>
         <Text style={styles.headerText}>Mais opções</Text>
+        <LogoutComponent />
       </View>
       <View style={styles.menuBody}>
-      <LogoutComponent />
         {/* A implementar */}
         <TouchableOpacity style={styles.menuItem} onPress={() => {}}>
           <Image
-            source={require("../../../assets/settings.png")}
+            source={require("../../../assets/more/settings.png")}
             style={styles.icon}
           />
           <Text style={styles.menuItemText}>Configurações</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.menuItem} onPress={toggleModal}>
-        <Image
-          source={require("../../../assets/csv.png")}
-          style={styles.icon}
-        />
-        <Text style={styles.menuItemText}>Importar CSV</Text>
-      </TouchableOpacity>
+          <Image
+            source={require("../../../assets/more/csv.png")}
+            style={styles.icon}
+          />
+          <Text style={styles.menuItemText}>Importar CSV</Text>
+        </TouchableOpacity>
 
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isModalVisible}
-        onRequestClose={toggleModal}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-     
-
-          <Text style={styles.menuItemText}>Importe o extrato do seu banco do dia a dia para que as transações sejam preenchidas automaticamente!</Text>
-          <Text style={styles.menuItemText}>- O arquivo precisa ser do formato CSV</Text>
-          <Text style={styles.menuItemText}>- Atualmente suportamos o extrato da Nubank</Text>
-          <Text style={styles.menuItemText}>- Nós não armazenamos o seu arquivo!</Text>  
-            <ImportarCsvComponente />
-            <TouchableOpacity style={styles.btnCriar} onPress={toggleModal}>
-              <Text style={styles.criarOrcamento}>Fechar</Text>
-            </TouchableOpacity>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={isModalVisible}
+          onRequestClose={toggleModal}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={styles.menuItemText}>
+                Importe o extrato do seu banco do dia a dia para que as
+                transações sejam preenchidas automaticamente!
+              </Text>
+              <Text style={styles.menuItemText}>
+                - O arquivo precisa ser do formato CSV
+              </Text>
+              <Text style={styles.menuItemText}>
+                - Atualmente suportamos o extrato da Nubank
+              </Text>
+              <Text style={styles.menuItemText}>
+                - Nós não armazenamos o seu arquivo!
+              </Text>
+              <ImportarCsvComponente />
+              <TouchableOpacity style={styles.btnCriar} onPress={toggleModal}>
+                <Text style={styles.criarOrcamento}>Fechar</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </Modal>
-      
+        </Modal>
 
+        <TouchableOpacity style={styles.menuItem} onPress={toggleCurrencyModal}>
+          <Image
+            source={require("../../../assets/more/coinConf.png")}
+            style={styles.icon}
+          />
+          <Text style={styles.menuItemText}>Conversor de Moeda</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity style={styles.menuItem} onPress={toggleCurrencyModal}>
-        <Image
-          source={require("../../../assets/coinConf.png")}
-          style={styles.icon}
-        />
-        <Text style={styles.menuItemText}>Conversor de Moeda</Text>
-      </TouchableOpacity>
-
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isCurrencyModalVisible}
-        onRequestClose={toggleCurrencyModal}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <ConversorMoeda />
-            <TouchableOpacity style={styles.buttonClose} onPress={toggleCurrencyModal}>
-              <Text style={styles.textStyle}>Fechar</Text>
-            </TouchableOpacity>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={isCurrencyModalVisible}
+          onRequestClose={toggleCurrencyModal}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <ConversorMoeda />
+              <TouchableOpacity
+                style={styles.buttonClose}
+                onPress={toggleCurrencyModal}
+              >
+                <Text style={styles.textStyle}>Fechar</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
 
-      <TouchableOpacity style={styles.menuItem} onPress={toggleChangePasswordModal}>
-      
-      <Text style={styles.menuItemText}>Alterar Senha</Text>
-    </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={toggleChangePasswordModal}
+        >
+          <Text style={styles.menuItemText}>Alterar Senha</Text>
+        </TouchableOpacity>
 
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={isChangePasswordModalVisible}
-      onRequestClose={toggleChangePasswordModal}
-    >
-      <View style={styles.centeredView}>
-        <View style={styles.modalView}>
-          <ChangePassword />
-          <TouchableOpacity style={styles.buttonClose} onPress={toggleChangePasswordModal}>
-            <Text style={styles.textStyle}>Fechar</Text>
-          </TouchableOpacity>
-        </View>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={isChangePasswordModalVisible}
+          onRequestClose={toggleChangePasswordModal}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <ChangePassword />
+              <TouchableOpacity
+                style={styles.buttonClose}
+                onPress={toggleChangePasswordModal}
+              >
+                <Text style={styles.textStyle}>Fechar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </View>
-    </Modal>
-     </View>
       <View style={styles.menuFooter}>
         <NavigationBar />
       </View>
@@ -142,7 +162,7 @@ const styles = StyleSheet.create({
   menuHeader: {
     flexDirection: "row",
     alignItems: "flex-end",
-    justifyContent: "flex-start",
+    justifyContent: "space-between",
     marginLeft: 20,
     width: "100%",
     height: "12%",
@@ -169,7 +189,7 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontWeight: "bold",
     marginBottom: 30,
-    marginLeft: 10
+    marginLeft: 10,
   },
   menuItem: {
     flexDirection: "row",
@@ -193,8 +213,8 @@ const styles = StyleSheet.create({
   },
   centeredView: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 22,
   },
   modalView: {
@@ -206,22 +226,22 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 2
+      height: 2,
     },
     shadowOpacity: 0.25,
     shadowRadius: 4,
-    elevation: 5
+    elevation: 5,
   },
   buttonClose: {
     backgroundColor: "#2196F3",
     borderRadius: 20,
     padding: 10,
-    elevation: 2
+    elevation: 2,
   },
   textStyle: {
     color: "white",
     fontWeight: "bold",
-    textAlign: "center"
+    textAlign: "center",
   },
   criarOrcamento: {
     color: "#0fec32",
