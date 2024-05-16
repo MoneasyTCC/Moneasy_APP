@@ -37,10 +37,8 @@ const Graficos: React.FC<GraficosProps> = ({
   const screenWidth = Dimensions.get("window").width;
 
   const chartConfig = {
-    backgroundGradientFrom: "#2b2b2b",
-    backgroundGradientFromOpacity: 0,
-    backgroundGradientTo: "#2b2b2b",
-    backgroundGradientToOpacity: 0,
+    backgroundGradientFrom: "#3A3E3A",
+    backgroundGradientTo: "#3A3E3A",
     color: (opacity = 1) => `rgba(255,255,255, ${opacity})`,
     strokeWidth: 2,
   };
@@ -158,11 +156,11 @@ const Graficos: React.FC<GraficosProps> = ({
     const objeto1 = {
       spacing: 2,
       labelWidth: 30,
-      labelTextStyle: { color: "gray" },
-      frontColor: "#177AD5",
+      labelTextStyle: { color: "#FFFFFF" },
+      frontColor: "#0FEC32",
     };
     const objeto2 = {
-      frontColor: "#ED6665",
+      frontColor: "#FF0000",
     };
     const arrayDeObjetos = [];
     for (let i = 0; i < Math.max(entradas.length, saidas.length); i++) {
@@ -267,7 +265,7 @@ const Graficos: React.FC<GraficosProps> = ({
         width={screenWidth - 40}
         height={220}
         chartConfig={chartConfig}
-        withShadow={true}
+        withShadow={false}
         bezier
       />
     </View>
@@ -280,7 +278,7 @@ const Graficos: React.FC<GraficosProps> = ({
         width={screenWidth - 40}
         height={220}
         chartConfig={chartConfig}
-        withShadow={true}
+        withShadow={false}
         bezier
       />
     </View>
@@ -306,15 +304,17 @@ const Graficos: React.FC<GraficosProps> = ({
         data={filteredBarData}
         width={screenWidth - 40}
         height={220}
-        barWidth={16}
-        spacing={8}
+        barWidth={15}
+        spacing={2}
         barBorderRadius={4}
         noOfSections={3}
         yAxisThickness={0}
         xAxisThickness={0}
-        initialSpacing={20}
-        chartConfig={chartConfig}
-        isAnimated={true} // Anima as barras ao carregar
+        initialSpacing={10}
+        hideRules={true}
+        isAnimated={true}
+        yAxisTextStyle={{ color: "#FFFFFF" }} // Cor branca para valores do eixo Y
+        /* chartConfig={chartConfig} */
       />
     </View>
   );
