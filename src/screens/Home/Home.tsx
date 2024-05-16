@@ -13,6 +13,7 @@ import {
   FlatList,
   FlatListProps,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
@@ -244,25 +245,17 @@ export default function HomeScreen({ navigation }: Props) {
         />
         <View>
           {isLoading ? (
-            <ActivityIndicator
-              size="large"
-              color="#ffffff"
-            />
+            <ActivityIndicator size="large" color="#ffffff" />
           ) : (
             <Text style={styles.saldoAtual}>
-              {mostrarValores
-                ? `R$ ${valuesObject.saldo ? valuesObject.saldo.toFixed(2) : "0.00"}`
-                : "R$ --"}
+              {mostrarValores ? `R$ ${valuesObject.saldo ? valuesObject.saldo.toFixed(2) : "0.00"}` : "R$ --"}
             </Text>
           )}
         </View>
         <View style={styles.spacer}></View>
         <View style={styles.buttons}>
           <View style={styles.rendas}>
-            <TouchableOpacity
-              style={styles.entradaBtn}
-              onPress={handleTipoTransacaoEntrada}
-            >
+            <TouchableOpacity style={styles.entradaBtn} onPress={handleTipoTransacaoEntrada}>
               <Image
                 source={require("../../../assets/setaCima.png")} // Ajuste o caminho conforme necessário
                 style={{ width: 32, height: 32 }} // Ajuste o tamanho conforme necessário
@@ -270,14 +263,9 @@ export default function HomeScreen({ navigation }: Props) {
             </TouchableOpacity>
             <Text style={styles.saldosText}>Rendas</Text>
             {isLoading ? (
-              <ActivityIndicator
-                size="large"
-                color="#ffffff"
-              />
+              <ActivityIndicator size="large" color="#ffffff" />
             ) : (
-              <Text style={styles.saldosText}>
-                {mostrarValores ? `R$ ${String(valuesObject?.totalEntradas)}` : "R$ --"}
-              </Text>
+              <Text style={styles.saldosText}>{mostrarValores ? `R$ ${String(valuesObject?.totalEntradas)}` : "R$ --"}</Text>
             )}
           </View>
           <View>
@@ -289,10 +277,7 @@ export default function HomeScreen({ navigation }: Props) {
             </TouchableOpacity>
           </View>
           <View style={styles.despesas}>
-            <TouchableOpacity
-              style={styles.saidaBtn}
-              onPress={handleTipoTransacaoSaida}
-            >
+            <TouchableOpacity style={styles.saidaBtn} onPress={handleTipoTransacaoSaida}>
               <Image
                 source={require("../../../assets/setaCima.png")} // Ajuste o caminho conforme necessário
                 style={{
@@ -304,22 +289,13 @@ export default function HomeScreen({ navigation }: Props) {
             </TouchableOpacity>
             <Text style={styles.saldosText}>Despesas</Text>
             {isLoading ? (
-              <ActivityIndicator
-                size="large"
-                color="#ffffff"
-              />
+              <ActivityIndicator size="large" color="#ffffff" />
             ) : (
-              <Text style={styles.saldosText}>
-                {mostrarValores ? `R$ ${String(valuesObject?.totalSaidas)}` : "R$ --"}
-              </Text>
+              <Text style={styles.saldosText}>{mostrarValores ? `R$ ${String(valuesObject?.totalSaidas)}` : "R$ --"}</Text>
             )}
           </View>
         </View>
-        <Modal
-          visible={isModalVisible}
-          animationType="slide"
-          transparent={true}
-        >
+        <Modal visible={isModalVisible} animationType="slide" transparent={true}>
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
               <TextInput
@@ -348,16 +324,10 @@ export default function HomeScreen({ navigation }: Props) {
               />
 
               <View style={styles.buttonGroup}>
-                <TouchableOpacity
-                  onPress={handleTransacao}
-                  style={styles.btnModalSuccess}
-                >
+                <TouchableOpacity onPress={handleTransacao} style={styles.btnModalSuccess}>
                   <Text style={styles.labelModal}>Concluir</Text>
                 </TouchableOpacity>
-                <Text
-                  onPress={handleCancelarTransacao}
-                  style={styles.labelModal}
-                >
+                <Text onPress={handleCancelarTransacao} style={styles.labelModal}>
                   Cancelar
                 </Text>
               </View>
@@ -378,11 +348,7 @@ export default function HomeScreen({ navigation }: Props) {
         </Modal>
       </View>
       <View style={styles.menuBody}>
-        {/* <View style={styles.content}>{<CotacaoDolar />}</View> */}
-        <Graficos
-          dataSelecionada={dataSelecionada}
-          novaTransacao={updateGraph}
-        />
+        <Graficos dataSelecionada={dataSelecionada} novaTransacao={updateGraph} />
       </View>
       <View style={styles.menuFooter}>
         <NavigationBar />
