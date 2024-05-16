@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { LineChart, PieChart, ProgressChart } from "react-native-chart-kit";
-import { Dimensions, TouchableOpacity, View, Text, StyleSheet, ScrollView } from "react-native";
+import {
+  Dimensions,
+  TouchableOpacity,
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+} from "react-native";
 import { obterEntradasESaidasPorAno } from "../Controller/TransacaoController";
 import { obterMetasPorAno } from "../Controller/MetaController";
 import { BarChart } from "react-native-gifted-charts";
@@ -10,7 +17,10 @@ interface GraficosProps {
   novaTransacao: boolean;
 }
 
-const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) => {
+const Graficos: React.FC<GraficosProps> = ({
+  dataSelecionada,
+  novaTransacao,
+}) => {
   const [transacaoObject, setTransacaoObject] = useState<{
     entradasESaidasPorMes: { mes: string; entradas: number; saidas: number }[];
     saldoPorMes: number[];
@@ -23,17 +33,14 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
   }>({
     metas: [],
   });
-  const [show, setShow] = useState(false);
-  const [selectedChart, setSelectedChart] = useState<string>("");
+  const [selectedChart, setSelectedChart] = useState<string>("lineSaldo");
   const screenWidth = Dimensions.get("window").width;
 
   const chartConfig = {
-    backgroundGradientFrom: "#2b2b2b",
-    backgroundGradientFromOpacity: 0,
-    backgroundGradientTo: "#2b2b2b",
-    backgroundGradientToOpacity: 1,
+    backgroundGradientFrom: "#3A3E3A",
+    backgroundGradientTo: "#3A3E3A",
     color: (opacity = 1) => `rgba(255,255,255, ${opacity})`,
-    strokeWidth: 2, // optional, default 3
+    strokeWidth: 2,
   };
 
   const handleObterMetasPorAno = async () => {
@@ -56,38 +63,42 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
 
   const handleObterEntradasESaidasPorAno = async () => {
     try {
-      const { entradasESaidasPorMes, saldoPorMes } = await obterEntradasESaidasPorAno(
-        dataSelecionada
-      );
+      const { entradasESaidasPorMes, saldoPorMes } =
+        await obterEntradasESaidasPorAno(dataSelecionada);
 
       const formattedData = {
-        entradasESaidasPorMes: entradasESaidasPorMes.map(({ mes, totalEntradas, totalSaidas }) => ({
-          mes,
-          entradas: totalEntradas,
-          saidas: totalSaidas,
-        })),
+        entradasESaidasPorMes: entradasESaidasPorMes.map(
+          ({ mes, totalEntradas, totalSaidas }) => ({
+            mes,
+            entradas: totalEntradas,
+            saidas: totalSaidas,
+          })
+        ),
         saldoPorMes: saldoPorMes,
       };
 
       setTransacaoObject(formattedData);
-      //console.log(formattedData);
     } catch (error) {
       console.error("Erro ao obter entradas e saídas por ano: ", error);
     }
   };
 
   const todasEntradasESaidas = () => {
-    return transacaoObject.entradasESaidasPorMes.map(({ entradas, saidas }) => ({
-      entradas,
-      saidas,
-    }));
+    return transacaoObject.entradasESaidasPorMes.map(
+      ({ entradas, saidas }) => ({
+        entradas,
+        saidas,
+      })
+    );
   };
 
   const filterZeroSaldo = () => {
     const filteredData = transacaoObject.entradasESaidasPorMes.filter(
       (_, index) => transacaoObject.saldoPorMes[index] !== 0
     );
-    const filteredSaldoPorMes = transacaoObject.saldoPorMes.filter((saldo) => saldo !== 0);
+    const filteredSaldoPorMes = transacaoObject.saldoPorMes.filter(
+      (saldo) => saldo !== 0
+    );
     const filteredMeses = filteredData.map(({ mes }) => mes);
 
     return {
@@ -114,11 +125,14 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
   };
 
   const filterZeroMeta = () => {
-    const filteredMetas = metaObject.metas.filter((meta) => meta.valorAtual !== 0);
+    const filteredMetas = metaObject.metas.filter(
+      (meta) => meta.valorAtual !== 0
+    );
 
     const sortedMetas = filteredMetas.sort(
       (a, b) =>
-        Math.abs(a.valorAtual / a.valorObjetivo - 1) - Math.abs(b.valorAtual / b.valorObjetivo - 1)
+        Math.abs(a.valorAtual / a.valorObjetivo - 1) -
+        Math.abs(b.valorAtual / b.valorObjetivo - 1)
     );
 
     const closestToCompletion = sortedMetas.slice(0, 5).map((meta) => ({
@@ -128,24 +142,34 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
 
     return {
       titulos: closestToCompletion.map((meta) => meta.titulo),
-      porcentagensConclusao: closestToCompletion.map((meta) => meta.porcentagemConclusao),
+      porcentagensConclusao: closestToCompletion.map(
+        (meta) => meta.porcentagemConclusao
+      ),
     };
   };
 
-  function criarArrayDeObjetos(entradas: number[], saidas: number[], meses: string[]) {
+  function criarArrayDeObjetos(
+    entradas: number[],
+    saidas: number[],
+    meses: string[]
+  ) {
     const objeto1 = {
       spacing: 2,
       labelWidth: 30,
-      labelTextStyle: { color: "gray" },
-      frontColor: "#177AD5",
+      labelTextStyle: { color: "#FFFFFF" },
+      frontColor: "#0FEC32",
     };
     const objeto2 = {
-      frontColor: "#ED6665",
+      frontColor: "#FF0000",
     };
     const arrayDeObjetos = [];
     for (let i = 0; i < Math.max(entradas.length, saidas.length); i++) {
       if (entradas[i] !== undefined) {
-        arrayDeObjetos.push({ value: entradas[i], label: meses[i], ...objeto1 });
+        arrayDeObjetos.push({
+          value: entradas[i],
+          label: meses[i],
+          ...objeto1,
+        });
       }
       if (saidas[i] !== undefined) {
         arrayDeObjetos.push({ value: saidas[i], ...objeto2 });
@@ -169,11 +193,11 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
     datasets: [
       {
         data: filteredData.saldoPorMes.map((saldo) => saldo),
-        color: (opacity = 1) => `rgba(255,255,255, ${opacity})`, // optional
-        strokeWidth: 2, // optional
+        color: (opacity = 1) => `rgba(255,255,255, ${opacity})`,
+        strokeWidth: 2,
       },
     ],
-    legend: ["Saldo Por Mes"], // optional
+    legend: ["Saldo Por Mes"],
   };
 
   const entradasSaidaData = {
@@ -181,29 +205,33 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
     datasets: [
       {
         data: filteredDataDetalhado.entradas.map((entrada) => entrada),
-        color: (opacity = 1) => `rgba(20,252,61, ${opacity})`, // optional
-        strokeWidth: 2, // optional
+        color: (opacity = 1) => `rgba(20,252,61, ${opacity})`,
+        strokeWidth: 2,
       },
       {
         data: filteredDataDetalhado.saidas.map((saida) => saida),
-        color: (opacity = 1) => `rgba(255,0,0, ${opacity})`, // optional
-        strokeWidth: 2, // optional
+        color: (opacity = 1) => `rgba(255,0,0, ${opacity})`,
+        strokeWidth: 2,
       },
     ],
-    legend: ["Entradas", "Saidas"], // optional
+    legend: ["Entradas", "Saidas"],
   };
 
   const pieData = [
     {
       name: "Entradas",
-      population: filteredPieData.map(({ entradas }) => entradas).reduce((a, b) => a + b, 0),
+      population: filteredPieData
+        .map(({ entradas }) => entradas)
+        .reduce((a, b) => a + b, 0),
       color: "#14fc3d",
       legendFontColor: "#fff",
       legendFontSize: 15,
     },
     {
       name: "Saidas",
-      population: filteredPieData.map(({ saidas }) => saidas).reduce((a, b) => a + b, 0),
+      population: filteredPieData
+        .map(({ saidas }) => saidas)
+        .reduce((a, b) => a + b, 0),
       color: "#ff0000",
       legendFontColor: "#fff",
       legendFontSize: 15,
@@ -216,238 +244,181 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
     colors: ["#FF0000", "#FF7F00", "#FFFF00", "#00FF00", "#0000FF"],
   };
 
-  let pieChart = null;
-  pieChart = (
-    <PieChart
-      data={pieData}
-      width={screenWidth}
-      height={220}
-      chartConfig={chartConfig}
-      accessor={"population"}
-      backgroundColor={"transparent"}
-      paddingLeft="15"
-    />
-  );
-  let lineChartSaldo = null;
-  lineChartSaldo = (
-    <LineChart
-      data={saldoData}
-      width={screenWidth}
-      height={220}
-      chartConfig={chartConfig}
-      withShadow={false}
-    />
-  );
-  let lineChartEntradasSaidas = null;
-  lineChartEntradasSaidas = (
-    <LineChart
-      data={entradasSaidaData}
-      width={screenWidth}
-      height={220}
-      chartConfig={chartConfig}
-      withShadow={false}
-    />
-  );
-  let progressRing = null;
-  progressRing = (
-    <ProgressChart
-      data={ringData}
-      width={screenWidth}
-      height={220}
-      strokeWidth={10}
-      radius={32}
-      chartConfig={chartConfig}
-      hideLegend={false}
-      withCustomBarColorFromData={true}
-    />
-  );
-  let barChart = null;
-  barChart = (
-    <View style={{ width: screenWidth, alignItems: "center" }}>
-      <Text style={styles.chartTitle}>Entradas e Saidas</Text>
-      <View style={styles.bolinhaWrapper}>
-        <View style={styles.bolinhaGroup}>
-          <View style={[styles.bolinha, { backgroundColor: "#147ad5" }]}></View>
-          <Text style={styles.legendaText}>Entradas</Text>
-        </View>
-        <View style={styles.bolinhaGroup}>
-          <View style={[styles.bolinha, { backgroundColor: "#ed6665" }]}></View>
-          <Text style={styles.legendaText}>Saidas</Text>
-        </View>
-      </View>
-      <BarChart
-        data={filteredBarData}
-        barWidth={8}
-        spacing={24}
-        roundedTop
-        roundedBottom
-        hideRules
-        xAxisThickness={0}
-        yAxisThickness={0}
-        yAxisTextStyle={{ color: "gray" }}
-        noOfSections={3}
-        disablePress={true}
+  const pieChart = (
+    <View style={styles.chartContainer}>
+      <PieChart
+        data={pieData}
+        width={screenWidth - 40}
+        height={220}
+        chartConfig={chartConfig}
+        accessor={"population"}
+        backgroundColor={"transparent"}
+        paddingLeft="15"
       />
     </View>
   );
 
-  const handleChartSelection = () => {
-    if (selectedChart === "saldo") {
-      return lineChartSaldo;
-    }
-    if (selectedChart === "entradasSaidas") {
-      return lineChartEntradasSaidas;
-    }
-    if (selectedChart === "pie") {
-      return pieChart;
-    }
-    if (selectedChart === "ring") {
-      return progressRing;
-    }
-    if (selectedChart === "bar") {
-      return barChart;
-    }
-  };
+  const lineChartSaldo = (
+    <View style={styles.chartContainer}>
+      <LineChart
+        data={saldoData}
+        width={screenWidth - 40}
+        height={220}
+        chartConfig={chartConfig}
+        withShadow={false}
+        bezier
+      />
+    </View>
+  );
+
+  const lineChartEntradasSaidas = (
+    <View style={styles.chartContainer}>
+      <LineChart
+        data={entradasSaidaData}
+        width={screenWidth - 40}
+        height={220}
+        chartConfig={chartConfig}
+        withShadow={false}
+        bezier
+      />
+    </View>
+  );
+
+  const progressRing = (
+    <View style={styles.chartContainer}>
+      <ProgressChart
+        data={ringData}
+        width={screenWidth - 40}
+        height={220}
+        strokeWidth={16}
+        radius={32}
+        chartConfig={chartConfig}
+        hideLegend={false}
+      />
+    </View>
+  );
+
+  const barChart = (
+    <View style={styles.chartContainer}>
+      <BarChart
+        data={filteredBarData}
+        width={screenWidth - 40}
+        height={220}
+        barWidth={15}
+        spacing={2}
+        barBorderRadius={4}
+        noOfSections={3}
+        yAxisThickness={0}
+        xAxisThickness={0}
+        initialSpacing={10}
+        hideRules={true}
+        isAnimated={true}
+        yAxisTextStyle={{ color: "#FFFFFF" }} // Cor branca para valores do eixo Y
+        /* chartConfig={chartConfig} */
+      />
+    </View>
+  );
 
   useEffect(() => {
     handleObterEntradasESaidasPorAno();
     handleObterMetasPorAno();
-  }, [dataSelecionada, novaTransacao, selectedChart]);
+  }, [dataSelecionada, novaTransacao]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.buttonGroup}>
-        <ScrollView
-          horizontal
-          style={{ marginHorizontal: 15 }}
-        >
-          <View style={styles.buttonGroup}>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => {
-                setSelectedChart("saldo");
-                setShow(true);
-              }}
-            >
-              <Text
-                style={[
-                  styles.buttonText,
-                  { color: selectedChart === "saldo" ? "#14fc3d" : "#fff" },
-                ]}
-              >
-                Saldo Por Mes
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => {
-                setSelectedChart("entradasSaidas");
-                setShow(true);
-              }}
-            >
-              <Text
-                style={[
-                  styles.buttonText,
-                  { color: selectedChart === "entradasSaidas" ? "#14fc3d" : "#fff" },
-                ]}
-              >
-                Entradas e Saidas
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => {
-                setSelectedChart("pie");
-                setShow(true);
-              }}
-            >
-              <Text
-                style={[styles.buttonText, { color: selectedChart === "pie" ? "#14fc3d" : "#fff" }]}
-              >
-                PieChart
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => {
-                setSelectedChart("ring");
-                setShow(true);
-              }}
-            >
-              <Text
-                style={[
-                  styles.buttonText,
-                  { color: selectedChart === "ring" ? "#14fc3d" : "#fff" },
-                ]}
-              >
-                Metas
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => {
-                setSelectedChart("bar");
-                setShow(true);
-              }}
-            >
-              <Text
-                style={[styles.buttonText, { color: selectedChart === "bar" ? "#14fc3d" : "#fff" }]}
-              >
-                BarChart
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
+    <View style={styles.graficos}>
+      <View style={styles.buttonContainer}>
+        <View style={styles.row}>
+          <TouchableOpacity
+            style={[
+              styles.button,
+              selectedChart === "pie" && { backgroundColor: "#0FEC32" },
+            ]}
+            onPress={() => setSelectedChart("pie")}
+          >
+            <Text style={styles.buttonText}>Pie</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.button,
+              selectedChart === "lineSaldo" && { backgroundColor: "#0FEC32" },
+            ]}
+            onPress={() => setSelectedChart("lineSaldo")}
+          >
+            <Text style={styles.buttonText}>Saldo</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.button,
+              selectedChart === "ring" && { backgroundColor: "#0FEC32" },
+            ]}
+            onPress={() => setSelectedChart("ring")}
+          >
+            <Text style={styles.buttonText}>Metas</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.button,
+              selectedChart === "lineEntradasSaidas" && {
+                backgroundColor: "#0FEC32",
+              },
+            ]}
+            onPress={() => setSelectedChart("lineEntradasSaidas")}
+          >
+            <Text style={styles.buttonText}>Entradas/Saidas</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.button,
+              selectedChart === "bar" && { backgroundColor: "#0FEC32" },
+            ]}
+            onPress={() => setSelectedChart("bar")}
+          >
+            <Text style={styles.buttonText}>Bar</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      {show && handleChartSelection()}
+      {selectedChart === "pie" && pieChart}
+      {selectedChart === "lineSaldo" && lineChartSaldo}
+      {selectedChart === "lineEntradasSaidas" && lineChartEntradasSaidas}
+      {selectedChart === "ring" && progressRing}
+      {selectedChart === "bar" && barChart}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  graficos: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#2B2B2B",
+    paddingHorizontal: 10,
   },
-  buttonGroup: {
-    flexDirection: "row",
-    gap: 5,
+  buttonContainer: {
+    marginVertical: 10,
   },
   button: {
-    backgroundColor: "#3a3d3a",
+    backgroundColor: "#3A3E3A",
     padding: 10,
-    borderRadius: 20,
-    marginBottom: 10,
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-  },
-  bolinha: {
-    width: 15,
-    height: 15,
-    borderRadius: 10,
+    borderRadius: 5,
     marginHorizontal: 5,
   },
-  bolinhaGroup: {
+  buttonText: {
+    color: "#ffffff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginVertical: 5,
+  },
+  chartContainer: {
+    backgroundColor: "#3A3E3A",
+    borderRadius: 15,
+    marginVertical: 10,
+    padding: 10,
     alignItems: "center",
-    flexDirection: "row",
-  },
-  bolinhaWrapper: {
-    flexDirection: "row",
-    width: "100%",
-    justifyContent: "space-evenly",
-    marginTop: 20,
-  },
-  legendaText: {
-    color: "white",
-    fontSize: 14,
-  },
-  chartTitle: {
-    color: "white",
-    fontSize: 20,
-    textAlign: "center",
   },
 });
 
