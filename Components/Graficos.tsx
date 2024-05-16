@@ -355,8 +355,6 @@ const Graficos: React.FC<GraficosProps> = ({
           >
             <Text style={styles.buttonText}>Metas</Text>
           </TouchableOpacity>
-        </View>
-        <View style={styles.row}>
           <TouchableOpacity
             style={[
               styles.button,
