@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { LineChart, PieChart, ProgressChart } from "react-native-chart-kit";
-import { Dimensions, TouchableOpacity, View, Text, StyleSheet, ScrollView } from "react-native";
+import {
+  Dimensions,
+  TouchableOpacity,
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+} from "react-native";
 import { obterEntradasESaidasPorAno } from "../Controller/TransacaoController";
 import { obterMetasPorAno } from "../Controller/MetaController";
 import { BarChart } from "react-native-gifted-charts";
@@ -10,7 +17,10 @@ interface GraficosProps {
   novaTransacao: boolean;
 }
 
-const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) => {
+const Graficos: React.FC<GraficosProps> = ({
+  dataSelecionada,
+  novaTransacao,
+}) => {
   const [transacaoObject, setTransacaoObject] = useState<{
     entradasESaidasPorMes: { mes: string; entradas: number; saidas: number }[];
     saldoPorMes: number[];
@@ -55,14 +65,17 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
 
   const handleObterEntradasESaidasPorAno = async () => {
     try {
-      const { entradasESaidasPorMes, saldoPorMes } = await obterEntradasESaidasPorAno(dataSelecionada);
+      const { entradasESaidasPorMes, saldoPorMes } =
+        await obterEntradasESaidasPorAno(dataSelecionada);
 
       const formattedData = {
-        entradasESaidasPorMes: entradasESaidasPorMes.map(({ mes, totalEntradas, totalSaidas }) => ({
-          mes,
-          entradas: totalEntradas,
-          saidas: totalSaidas,
-        })),
+        entradasESaidasPorMes: entradasESaidasPorMes.map(
+          ({ mes, totalEntradas, totalSaidas }) => ({
+            mes,
+            entradas: totalEntradas,
+            saidas: totalSaidas,
+          })
+        ),
         saldoPorMes: saldoPorMes,
       };
 
@@ -73,17 +86,21 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
   };
 
   const todasEntradasESaidas = () => {
-    return transacaoObject.entradasESaidasPorMes.map(({ entradas, saidas }) => ({
-      entradas,
-      saidas,
-    }));
+    return transacaoObject.entradasESaidasPorMes.map(
+      ({ entradas, saidas }) => ({
+        entradas,
+        saidas,
+      })
+    );
   };
 
   const filterZeroSaldo = () => {
     const filteredData = transacaoObject.entradasESaidasPorMes.filter(
       (_, index) => transacaoObject.saldoPorMes[index] !== 0
     );
-    const filteredSaldoPorMes = transacaoObject.saldoPorMes.filter((saldo) => saldo !== 0);
+    const filteredSaldoPorMes = transacaoObject.saldoPorMes.filter(
+      (saldo) => saldo !== 0
+    );
     const filteredMeses = filteredData.map(({ mes }) => mes);
 
     return {
@@ -110,10 +127,14 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
   };
 
   const filterZeroMeta = () => {
-    const filteredMetas = metaObject.metas.filter((meta) => meta.valorAtual !== 0);
+    const filteredMetas = metaObject.metas.filter(
+      (meta) => meta.valorAtual !== 0
+    );
 
     const sortedMetas = filteredMetas.sort(
-      (a, b) => Math.abs(a.valorAtual / a.valorObjetivo - 1) - Math.abs(b.valorAtual / b.valorObjetivo - 1)
+      (a, b) =>
+        Math.abs(a.valorAtual / a.valorObjetivo - 1) -
+        Math.abs(b.valorAtual / b.valorObjetivo - 1)
     );
 
     const closestToCompletion = sortedMetas.slice(0, 5).map((meta) => ({
@@ -123,11 +144,17 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
 
     return {
       titulos: closestToCompletion.map((meta) => meta.titulo),
-      porcentagensConclusao: closestToCompletion.map((meta) => meta.porcentagemConclusao),
+      porcentagensConclusao: closestToCompletion.map(
+        (meta) => meta.porcentagemConclusao
+      ),
     };
   };
 
-  function criarArrayDeObjetos(entradas: number[], saidas: number[], meses: string[]) {
+  function criarArrayDeObjetos(
+    entradas: number[],
+    saidas: number[],
+    meses: string[]
+  ) {
     const objeto1 = {
       spacing: 2,
       labelWidth: 30,
@@ -140,7 +167,11 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
     const arrayDeObjetos = [];
     for (let i = 0; i < Math.max(entradas.length, saidas.length); i++) {
       if (entradas[i] !== undefined) {
-        arrayDeObjetos.push({ value: entradas[i], label: meses[i], ...objeto1 });
+        arrayDeObjetos.push({
+          value: entradas[i],
+          label: meses[i],
+          ...objeto1,
+        });
       }
       if (saidas[i] !== undefined) {
         arrayDeObjetos.push({ value: saidas[i], ...objeto2 });
@@ -191,14 +222,18 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
   const pieData = [
     {
       name: "Entradas",
-      population: filteredPieData.map(({ entradas }) => entradas).reduce((a, b) => a + b, 0),
+      population: filteredPieData
+        .map(({ entradas }) => entradas)
+        .reduce((a, b) => a + b, 0),
       color: "#14fc3d",
       legendFontColor: "#fff",
       legendFontSize: 15,
     },
     {
       name: "Saidas",
-      population: filteredPieData.map(({ saidas }) => saidas).reduce((a, b) => a + b, 0),
+      population: filteredPieData
+        .map(({ saidas }) => saidas)
+        .reduce((a, b) => a + b, 0),
       color: "#ff0000",
       legendFontColor: "#fff",
       legendFontSize: 15,
@@ -233,7 +268,7 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
         height={220}
         chartConfig={chartConfig}
         withShadow={true}
-        bezier  
+        bezier
       />
     </View>
   );
@@ -246,7 +281,7 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
         height={220}
         chartConfig={chartConfig}
         withShadow={true}
-        bezier  
+        bezier
       />
     </View>
   );
@@ -271,16 +306,15 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
         data={filteredBarData}
         width={screenWidth - 40}
         height={220}
-        barWidth={15}
-        spacing={1}
-        barBorderRadius={5}
+        barWidth={16}
+        spacing={8}
+        barBorderRadius={4}
         noOfSections={3}
         yAxisThickness={0}
         xAxisThickness={0}
         initialSpacing={20}
         chartConfig={chartConfig}
-        isAnimated={true} 
-        hideRules={false}
+        isAnimated={true} // Anima as barras ao carregar
       />
     </View>
   );
@@ -326,7 +360,9 @@ const Graficos: React.FC<GraficosProps> = ({ dataSelecionada, novaTransacao }) =
           <TouchableOpacity
             style={[
               styles.button,
-              selectedChart === "lineEntradasSaidas" && { backgroundColor: "#0FEC32" },
+              selectedChart === "lineEntradasSaidas" && {
+                backgroundColor: "#0FEC32",
+              },
             ]}
             onPress={() => setSelectedChart("lineEntradasSaidas")}
           >
