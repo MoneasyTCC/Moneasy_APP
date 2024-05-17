@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     height: 60,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 10,
+    borderRadius: 15,
     shadowColor: "#52006A",
   },
   txtLogin: {
@@ -97,6 +97,7 @@ const styles = StyleSheet.create({
   frase: {
     color: "#FFFFFF",
     fontSize: 24,
+    fontWeight: "bold",
     textAlign: "center",
     width: "70%",
   },

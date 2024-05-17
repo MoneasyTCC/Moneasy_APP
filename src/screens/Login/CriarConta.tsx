@@ -61,7 +61,7 @@ export default function CriarContaScreen({ navigation }: Props) {
       ></SvgXml>
       <View style={styles.menu}>
         <TextInput
-          placeholderTextColor={"#000000"}
+          placeholderTextColor={"#646464"}
           style={styles.input}
           placeholder="E-mail"
           onChangeText={setEmail}
@@ -71,7 +71,7 @@ export default function CriarContaScreen({ navigation }: Props) {
         />
         <View style={styles.spacer} />
         <TextInput
-          placeholderTextColor={"#000000"}
+          placeholderTextColor={"#646464"}
           style={styles.input}
           placeholder="Senha"
           onChangeText={setPassword}
@@ -80,7 +80,7 @@ export default function CriarContaScreen({ navigation }: Props) {
         />
         <View style={styles.spacer} />
         <TextInput
-          placeholderTextColor={"#000000"}
+          placeholderTextColor={"#646464"}
           style={styles.input}
           placeholder="Confirmar Senha"
           onChangeText={setConfirmPassword}
@@ -127,12 +127,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   input: {
+    fontSize: 18,
+    fontWeight: "400",
     width: "70%",
-    height: 40,
-    borderRadius: 5,
+    height: 50,
+    borderRadius: 15,
     padding: 10,
-    backgroundColor: "#FFFFFF",
-    color: "#000000",
+    backgroundColor: "#FFFFFF", 
   },
   buttonLogin: {
     backgroundColor: "#0FEC32",
@@ -141,7 +142,7 @@ const styles = StyleSheet.create({
     height: 60,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 10,
+    borderRadius: 15,
     shadowColor: "#52006A",
   },
   txtLogin: {

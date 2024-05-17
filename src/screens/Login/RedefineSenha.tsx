@@ -28,10 +28,19 @@ const xmlImg =
 export default function RedefineSenhaScreen({ navigation }: Props) {
   const [email, setEmail] = useState("");
 
- const handleForgotPassword = async () => {
+  const handleForgotPassword = async () => {
     try {
       await resetPasswordWithEmail(email);
-      Alert.alert("E-mail de redefinição de senha enviado. Verifique sua caixa de entrada.");
+      Alert.alert(
+        "E-Mail Enviado!",
+        "Verifique sua caixa de entrada.",
+        [
+          {
+            text: "OK",
+            onPress: () => navigation.navigate("Login"),
+          },
+        ]
+      );
     } catch (error) {
       Alert.alert("Erro ao enviar e-mail de redefinição de senha.");
     }
@@ -44,13 +53,14 @@ export default function RedefineSenhaScreen({ navigation }: Props) {
         style={styles.icon}
         onPress={() => navigation.navigate("Inicio")}
       ></SvgXml>
-    
+
       <View style={styles.menu}>
-      <Text style={styles.frase}>
-         Insira seu email cadastrado para enviarmos um link de redefinição de senha!
+        <Text style={styles.frase}>
+          Insira seu email cadastrado para enviarmos um link de redefinição de
+          senha!
         </Text>
         <TextInput
-          placeholderTextColor={"#000000"}
+          placeholderTextColor={"#646464"}
           style={styles.input}
           placeholder="E-mail"
           onChangeText={setEmail}
@@ -58,20 +68,23 @@ export default function RedefineSenhaScreen({ navigation }: Props) {
           keyboardType="email-address"
           autoCapitalize="none"
         />
-      
+
         <View style={styles.spacer} />
         <View style={styles.spacer} />
-        <TouchableOpacity style={styles.buttonLogin} onPress={handleForgotPassword}>
-          <Text style={styles.txtLogin}>Redefinir a Senha</Text>
+        <TouchableOpacity
+          style={styles.buttonLogin}
+          onPress={handleForgotPassword}
+        >
+          <Text style={styles.txtLogin}>Confirmar</Text>
         </TouchableOpacity>
         <View style={styles.spacer2} />
         <Text
           style={styles.textRedirect}
           onPress={() => navigation.navigate("Login")}
         >
-        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-                   <Text style={styles.textRedirect}>Voltar</Text >
-                 </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+            <Text style={styles.textRedirect}>Voltar</Text>
+          </TouchableOpacity>
         </Text>
       </View>
     </View>
@@ -93,7 +106,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
-    height: "50%",
+    height: "60%",
     backgroundColor: "#2B2B2B",
   },
   spacer: {
@@ -104,14 +117,17 @@ const styles = StyleSheet.create({
   },
   icon: {
     width: 120,
-    height: "50%",
+    height: "40%",
     fill: "#FFFFFF",
     justifyContent: "center",
   },
+
   input: {
+    fontSize: 18,
+    fontWeight: "400",
     width: "70%",
     height: 50,
-    borderRadius: 12,
+    borderRadius: 15,
     padding: 10,
     backgroundColor: "#FFFFFF",
     color: "#000000",
@@ -123,24 +139,27 @@ const styles = StyleSheet.create({
     height: 60,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 12,
+    borderRadius: 15,
     shadowColor: "#52006A",
   },
   txtLogin: {
     textAlign: "center",
-    color: "#000000",
+    color: "#FFFFFF",
     fontSize: 24,
     fontWeight: "bold",
   },
   textRedirect: {
+    fontSize: 18,
+    fontWeight: "400",
     color: "#FFFFFF",
     textDecorationLine: "underline",
   },
   frase: {
     color: "#FFFFFF",
-    fontSize: 18,
+    fontSize: 24,
+    fontWeight: "bold",
     textAlign: "center",
-    width: "70%",
+    width: "75%",
     marginBottom: `6%`,
-  }
+  },
 });

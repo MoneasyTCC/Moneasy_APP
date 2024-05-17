@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   TextInput,
@@ -28,31 +28,36 @@ const xmlImg =
 export default function LoginScreen({ navigation }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const passwordInputRef = useRef<TextInput>(null);
 
   const handleLogin = async () => {
     try {
       const user = await loginWithEmail(email, password);
-      // navigation.replace('Home');
       navigation.reset({
         index: 0,
         routes: [{ name: "Home" }],
       });
-      //replace deixa que o usuario volte na tela
-      //reset não permite voltar, então quando o usuario fizer o login não poderá sair sem querer.
     } catch (error) {
       Alert.alert("Usuario não autenticado");
     }
   };
 
-   const handleForgotPassword = async () => {
+  const handleForgotPassword = async () => {
+    Alert.alert(
+      "Insira o Email",
+      "Um e-mail de redefinição de senha foi enviado. Verifique sua caixa de entrada.",
+      [
+        {
+          text: "OK",
+          onPress: () => navigation.navigate("Inicio")
+        }
+      ]
+    );
+  };
 
-        Alert.alert(
-           "Insira o Email",
-           "Um e-mail de redefinição de senha foi enviado. Verifique sua caixa de entrada."
-         );
-
-     };
-
+  const focusPasswordInput = () => {
+    passwordInputRef.current?.focus();
+  };
 
   return (
     <View style={styles.container}>
@@ -63,35 +68,38 @@ export default function LoginScreen({ navigation }: Props) {
       ></SvgXml>
       <View style={styles.menu}>
         <TextInput
-          placeholderTextColor={"#000000"}
+          placeholderTextColor={"#646464"}
           style={styles.input}
           placeholder="E-mail"
           onChangeText={setEmail}
           value={email}
           keyboardType="email-address"
           autoCapitalize="none"
+          returnKeyType="next"
+          onSubmitEditing={focusPasswordInput}
         />
         <View style={styles.spacer} />
         <TextInput
-          placeholderTextColor={"#000000"}
+          placeholderTextColor={"#646464"}
           style={styles.input}
           placeholder="Senha"
           onChangeText={setPassword}
           value={password}
           secureTextEntry
+          ref={passwordInputRef}
+          onSubmitEditing={handleLogin} // Captura o evento "Enter"
         />
         <View style={styles.spacer} />
         <TouchableOpacity style={styles.buttonLogin} onPress={handleLogin}>
           <Text style={styles.txtLogin}>Entrar</Text>
         </TouchableOpacity>
         <View style={styles.spacer2} />
-
         <Text
-           style={styles.textRedirect}
-           onPress={() => navigation.navigate("RedefineSenha")}
-         >
-           Esqueci minha senha!
-         </Text>
+          style={styles.textRedirect}
+          onPress={handleForgotPassword}
+        >
+          Esqueci minha senha!
+        </Text>
       </View>
     </View>
   );
@@ -112,7 +120,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
-    height: "50%",
+    height: "60%",
     backgroundColor: "#2B2B2B",
   },
   spacer: {
@@ -123,17 +131,18 @@ const styles = StyleSheet.create({
   },
   icon: {
     width: 120,
-    height: "50%",
+    height: "40%",
     fill: "#FFFFFF",
     justifyContent: "center",
   },
   input: {
+    fontSize: 18,
+    fontWeight: "400",
     width: "70%",
     height: 50,
-    borderRadius: 12,
+    borderRadius: 15,
     padding: 10,
     backgroundColor: "#FFFFFF",
-    color: "#000000",
   },
   buttonLogin: {
     backgroundColor: "#0FEC32",
@@ -142,7 +151,7 @@ const styles = StyleSheet.create({
     height: 60,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 12,
+    borderRadius: 15,
     shadowColor: "#52006A",
   },
   txtLogin: {
@@ -152,6 +161,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   textRedirect: {
+    fontSize: 18,
+    fontWeight: "400",
     color: "#FFFFFF",
     textDecorationLine: "underline",
   },
