@@ -308,7 +308,7 @@ const Graficos: React.FC<GraficosProps> = ({
     <View style={styles.chartContainer}>
       <ProgressChart
         data={ringData}
-        width={screenWidth - 40}
+        width={screenWidth - 30}
         height={220}
         strokeWidth={16}
         radius={32}
@@ -322,10 +322,10 @@ const Graficos: React.FC<GraficosProps> = ({
     <View style={styles.chartContainer}>
       <BarChart
         data={filteredBarData}
-        width={screenWidth - 40}
+        width={screenWidth - 20}
         height={220}
         barWidth={15}
-        spacing={2}
+        spacing={3}
         barBorderRadius={4}
         noOfSections={3}
         yAxisThickness={0}

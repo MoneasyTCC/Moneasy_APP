@@ -5,13 +5,12 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Alert,
 } from "react-native";
-import { resetPasswordWithEmail } from "../../../services/firebase-auth";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
 import { loginWithEmail } from "../../../services/firebase-auth";
 import { SvgXml } from "react-native-svg";
+import AwesomeAlert from "react-native-awesome-alerts";
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -30,20 +29,47 @@ export default function LoginScreen({ navigation }: Props) {
   const [password, setPassword] = useState("");
   const passwordInputRef = useRef<TextInput>(null);
 
+  const [showErrorAlert, setShowErrorAlert] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
   const handleLogin = async () => {
+    if (!validateEmail(email)) {
+      setErrorMessage("Por favor, insira um e-mail válido.");
+      setShowErrorAlert(true);
+      return;
+    }
+
+    /* if (password.length < 6) {
+      setErrorMessage("A senha deve ter pelo menos 6 caracteres.");
+      setShowErrorAlert(true);
+      return;
+    } */
+
     try {
       const user = await loginWithEmail(email, password);
       navigation.reset({
         index: 0,
         routes: [{ name: "Home" }],
       });
-    } catch (error) {
-      Alert.alert("Usuario não autenticado");
+    } catch (error: any) {
+      if (error.code === 'auth/wrong-password') {
+        setErrorMessage('Senha incorreta. Tente novamente.');
+      } else if (error.code === 'auth/user-not-found') {
+        setErrorMessage('Usuário não encontrado. Verifique seu e-mail.');
+      } else {
+        setErrorMessage('Erro ao autenticar. Verifique suas credenciais.');
+      }
+      setShowErrorAlert(true);
     }
   };
 
   const focusPasswordInput = () => {
     passwordInputRef.current?.focus();
+  };
+
+  const validateEmail = (email: string) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
   };
 
   return (
@@ -88,6 +114,21 @@ export default function LoginScreen({ navigation }: Props) {
           Esqueci minha senha!
         </Text>
       </View>
+
+      <AwesomeAlert
+        show={showErrorAlert}
+        showProgress={false}
+        title="Erro"
+        message={errorMessage}
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#EC0F0F"
+        onConfirmPressed={() => {
+          setShowErrorAlert(false);
+        }}
+      />
     </View>
   );
 }

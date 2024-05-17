@@ -11,10 +11,10 @@ import {
   TouchableOpacity,
   Modal,
   TextInput,
-  Button,
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import { OrcamentoDAL } from "../Repo/RepositorioOrcamento";
+import AwesomeAlert from "react-native-awesome-alerts"; // Certifique-se de importar AwesomeAlert
 
 interface ListaDeOrcamentosProps {
   dataSelecionada: Date;
@@ -53,7 +53,6 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
   const [openCategoria, setOpenCategoria] = useState(false);
   const [value, setValue] = useState(null);
   const [items, setItems] = useState([
-    //month names
     { label: "Janeiro", value: "1" },
     { label: "Fevereiro", value: "2" },
     { label: "Março", value: "3" },
@@ -67,6 +66,12 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
     { label: "Novembro", value: "11" },
     { label: "Dezembro", value: "12" },
   ]);
+
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [showErrorAlert, setShowErrorAlert] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showConfirmAlert, setShowConfirmAlert] = useState(false);
+  const [idParaDeletar, setIdParaDeletar] = useState("");
 
   const handleInteraction = () => {
     onInteraction();
@@ -99,15 +104,23 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
   };
 
   const handleDeletarOrcamento = async (orcamentoId: string) => {
+    setIdParaDeletar(orcamentoId);
+    setShowConfirmAlert(true);
+  };
+
+  const confirmarDelecaoOrcamento = async () => {
     try {
-      await OrcamentoDAL.deletarOrcamento(orcamentoId);
-      alert("Orçamento deletado com sucesso!");
+      await OrcamentoDAL.deletarOrcamento(idParaDeletar);
+      setShowSuccessAlert(true);
       setIsModalVisible(false);
       setUpdateLista(!updateLista);
       handleInteraction();
     } catch (err) {
       console.error(err);
+      setErrorMessage("Erro ao tentar deletar o orçamento.");
+      setShowErrorAlert(true);
     }
+    setShowConfirmAlert(false);
   };
 
   const handleAtualizarValorAtual = async (orcamentoId: string) => {
@@ -119,12 +132,14 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
         valorAtual: novoValorAtualNumber,
       };
       await OrcamentoDAL.alterarOrcamento(orcamentoId, novosDados);
-      alert("Valor atual atualizado com sucesso!");
+      setShowSuccessAlert(true);
       setIsModalVisible(false);
       setUpdateLista(!updateLista);
       handleInteraction();
     } catch (err) {
       console.error(err);
+      setErrorMessage("Erro ao tentar atualizar o valor atual.");
+      setShowErrorAlert(true);
     }
   };
 
@@ -143,12 +158,14 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
         data: dataOrcamento,
       };
       await OrcamentoDAL.alterarOrcamento(orcamentoId, novosDados);
-      alert("Orçamento alterado com sucesso!");
+      setShowSuccessAlert(true);
       setIsModalVisible(false);
       setUpdateLista(!updateLista);
       handleInteraction();
     } catch (err) {
       console.error(err);
+      setErrorMessage("Erro ao tentar alterar o orçamento.");
+      setShowErrorAlert(true);
     }
   };
 
@@ -273,6 +290,7 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
       </View>
     </TouchableOpacity>
   );
+
   return (
     <>
       <FlatList
@@ -449,6 +467,50 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
           </View>
         </View>
       </Modal>
+      <AwesomeAlert
+        show={showConfirmAlert}
+        showProgress={false}
+        title="Confirmar Exclusão"
+        message="Você tem certeza que deseja deletar este orçamento?"
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showCancelButton={true}
+        showConfirmButton={true}
+        cancelText="Cancelar"
+        confirmText="Sim"
+        confirmButtonColor="#DD6B55"
+        onCancelPressed={() => setShowConfirmAlert(false)}
+        onConfirmPressed={confirmarDelecaoOrcamento}
+      />
+
+      <AwesomeAlert
+        show={showConfirmAlert}
+        showProgress={false}
+        title="Confirmar Exclusão"
+        message="Você tem certeza que deseja deletar este orçamento?"
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showCancelButton={true}
+        showConfirmButton={true}
+        cancelText="Cancelar"
+        confirmText="Sim"
+        confirmButtonColor="#DD6B55"
+        onCancelPressed={() => setShowConfirmAlert(false)}
+        onConfirmPressed={confirmarDelecaoOrcamento}
+      />
+
+      <AwesomeAlert
+        show={showErrorAlert}
+        showProgress={false}
+        title="Erro"
+        message={errorMessage}
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#EC0F0F"
+        onConfirmPressed={() => setShowErrorAlert(false)}
+      />
     </>
   );
 };

@@ -152,6 +152,7 @@ export default function HomeScreen({ navigation }: Props) {
       const chaveCache = dataTransacao.toISOString().slice(0, 7);
       saldoCache.current.delete(chaveCache);
       await handleObterSaldoPorMes();
+      setDataSelecionada(new Date()); // Força a atualização da tela ao definir a data selecionada como a data atual
     } catch (err) {
       setErrorMessage("Erro ao adicionar transação");
       setShowErrorAlert(true);
@@ -209,6 +210,10 @@ export default function HomeScreen({ navigation }: Props) {
     updateSaldo(dataSelecionada);
     handleObterSaldoPorMes();
   }, [dataSelecionada]);
+
+  useEffect(() => {
+    handleObterSaldoPorMes();
+  }, [updateGraph]); // Atualizar o saldo ao alterar updateGraph
 
   return (
     <View style={styles.container}>
@@ -375,6 +380,7 @@ export default function HomeScreen({ navigation }: Props) {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   centeredView: {
