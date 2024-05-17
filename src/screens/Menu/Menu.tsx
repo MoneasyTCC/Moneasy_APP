@@ -84,6 +84,8 @@ export default function MenuScreen({ navigation }: Props) {
   const [showErrorAlert, setShowErrorAlert] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [showValidationAlert, setShowValidationAlert] = useState(false);
+  const [validationMessage, setValidationMessage] = useState("");
 
   const setMonthData = () => {
     const newDate = new Date();
@@ -100,6 +102,12 @@ export default function MenuScreen({ navigation }: Props) {
   };
 
   const handleOrcamento = async () => {
+    if (!valorDefinido || !valorAtual || !categoriaSelecionada) {
+      setValidationMessage("Todos os campos são obrigatórios.");
+      setShowValidationAlert(true);
+      return; // Não continuar com a inserção
+    }
+
     try {
       const valorDefinidoFloat = isNaN(parseFloat(valorDefinido))
         ? 0
@@ -288,6 +296,18 @@ export default function MenuScreen({ navigation }: Props) {
       <View style={styles.menuFooter}>
         <NavigationBar />
       </View>
+      <AwesomeAlert
+        show={showValidationAlert}
+        showProgress={false}
+        title="Erro de Validação"
+        message={validationMessage}
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#EC0F0F"
+        onConfirmPressed={() => setShowValidationAlert(false)}
+      />
 
       <AwesomeAlert
         show={showSuccessAlert}
@@ -330,7 +350,6 @@ export default function MenuScreen({ navigation }: Props) {
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {

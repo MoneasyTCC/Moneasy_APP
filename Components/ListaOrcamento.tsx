@@ -72,6 +72,8 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
   const [errorMessage, setErrorMessage] = useState("");
   const [showConfirmAlert, setShowConfirmAlert] = useState(false);
   const [idParaDeletar, setIdParaDeletar] = useState("");
+  const [showValidationAlert, setShowValidationAlert] = useState(false);
+  const [validationMessage, setValidationMessage] = useState("");
 
   const handleInteraction = () => {
     onInteraction();
@@ -124,6 +126,12 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
   };
 
   const handleAtualizarValorAtual = async (orcamentoId: string) => {
+    if (!novoValorAtual) {
+      setValidationMessage("O campo 'Valor Atual' é obrigatório.");
+      setShowValidationAlert(true);
+      return; // Não continuar com a atualização
+    }
+
     const novoValorAtualNumber = isNaN(parseFloat(novoValorAtual))
       ? 0
       : parseFloat(novoValorAtual);
@@ -144,6 +152,12 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
   };
 
   const handleAlterarOrcamento = async (orcamentoId: string) => {
+    if (!novoValorAtual || !novoValorDefinido || !selectedItemCategoria) {
+      setValidationMessage("Todos os campos são obrigatórios.");
+      setShowValidationAlert(true);
+      return; // Não continuar com a inserção
+    }
+
     const novoValorAtualNumber = isNaN(parseFloat(novoValorAtual))
       ? 0
       : parseFloat(novoValorAtual);
@@ -467,6 +481,19 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
           </View>
         </View>
       </Modal>
+      <AwesomeAlert
+        show={showValidationAlert}
+        showProgress={false}
+        title="Erro de Validação"
+        message={validationMessage}
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#EC0F0F"
+        onConfirmPressed={() => setShowValidationAlert(false)}
+      />
+
       <AwesomeAlert
         show={showConfirmAlert}
         showProgress={false}
