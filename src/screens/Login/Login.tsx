@@ -42,19 +42,6 @@ export default function LoginScreen({ navigation }: Props) {
     }
   };
 
-  const handleForgotPassword = async () => {
-    Alert.alert(
-      "Insira o Email",
-      "Um e-mail de redefinição de senha foi enviado. Verifique sua caixa de entrada.",
-      [
-        {
-          text: "OK",
-          onPress: () => navigation.navigate("Inicio")
-        }
-      ]
-    );
-  };
-
   const focusPasswordInput = () => {
     passwordInputRef.current?.focus();
   };
@@ -96,7 +83,7 @@ export default function LoginScreen({ navigation }: Props) {
         <View style={styles.spacer2} />
         <Text
           style={styles.textRedirect}
-          onPress={handleForgotPassword}
+          onPress={() => navigation.navigate("RedefineSenha")}
         >
           Esqueci minha senha!
         </Text>

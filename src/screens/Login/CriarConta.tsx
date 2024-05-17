@@ -5,13 +5,12 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
 } from "react-native";
 import { createAccountWithEmail } from "../../../services/firebase-auth";
 import { RootStackParamList } from "../../../shared/config";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SvgXml } from "react-native-svg";
-import { useFonts, Roboto_400Regular } from "@expo-google-fonts/roboto";
+import AwesomeAlert from "react-native-awesome-alerts";
 
 type CriarContaScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -28,27 +27,22 @@ export default function CriarContaScreen({ navigation }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [showErrorAlert, setShowErrorAlert] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleCreateAccount = async () => {
     if (password !== confirmPassword) {
-      Alert.alert("Erro", "As senhas não coincidem.");
+      setErrorMessage("As senhas não coincidem.");
+      setShowErrorAlert(true);
       return;
     }
     try {
       await createAccountWithEmail(email, password);
-      // Se a conta for criada com sucesso, você pode querer navegar para a tela Home ou qualquer outra que preferir
-      Alert.alert("Conta criada com sucesso. Faça o Login.", "", [
-        {
-          text: "OK",
-          onPress: () => {
-            setTimeout(() => {
-              navigation.replace("Login");
-            }, 1000); // Aguarda 1 segundo antes de executar a navegação
-          },
-        },
-      ]);
+      setShowSuccessAlert(true);
     } catch (error) {
-      Alert.alert("Erro ao criar conta");
+      setErrorMessage("Erro ao criar conta.");
+      setShowErrorAlert(true);
     }
   };
 
@@ -95,6 +89,50 @@ export default function CriarContaScreen({ navigation }: Props) {
           <Text style={styles.txtLogin}>Criar Conta</Text>
         </TouchableOpacity>
       </View>
+
+      <AwesomeAlert
+        show={showSuccessAlert}
+        showProgress={false}
+        title="Conta criada com sucesso"
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#0FEC32"
+        onConfirmPressed={() => {
+          setShowSuccessAlert(false);
+          navigation.replace("Login");
+        }}
+        customView={
+          <View>
+            <Text style={{ fontSize: 16, textAlign: "center" }}>
+              Faça o Login.
+            </Text>
+          </View>
+        }
+      />
+
+      <AwesomeAlert
+        show={showErrorAlert}
+        showProgress={false}
+        title="Erro ao Cadastrar"
+        message={errorMessage}
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#EC0F0F"
+        onConfirmPressed={() => {
+          setShowErrorAlert(false);
+        }}
+        customView={
+          <View>
+            <Text style={{ fontSize: 16, textAlign: "center" }}>
+              Tente novamente.
+            </Text>
+          </View>
+        }
+      />
     </View>
   );
 }
@@ -133,7 +171,7 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 15,
     padding: 10,
-    backgroundColor: "#FFFFFF", 
+    backgroundColor: "#FFFFFF",
   },
   buttonLogin: {
     backgroundColor: "#0FEC32",

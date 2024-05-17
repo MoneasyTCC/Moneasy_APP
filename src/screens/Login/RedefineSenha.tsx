@@ -5,13 +5,12 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Alert,
 } from "react-native";
 import { resetPasswordWithEmail } from "../../../services/firebase-auth";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
-import { loginWithEmail } from "../../../services/firebase-auth";
 import { SvgXml } from "react-native-svg";
+import AwesomeAlert from "react-native-awesome-alerts";
 
 type RedefineSenhaScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -27,22 +26,23 @@ const xmlImg =
 
 export default function RedefineSenhaScreen({ navigation }: Props) {
   const [email, setEmail] = useState("");
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [showErrorAlert, setShowErrorAlert] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleForgotPassword = async () => {
+    if (!email) {
+      setErrorMessage("Por favor, insira seu e-mail.");
+      setShowErrorAlert(true);
+      return;
+    }
+
     try {
       await resetPasswordWithEmail(email);
-      Alert.alert(
-        "E-Mail Enviado!",
-        "Verifique sua caixa de entrada.",
-        [
-          {
-            text: "OK",
-            onPress: () => navigation.navigate("Login"),
-          },
-        ]
-      );
+      setShowSuccessAlert(true);
     } catch (error) {
-      Alert.alert("Erro ao enviar e-mail de redefinição de senha.");
+      setErrorMessage("Erro ao enviar e-mail de redefinição de senha.");
+      setShowErrorAlert(true);
     }
   };
 
@@ -87,6 +87,50 @@ export default function RedefineSenhaScreen({ navigation }: Props) {
           </TouchableOpacity>
         </Text>
       </View>
+
+      <AwesomeAlert
+        show={showSuccessAlert}
+        showProgress={false}
+        title="E-Mail Enviado!"
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#0FEC32"
+        onConfirmPressed={() => {
+          setShowSuccessAlert(false);
+          navigation.navigate("Login");
+        }}
+        customView={
+          <View>
+            <Text style={{ fontSize: 16, textAlign: "center" }}>
+              Verifique sua caixa de entrada.
+            </Text>
+          </View>
+        }
+      />
+
+      <AwesomeAlert
+        show={showErrorAlert}
+        showProgress={false}
+        title="Erro"
+        message={errorMessage}
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#EC0F0F"
+        onConfirmPressed={() => {
+          setShowErrorAlert(false);
+        }}
+        customView={
+          <View>
+            <Text style={{ fontSize: 16, textAlign: "center" }}>
+              Tente novamente.
+            </Text>
+          </View>
+        }
+      />
     </View>
   );
 }
