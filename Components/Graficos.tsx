@@ -39,8 +39,17 @@ const Graficos: React.FC<GraficosProps> = ({
   const chartConfig = {
     backgroundGradientFrom: "#3A3E3A",
     backgroundGradientTo: "#3A3E3A",
-    color: (opacity = 1) => `rgba(255,255,255, ${opacity})`,
-    strokeWidth: 2,
+    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+    strokeWidth: 4, // Aumenta a espessura das linhas
+    labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+    propsForDots: {
+      r: "6",
+      strokeWidth: "1",
+      stroke: "#FFFFFF",
+    },
+    propsForLabels: {
+      fontSize: 12,
+    },
   };
 
   const handleObterMetasPorAno = async () => {
@@ -262,27 +271,38 @@ const Graficos: React.FC<GraficosProps> = ({
     <View style={styles.chartContainer}>
       <LineChart
         data={saldoData}
-        width={screenWidth - 40}
-        height={220}
-        chartConfig={chartConfig}
+        width={screenWidth - 20}
+        height={240}
+        chartConfig={{
+          ...chartConfig,
+          strokeWidth: 4, // Aumenta a espessura das linhas
+          decimalPlaces: 2, // Define duas casas decimais para os valores
+        }}
+        withDots={true}
         withShadow={false}
         bezier
       />
     </View>
   );
-
+  
   const lineChartEntradasSaidas = (
     <View style={styles.chartContainer}>
       <LineChart
         data={entradasSaidaData}
-        width={screenWidth - 40}
-        height={220}
-        chartConfig={chartConfig}
+        width={screenWidth - 20}
+        height={240}
+        chartConfig={{
+          ...chartConfig,
+          strokeWidth: 4, // Aumenta a espessura das linhas
+          decimalPlaces: 2, // Define duas casas decimais para os valores
+        }}
+        withDots={true}
         withShadow={false}
         bezier
       />
     </View>
   );
+  
 
   const progressRing = (
     <View style={styles.chartContainer}>
