@@ -2,32 +2,25 @@ import React, { useState, useEffect, useRef, useContext } from "react";
 import {
   View,
   Text,
-  Button,
-  StyleSheet,
   Image,
   Modal,
   TextInput,
-  Alert,
   Platform,
   TouchableOpacity,
-  FlatList,
-  FlatListProps,
   ActivityIndicator,
-  ScrollView,
+  StyleSheet,
 } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../shared/config";
-import { Shadow } from "react-native-shadow-2";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { Transacao } from "../../../Model/Transacao";
 import { TransacaoDAL } from "../../../Repo/RepositorioTransacao";
-import ListaDeTransacoes from "../../../Components/listaTransacao";
 import { obterSaldoPorMes } from "../../../Controller/TransacaoController";
-import DropDownPicker from "react-native-dropdown-picker";
-import NavigationBar from "../menuNavegation";
 import { DataContext } from "../../../Contexts/DataContext";
 import SeletorMesAno from "../../../Components/SeletorMesAno";
 import Graficos from "../../../Components/Graficos";
+import NavigationBar from "../menuNavegation";
+import AwesomeAlert from "react-native-awesome-alerts";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Home">;
 
@@ -37,9 +30,14 @@ type Props = {
 
 type DateTimePickerMode = "date" | "time" | "datetime";
 
-// Use as props na definição do seu componente
+interface SaldoMes {
+  totalEntradas: number;
+  totalSaidas: number;
+  saldo: number;
+}
+
 export default function HomeScreen({ navigation }: Props) {
-  var [isModalVisible, setModalVisible] = useState(false);
+  const [isModalVisible, setModalVisible] = useState(false);
   const [valor, setValor] = useState("");
   const [nome, setNome] = useState("");
   const [data, setData] = useState(new Date());
@@ -54,7 +52,7 @@ export default function HomeScreen({ navigation }: Props) {
   const [checkNovaTransacao, setcheckNovaTransacao] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const saldoCache = useRef<Map<string, SaldoMes>>(new Map());
-  const [fData, setFData] = useState(""); // Adicionado estado para fData
+  const [fData, setFData] = useState<Date>(new Date());
 
   const [mostrarValores, setMostrarValores] = useState(true);
 
@@ -77,18 +75,15 @@ export default function HomeScreen({ navigation }: Props) {
     setModalVisible(!isModalVisible);
   };
 
-  interface SaldoMes {
-    totalEntradas: number;
-    totalSaidas: number;
-    saldo: number;
-  }
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [showErrorAlert, setShowErrorAlert] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const obterSaldoPorMesComCache = async (data: Date): Promise<SaldoMes> => {
-    const chaveCache = data.toISOString().slice(0, 7); // Formato "AAAA-MM"
+    const chaveCache = data.toISOString().slice(0, 7);
     if (saldoCache.current.has(chaveCache)) {
       return saldoCache.current.get(chaveCache)!;
     }
-    // Supondo que obterSaldoPorMes retorne uma Promise<SaldoMes>
     const resultado = await obterSaldoPorMes(data);
     saldoCache.current.set(chaveCache, resultado);
     return resultado;
@@ -97,10 +92,8 @@ export default function HomeScreen({ navigation }: Props) {
   const handleObterSaldoPorMes = async () => {
     setIsLoading(true);
     try {
-      // Assegure-se de que obterSaldoPorMesComCache retorne o objeto esperado
       const result: SaldoMes = await obterSaldoPorMesComCache(dataSelecionada);
       setValuesObject(result);
-      // Não há necessidade de um estado separado para `saldo` se ele já está incluído em `valuesObject`
     } catch (error) {
       console.error("Erro ao obter saldo: ", error);
     } finally {
@@ -124,7 +117,7 @@ export default function HomeScreen({ navigation }: Props) {
       if (resultadoSaldo && typeof resultadoSaldo.saldo === "number") {
         setSaldo(resultadoSaldo.saldo);
       } else {
-        setSaldo(null); // ou um valor padrão que você desejar
+        setSaldo(null);
         console.warn("Saldo não encontrado ou o valor não é um número.");
       }
     } catch (error) {
@@ -136,30 +129,17 @@ export default function HomeScreen({ navigation }: Props) {
     setcheckNovaTransacao(true);
   };
 
-  const novosDados: Transacao = {
-    id: "",
-    usuarioId: "",
-    tipo: tipoTransacao,
-    valor: parseFloat(valor),
-    data: data,
-    nome: nome,
-    moeda: "BRL",
-  };
-
   const handleTransacao = async () => {
     try {
       const valorFloat = isNaN(parseFloat(valor)) ? 0 : parseFloat(valor);
-      // Cria uma data de transação baseada no mês e ano selecionados, mas mantendo o dia atual,
-      // ou o dia 1 se desejar representar a transação simplesmente no mês selecionado sem um dia específico.
-      // Nota: Ajuste essa lógica conforme necessário para atender ao requisito exato de data da transação.
-      const dataTransacao = setfData;
+      const dataTransacao = fData;
       console.log(dataTransacao);
       const novosDados: Transacao = {
         id: "",
         usuarioId: "",
         tipo: tipoTransacao,
         valor: valorFloat,
-        data: dataTransacao, // Usando a dataTransacao ajustada aqui
+        data: dataTransacao,
         nome: nome,
         moeda: "BRL",
       };
@@ -168,16 +148,14 @@ export default function HomeScreen({ navigation }: Props) {
       setUpdateGraph(!updateGraph);
       limparEstados();
       toggleModal();
-      Alert.alert("Transação adicionada com Sucesso!");
-
-      // Invalidate o cache do mês específico da nova transação
+      setShowSuccessAlert(true);
       const chaveCache = dataTransacao.toISOString().slice(0, 7);
       saldoCache.current.delete(chaveCache);
-
-      // Recarrega os dados do saldo para refletir a nova transação
       await handleObterSaldoPorMes();
+      setDataSelecionada(new Date()); // Força a atualização da tela ao definir a data selecionada como a data atual
     } catch (err) {
-      Alert.alert("Erro ao adicionar transação");
+      setErrorMessage("Erro ao adicionar transação");
+      setShowErrorAlert(true);
     }
   };
 
@@ -187,13 +165,12 @@ export default function HomeScreen({ navigation }: Props) {
       setShow(Platform.OS === "ios");
       setData(dataAtual);
       setDataTextInput(dataAtual.toLocaleDateString("pt-br"));
-      setfData = dataAtual;
+      setFData(dataAtual);
       let tempData = new Date(dataAtual);
       const dataFormatada =
         tempData.getDate() + "/" + (tempData.getMonth() + 1) + "/" + tempData.getFullYear();
 
       console.log(dataFormatada);
-      updateMonth(tempData.getMonth()); // Chama updateMonth para atualizar o mês na tela
       setShow(false);
     } else if (evento.type === "dismissed") {
       setShow(false);
@@ -234,6 +211,10 @@ export default function HomeScreen({ navigation }: Props) {
     handleObterSaldoPorMes();
   }, [dataSelecionada]);
 
+  useEffect(() => {
+    handleObterSaldoPorMes();
+  }, [updateGraph]); // Atualizar o saldo ao alterar updateGraph
+
   return (
     <View style={styles.container}>
       <View style={styles.menuHeader}>
@@ -257,8 +238,8 @@ export default function HomeScreen({ navigation }: Props) {
           <View style={styles.rendas}>
             <TouchableOpacity style={styles.entradaBtn} onPress={handleTipoTransacaoEntrada}>
               <Image
-                source={require("../../../assets/setaCima.png")} // Ajuste o caminho conforme necessário
-                style={{ width: 32, height: 32 }} // Ajuste o tamanho conforme necessário
+                source={require("../../../assets/setaCima.png")}
+                style={{ width: 32, height: 32 }}
               />
             </TouchableOpacity>
             <Text style={styles.saldosText}>Rendas</Text>
@@ -271,20 +252,20 @@ export default function HomeScreen({ navigation }: Props) {
           <View>
             <TouchableOpacity onPress={toggleValoresVisiveis}>
               <Image
-                source={require("../../../assets/eye.png")} // Ajuste o caminho conforme necessário
-                style={{ width: 32, height: 32 }} // Ajuste o tamanho conforme necessário
+                source={require("../../../assets/eye.png")}
+                style={{ width: 32, height: 32 }}
               />
             </TouchableOpacity>
           </View>
           <View style={styles.despesas}>
             <TouchableOpacity style={styles.saidaBtn} onPress={handleTipoTransacaoSaida}>
               <Image
-                source={require("../../../assets/setaCima.png")} // Ajuste o caminho conforme necessário
+                source={require("../../../assets/setaCima.png")}
                 style={{
                   width: 32,
                   height: 32,
                   transform: [{ rotate: "180deg" }],
-                }} // Ajuste o tamanho conforme necessário
+                }}
               />
             </TouchableOpacity>
             <Text style={styles.saldosText}>Despesas</Text>
@@ -353,9 +334,53 @@ export default function HomeScreen({ navigation }: Props) {
       <View style={styles.menuFooter}>
         <NavigationBar />
       </View>
+
+      <AwesomeAlert
+        show={showSuccessAlert}
+        showProgress={false}
+        title="Sucesso!"
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#0FEC32"
+        onConfirmPressed={() => {
+          setShowSuccessAlert(false);
+        }}
+        customView={
+          <View>
+            <Text style={{ fontSize: 16, textAlign: "center" }}>
+              Transação adicionada com sucesso!
+            </Text>
+          </View>
+        }
+      />
+
+      <AwesomeAlert
+        show={showErrorAlert}
+        showProgress={false}
+        title="Erro"
+        message={errorMessage}
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#EC0F0F"
+        onConfirmPressed={() => {
+          setShowErrorAlert(false);
+        }}
+        customView={
+          <View>
+            <Text style={{ fontSize: 16, textAlign: "center" }}>
+              Tente novamente.
+            </Text>
+          </View>
+        }
+      />
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   centeredView: {
@@ -385,13 +410,12 @@ const styles = StyleSheet.create({
     padding: 10,
     paddingLeft: 20,
     marginVertical: 8,
-    backgroundColor: "#616161", // Fundo do input
+    backgroundColor: "#616161",
     borderRadius: 25,
-    color: "#ffffff", // Cor do texto digitado
-    fontSize: 16, // Tamanho da fonte
+    color: "#ffffff",
+    fontSize: 16,
     opacity: 0.7,
   },
-
   buttonGroup: {
     alignItems: "center",
     flexDirection: "column",
@@ -421,7 +445,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 15,
   },
-
   container: {
     flex: 1,
     justifyContent: "center",

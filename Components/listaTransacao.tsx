@@ -3,13 +3,12 @@ import {
   View,
   Text,
   FlatList,
-  Alert,
   StyleSheet,
   TouchableOpacity,
   Modal,
-  Button,
   TextInput,
   Platform,
+  Alert, // Certifique-se de importar Alert do react-native
 } from "react-native";
 import { Transacao } from "../Model/Transacao";
 import { obterTransacoesPorData } from "../Controller/TransacaoController";
@@ -17,10 +16,7 @@ import { TransacaoDAL } from "../Repo/RepositorioTransacao";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import Transacoes from "../src/screens/Transacoes/Transacoes";
-
-// import Money from "../assets/transacoes/money.png";
+import AwesomeAlert from "react-native-awesome-alerts"; // Certifique-se de importar AwesomeAlert
 
 interface ListaDeTransacoesProps {
   dataSelecionada: Date;
@@ -46,6 +42,13 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
   const [modo, setModo] = useState<DateTimePickerMode | undefined>(undefined);
   const [show, setShow] = useState(false);
   const [novaData, setNovaData] = useState(new Date());
+
+  // Variáveis para controlar os AwesomeAlerts
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [showErrorAlert, setShowErrorAlert] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showConfirmAlert, setShowConfirmAlert] = useState(false);
+  const [idParaDeletar, setIdParaDeletar] = useState("");
 
   useEffect(() => {
     const buscarTransacoes = async () => {
@@ -109,43 +112,28 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
     const timestamp = new Date(seconds * 1000 + nanoseconds / 1000000);
     const formattedDate = timestamp;
     setDataTextInput(formattedDate.toLocaleDateString("pt-BR"));
-    //console.log(itemData.toString());
-    //console.log(`seconds: ${seconds}, nanoseconds: ${nanoseconds}`);
-    //console.log(formattedDate.toLocaleDateString("pt-BR"));
-    console.log(itemId);
     setIsModalVisible(!isModalVisible);
   };
 
   const handleDeletarTransacao = async (transacaoId: string) => {
-    Alert.alert(
-      "Confirmar Exclusão", // Título do alerta
-      "Você tem certeza que deseja deletar esta transação?", // Mensagem do alerta
-      [
-        {
-          text: "Cancelar",
-          //onPress: () => console.log("Cancelado"), // O que fazer quando "Cancelar" é pressionado
-          style: "cancel",
-        },
-        { 
-          text: "Excluir", 
-          onPress: async () => {
-            try {
-              await TransacaoDAL.deletarTransacao(transacaoId);
-              setIsModalVisible(false);
-              setUpdateLista(!updateLista);
-              onTransacaoAlterada(); // Callback chamado aqui
-            } catch (err) {
-              console.error(err);
-              alert("Erro ao tentar deletar a transação.");
-            }
-          },
-          style: "destructive", // Estilo do botão (somente iOS)
-        }
-      ],
-      { cancelable: false } // Se deve ser possível cancelar o alerta tocando fora dele
-    );
+    setIdParaDeletar(transacaoId);
+    setShowConfirmAlert(true);
   };
-  
+
+  const confirmarDelecaoTransacao = async () => {
+    try {
+      await TransacaoDAL.deletarTransacao(idParaDeletar);
+      setIsModalVisible(false);
+      setUpdateLista(!updateLista);
+      onTransacaoAlterada();
+      setShowSuccessAlert(true);
+    } catch (err) {
+      console.error(err);
+      setErrorMessage("Erro ao tentar deletar a transação.");
+      setShowErrorAlert(true);
+    }
+    setShowConfirmAlert(false);
+  };
 
   const handleAlterarTransacao = async (transacaoId: string) => {
     const novoValorNumber = isNaN(parseFloat(novoValor))
@@ -158,24 +146,26 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
         data: novaData,
       };
       await TransacaoDAL.alterarTransacao(transacaoId, novosDados);
-      alert("Transação alterada com sucesso.");
       setIsModalVisible(false);
       setUpdateLista(!updateLista);
       onTransacaoAlterada(); // Callback chamado aqui
+      setShowSuccessAlert(true); // Mostra o alert de sucesso
     } catch (err) {
       console.error(err);
+      setErrorMessage("Erro ao tentar alterar a transação.");
+      setShowErrorAlert(true); // Mostra o alert de erro
     }
   };
 
   const getValueStyle = (tipo: string) => {
     return tipo === "entrada" ? styles.valueEntrada : styles.valueSaida;
   };
+
   const renderItem = ({ item }: { item: Transacao }) => (
     <TouchableOpacity
       onPress={() => toggleModal(item.valor, item.nome, item.data, item.id)}
     >
       <View style={styles.container}>
-        {/* <View style={styles.icon}>{}</View> */}
         <Text style={styles.text}>
           {item.nome.length > 15
             ? `${item.nome.substring(0, 15)}...`
@@ -184,9 +174,6 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
         <Text style={[styles.text, getValueStyle(item.tipo)]}>
           R${item.valor.toFixed(2)}
         </Text>
-        {/* <Text style={styles.checkmark}>
-        {}
-      </Text> */}
       </View>
     </TouchableOpacity>
   );
@@ -296,9 +283,51 @@ const ListaDeTransacoes: React.FC<ListaDeTransacoesProps> = ({
           </View>
         </View>
       </Modal>
+
+      <AwesomeAlert
+        show={showConfirmAlert}
+        showProgress={false}
+        title="Confirmar Exclusão"
+        message="Você tem certeza que deseja deletar esta transação?"
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showCancelButton={true}
+        showConfirmButton={true}
+        cancelText="Cancelar"
+        confirmText="Sim"
+        confirmButtonColor="#DD6B55"
+        onCancelPressed={() => setShowConfirmAlert(false)}
+        onConfirmPressed={confirmarDelecaoTransacao}
+      />
+
+      <AwesomeAlert
+        show={showSuccessAlert}
+        showProgress={false}
+        title="Sucesso!"
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#0FEC32"
+        onConfirmPressed={() => setShowSuccessAlert(false)}
+      />
+
+      <AwesomeAlert
+        show={showErrorAlert}
+        showProgress={false}
+        title="Erro"
+        message={errorMessage}
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#EC0F0F"
+        onConfirmPressed={() => setShowErrorAlert(false)}
+      />
     </>
   );
 };
+
 const styles = StyleSheet.create({
   valueEntrada: {
     color: "#0FEC32",
@@ -365,7 +394,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     width: "100%",
   },
-
   labelModal: {
     color: "#ffffff",
     fontWeight: "bold",

@@ -7,7 +7,6 @@ import {
   StyleSheet,
   Modal,
   TextInput,
-  Alert,
   TouchableOpacity,
 } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -19,6 +18,7 @@ import ListaDeOrcamentos from "../../../Components/ListaOrcamento";
 import { obterTotalERestantePorMes } from "../../../Controller/OrcamentoController";
 import SeletorMesAno from "../../../Components/SeletorMesAno";
 import { DataContext } from "../../../Contexts/DataContext";
+import AwesomeAlert from "react-native-awesome-alerts";
 
 type OrcamentoScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -80,6 +80,13 @@ export default function MenuScreen({ navigation }: Props) {
     valorAtualTotal: number;
   }>({ valorDefinidoTotal: 0, valorAtualTotal: 0 });
 
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [showErrorAlert, setShowErrorAlert] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [showValidationAlert, setShowValidationAlert] = useState(false);
+  const [validationMessage, setValidationMessage] = useState("");
+
   const setMonthData = () => {
     const newDate = new Date();
     newDate.setMonth(value ? value - 1 : newDate.getMonth());
@@ -95,6 +102,12 @@ export default function MenuScreen({ navigation }: Props) {
   };
 
   const handleOrcamento = async () => {
+    if (!valorDefinido || !valorAtual || !categoriaSelecionada) {
+      setValidationMessage("Todos os campos são obrigatórios.");
+      setShowValidationAlert(true);
+      return; // Não continuar com a inserção
+    }
+
     try {
       const valorDefinidoFloat = isNaN(parseFloat(valorDefinido))
         ? 0
@@ -115,9 +128,11 @@ export default function MenuScreen({ navigation }: Props) {
       await OrcamentoDAL.adicionarOrcamento(novosDados);
       setUpdateLista(!updateLista);
       setIsModalVisible(false);
-      alert("Orçamento adicionado com sucesso");
+      setSuccessMessage("Orçamento adicionado com sucesso!");
+      setShowSuccessAlert(true);
     } catch (err) {
-      Alert.alert("Erro", "Erro ao adicionar orçamento");
+      setErrorMessage("Erro ao adicionar orçamento.");
+      setShowErrorAlert(true);
     }
   };
 
@@ -161,51 +176,7 @@ export default function MenuScreen({ navigation }: Props) {
           onYearChange={handleOnChangeYear}
         />
       </View>
-      <View style={styles.menuBody}>{/* 
-        <View style={styles.totalERestanteGroup}> 
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-around",
-            }}
-          >
-            <View>
-              <Image
-                style={{ width: 32, height: 32 }}
-                source={require("../../../assets/orcamento/dinheiro.png")}
-              />
-            </View>
-            <View style={{ paddingLeft: 10 }}>
-              <Text style={styles.totalERestanteText}>Total</Text> 
-              <Text style={styles.totalERestanteValor}>
-                R${valuesObject.valorDefinidoTotal.toFixed(2)}
-              </Text>
-            </View>
-          </View>
- 
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-around",
-            }}
-          >
-            <View>
-              <Image
-                style={{ width: 32, height: 32 }}
-                source={require("../../../assets/orcamento/coin2.png")}
-              />
-            </View>
-            <View style={{ paddingLeft: 10 }}>
-              <Text style={styles.totalERestanteText}>Restante</Text> 
-              <Text style={styles.totalERestanteValor}>
-                R${valuesObject.valorAtualTotal.toFixed(2)}
-              </Text>
-            </View>
-          </View>
-        </View>
- */}
+      <View style={styles.menuBody}>
         <ListaDeOrcamentos
           dataSelecionada={dataSelecionada}
           novoOrcamento={updateLista}
@@ -325,6 +296,57 @@ export default function MenuScreen({ navigation }: Props) {
       <View style={styles.menuFooter}>
         <NavigationBar />
       </View>
+      <AwesomeAlert
+        show={showValidationAlert}
+        showProgress={false}
+        title="Erro de Validação"
+        message={validationMessage}
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#EC0F0F"
+        onConfirmPressed={() => setShowValidationAlert(false)}
+      />
+
+      <AwesomeAlert
+        show={showSuccessAlert}
+        showProgress={false}
+        title="Sucesso!"
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#0FEC32"
+        onConfirmPressed={() => setShowSuccessAlert(false)}
+        customView={
+          <View>
+            <Text style={{ fontSize: 16, textAlign: "center" }}>
+              {successMessage}
+            </Text>
+          </View>
+        }
+      />
+
+      <AwesomeAlert
+        show={showErrorAlert}
+        showProgress={false}
+        title="Erro"
+        message={errorMessage}
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#EC0F0F"
+        onConfirmPressed={() => setShowErrorAlert(false)}
+        customView={
+          <View>
+            <Text style={{ fontSize: 16, textAlign: "center" }}>
+              Tente novamente.
+            </Text>
+          </View>
+        }
+      />
     </View>
   );
 }

@@ -22,6 +22,7 @@ import ListaDeMetas from "../../../Components/ListaMeta";
 import ListaDeDividas from "../../../Components/ListaDivida";
 import SeletorMesAno from "../../../Components/SeletorMesAno";
 import { DataContext } from "../../../Contexts/DataContext";
+import AwesomeAlert from "react-native-awesome-alerts"; // Certifique-se de importar AwesomeAlert
 
 type MetasScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -51,6 +52,11 @@ export default function MetasScreen({ navigation }: Props) {
   const [isDividaPendente, setIsDividaPendente] = useState(false);
   const [isTelaDivida, setIsTelaDivida] = useState(false);
   const colorAnim = useRef(new Animated.Value(0)).current;
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [showErrorAlert, setShowErrorAlert] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showValidationAlert, setShowValidationAlert] = useState(false);
+  const [validationMessage, setValidationMessage] = useState("");
 
   useEffect(() => {
     Animated.timing(colorAnim, {
@@ -82,6 +88,17 @@ export default function MetasScreen({ navigation }: Props) {
   };
 
   const handleMeta = async () => {
+    if (
+      !tituloMeta ||
+      !valorAtualMeta ||
+      !valorObjetivoMeta ||
+      !dataInicio ||
+      !dataFim
+    ) {
+      setValidationMessage("Todos os campos são obrigatórios.");
+      setShowValidationAlert(true);
+      return; // Não continuar com a inserção
+    }
     try {
       const valorObjetivoFloat = isNaN(parseFloat(valorObjetivoMeta))
         ? 0
@@ -108,13 +125,25 @@ export default function MetasScreen({ navigation }: Props) {
       await MetasDAL.adicionarMeta(novosDados);
       setUpdateLista(!updateLista);
       setIsModalVisible(false);
-      alert("Meta adicionada com sucesso!");
+      setShowSuccessAlert(true);
     } catch (err) {
-      alert("Erro ao adicionar meta");
+      setErrorMessage("Erro ao adicionar meta");
+      setShowErrorAlert(true);
     }
   };
 
   const handleDivida = async () => {
+    if (
+      !tituloDivida ||
+      !valorPagoDivida ||
+      !valorTotalDivida ||
+      !dataInicio ||
+      !dataFim
+    ) {
+      setValidationMessage("Todos os campos são obrigatórios.");
+      setShowValidationAlert(true);
+      return; // Não continuar com a inserção
+    }
     try {
       const valorTotalFloat = isNaN(parseFloat(valorTotalDivida))
         ? 0
@@ -135,9 +164,10 @@ export default function MetasScreen({ navigation }: Props) {
       await DividaDAL.adicionarDivida(novosDados);
       setUpdateLista(!updateLista);
       setIsModalVisible(false);
-      alert("Divida adicionada com sucesso!");
+      setShowSuccessAlert(true);
     } catch (err) {
-      alert("Erro ao adicionar divida");
+      setErrorMessage("Erro ao adicionar dívida");
+      setShowErrorAlert(true);
     }
   };
 
@@ -303,22 +333,11 @@ export default function MetasScreen({ navigation }: Props) {
             <View style={styles.buttonGroup}>
               <TouchableOpacity
                 style={[styles.btn, styles.btnAdicionar]}
-                onPress={
-                  !isTelaDivida
-                    ? () => {
-                        handleMeta();
-                        setIsModalVisible(false);
-                        limparEstados();
-                      }
-                    : () => {
-                        handleDivida();
-                        setIsModalVisible(false);
-                        limparEstados();
-                      }
-                }
+                onPress={!isTelaDivida ? handleMeta : handleDivida}
               >
                 <Text style={styles.labelModal}>Concluir</Text>
               </TouchableOpacity>
+
               <TouchableOpacity
                 style={[styles.btn, styles.btnCancelar]}
                 onPress={() => setIsModalVisible(false)}
@@ -329,6 +348,49 @@ export default function MetasScreen({ navigation }: Props) {
           </View>
         </View>
       </Modal>
+      <AwesomeAlert
+        show={showSuccessAlert}
+        showProgress={false}
+        title="Sucesso!"
+        message={
+          !isTelaDivida
+            ? "Meta adicionada com sucesso!"
+            : "Dívida adicionada com sucesso!"
+        }
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#0FEC32"
+        onConfirmPressed={() => setShowSuccessAlert(false)}
+      />
+
+      <AwesomeAlert
+        show={showErrorAlert}
+        showProgress={false}
+        title="Erro"
+        message={errorMessage}
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#EC0F0F"
+        onConfirmPressed={() => setShowErrorAlert(false)}
+      />
+
+      <AwesomeAlert
+        show={showValidationAlert}
+        showProgress={false}
+        title="Erro de Validação"
+        message={validationMessage}
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#EC0F0F"
+        onConfirmPressed={() => setShowValidationAlert(false)}
+      />
+
       <View style={styles.menuFooter}>
         <NavigationBar />
       </View>

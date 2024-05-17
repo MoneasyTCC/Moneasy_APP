@@ -4,17 +4,17 @@ import {
   View,
   Text,
   FlatList,
-  StyleSheet,
-  Alert,
   TouchableOpacity,
   Image,
   Modal,
   TextInput,
   Switch,
+  StyleSheet,
 } from "react-native";
 import { MetasDAL } from "../Repo/RepositorioMeta";
 import { Meta } from "../Model/Meta";
 import SeletorData from "./SeletorData";
+import AwesomeAlert from "react-native-awesome-alerts"; // Certifique-se de importar AwesomeAlert
 
 interface ListaDeMetasProps {
   dataSelecionada: Date;
@@ -54,6 +54,11 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({
     Pausado: useRef(new Animated.Value(0)).current,
     Concluído: useRef(new Animated.Value(0)).current,
   };
+  const [showValidationAlert, setShowValidationAlert] = useState(false);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [validationMessage, setValidationMessage] = useState("");
+  const [showErrorAlert, setShowErrorAlert] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     Animated.timing(backgroundColors[switchMetaStatus], {
@@ -98,7 +103,8 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : "Um erro ocorreu";
-        Alert.alert("Erro", errorMessage);
+        setErrorMessage(errorMessage);
+        setShowErrorAlert(true);
       }
     };
     buscarMetasPorStatus();
@@ -129,9 +135,12 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({
   };
 
   const handleATualizarValorAtual = async (metaId: string) => {
-    const oldValorAtualNumber = isNaN(parseFloat(selectedItemValorAtual))
-      ? 0
-      : parseFloat(selectedItemValorAtual);
+    if (!novoValorAtual) {
+      setValidationMessage("O campo Valor Atual é obrigatório.");
+      setShowValidationAlert(true);
+      return; // Não continuar com a atualização
+    }
+
     const novoValorAtualNumber = isNaN(parseFloat(novoValorAtual))
       ? 0
       : parseFloat(novoValorAtual);
@@ -150,7 +159,7 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({
         novosDados.valorAtual = oldValorAtualNumber;
       }
       await MetasDAL.alterarMeta(metaId, novosDados);
-      alert("Valor atual atualizado com sucesso!");
+      setShowSuccessAlert(true); // Mostrar alerta de sucesso
       setIsModalVisible(false);
       limparEstados();
       setUpdateLista(!updateLista);
@@ -165,12 +174,14 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({
         status: isMetaPausada ? "Pausado" : "Ativo",
       };
       await MetasDAL.alterarMeta(metaId, novosDados);
-      isMetaPausada ? null : alert("Meta ativada!");
+      setShowSuccessAlert(true);
       setIsModalVisible(false);
       limparEstados();
       setUpdateLista(!updateLista);
     } catch (err) {
       console.error(err);
+      setErrorMessage("Erro ao tentar despausar a meta.");
+      setShowErrorAlert(true);
     }
   };
 
@@ -180,15 +191,24 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({
         dataFimPrevista: novaDataFim,
       };
       await MetasDAL.alterarMeta(metaId, novosDados);
+      setShowSuccessAlert(true);
       setIsModalVisible(false);
       limparEstados();
       setUpdateLista(!updateLista);
     } catch (err) {
       console.error(err);
+      setErrorMessage("Erro ao tentar atualizar a data de fim.");
+      setShowErrorAlert(true);
     }
   };
 
   const handleAlterarMeta = async (metaId: string) => {
+    if (!novoTitulo || !novoValorAtual || !novoValorObjetivo) {
+      setValidationMessage("Todos os campos são obrigatórios.");
+      setShowValidationAlert(true);
+      return; // Não continuar com a atualização
+    }
+
     const novoValorAtualNumber = isNaN(parseFloat(novoValorAtual))
       ? 0
       : parseFloat(novoValorAtual);
@@ -208,24 +228,28 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({
         novosDados.status = "Concluído";
       }
       await MetasDAL.alterarMeta(metaId, novosDados);
-      alert("Meta alterada com sucesso!");
+      setShowSuccessAlert(true); // Mostrar alerta de sucesso
       setIsModalVisible(false);
       setIsEditable(false);
       limparEstados();
       setUpdateLista(!updateLista);
     } catch (err) {
       console.error(err);
+      setErrorMessage("Erro ao tentar alterar a meta.");
+      setShowErrorAlert(true);
     }
   };
 
   const handleDeletarMeta = async (metaId: string) => {
     try {
       await MetasDAL.deletarMeta(metaId);
-      alert("Meta deletada com sucesso!");
+      setShowSuccessAlert(true);
       setIsModalVisible(false);
       setUpdateLista(!updateLista);
     } catch (err) {
       console.error(err);
+      setErrorMessage("Erro ao tentar deletar a meta.");
+      setShowErrorAlert(true);
     }
   };
 
@@ -607,6 +631,45 @@ const ListaDeMetas: React.FC<ListaDeMetasProps> = ({
           </View>
         </View>
       </Modal>
+
+      <AwesomeAlert
+        show={showValidationAlert}
+        showProgress={false}
+        title="Erro de Validação"
+        message={validationMessage}
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#EC0F0F"
+        onConfirmPressed={() => setShowValidationAlert(false)}
+      />
+
+      <AwesomeAlert
+        show={showErrorAlert}
+        showProgress={false}
+        title="Erro"
+        message={errorMessage}
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#EC0F0F"
+        onConfirmPressed={() => setShowErrorAlert(false)}
+      />
+
+      <AwesomeAlert
+        show={showSuccessAlert}
+        showProgress={false}
+        title="Sucesso"
+        message="Meta atualizada com sucesso!"
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#0FEC32"
+        onConfirmPressed={() => setShowSuccessAlert(false)}
+      />
     </>
   );
 };
@@ -618,7 +681,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: "#3a3e3a",
-    //backgroundColor: "#2a2a2a",
     elevation: 5,
     borderColor: "rgba(0, 0, 0, 0.1)",
     borderWidth: 1,
@@ -741,17 +803,7 @@ const styles = StyleSheet.create({
   textoEValorWrapper: {
     flexDirection: "column",
     alignItems: "center",
-  } /* ,
-  metaStatusSwitch: {
-    flexDirection: "row",
-    width: "90%",
-    height: 50,
-    backgroundColor: "#2a2a2a",
-    borderRadius: 30,
-    alignItems: "center",
-    justifyContent: "space-evenly",
-    marginBottom: 20,
-  } */,
+  },
   editDeletePosition: {
     position: "absolute",
     top: 20,
@@ -770,9 +822,7 @@ const styles = StyleSheet.create({
   },
   statusButton: {
     flex: 1,
-    /* marginHorizontal: 4, */
-    /*  borderRadius: 10, */
-    overflow: "hidden", // Important to clip the animated view
+    overflow: "hidden",
   },
   animatedButton: {
     flex: 1,
@@ -781,7 +831,7 @@ const styles = StyleSheet.create({
   },
   btn: {
     padding: 10,
-    width: 120, // Largura fixa para uniformidade
+    width: 120,
     height: 40,
     borderRadius: 20,
     marginVertical: 5,
@@ -789,7 +839,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   btnCancelar: {
-    backgroundColor: "#EC0F0F", // Vermelho para botões de 'Excluir'
+    backgroundColor: "#EC0F0F",
   },
 });
 

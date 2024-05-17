@@ -16,6 +16,7 @@ import { obterDividasPorData } from "../Controller/DividaController";
 import { DividaDAL } from "../Repo/RepositorioDivida";
 import { Divida } from "../Model/Divida";
 import SeletorData from "./SeletorData";
+import AwesomeAlert from "react-native-awesome-alerts"; // Import AwesomeAlert
 
 interface ListaDeDividasProps {
   dataSelecionada: Date;
@@ -51,6 +52,12 @@ const ListaDeDividas: React.FC<ListaDeDividasProps> = ({
   const [novoValorTotal, setNovoValorTotal] = useState("");
   const [novoValorPago, setNovoValorPago] = useState("");
   const [novoTitulo, setNovoTitulo] = useState("");
+  const [showValidationAlert, setShowValidationAlert] = useState(false);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [validationMessage, setValidationMessage] = useState("");
+  const [showErrorAlert, setShowErrorAlert] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showDeleteConfirmAlert, setShowDeleteConfirmAlert] = useState(false);
 
   // Animação refs
   const backgroundColors = {
@@ -172,6 +179,12 @@ const ListaDeDividas: React.FC<ListaDeDividasProps> = ({
   };
 
   const handleATualizarValorPago = async (dividaId: string) => {
+    if (!novoValorPago) {
+      setValidationMessage("O campo Valor Pago é obrigatório.");
+      setShowValidationAlert(true);
+      return; // Não continuar com a atualização
+    }
+
     const oldValorAtualNumber = isNaN(parseFloat(selectedItemValorPago))
       ? 0
       : parseFloat(selectedItemValorPago);
@@ -192,28 +205,32 @@ const ListaDeDividas: React.FC<ListaDeDividasProps> = ({
       if (novoValorPagoNumber === 0) {
         novosDados.valorPago = oldValorAtualNumber;
       }
-      console.log(novosDados);
       await DividaDAL.alterarDivida(dividaId, novosDados);
-      alert("Valor atual atualizado com sucesso!");
+      setShowSuccessAlert(true); // Mostrar alerta de sucesso
       setIsModalVisible(false);
       limparEstados();
       setUpdateLista(!updateLista);
     } catch (err) {
       console.error(err);
+      setErrorMessage("Erro ao tentar atualizar o valor pago.");
+      setShowErrorAlert(true);
     }
   };
+
   const handleDividaPendente = async (dividaId: string) => {
     try {
       const novosDados: Partial<Divida> = {
         status: isDividaPaga ? "Pendente" : "Paga",
       };
       await DividaDAL.alterarDivida(dividaId, novosDados);
-      isDividaPaga ? null : alert("Divida Paga!");
+      setShowSuccessAlert(true); // Mostrar alerta de sucesso
       setIsModalVisible(false);
       limparEstados();
       setUpdateLista(!updateLista);
     } catch (err) {
       console.error(err);
+      setErrorMessage("Erro ao tentar alterar o status da dívida.");
+      setShowErrorAlert(true);
     }
   };
 
@@ -231,6 +248,12 @@ const ListaDeDividas: React.FC<ListaDeDividasProps> = ({
     }
   };
   const handleAlterarDivida = async (dividaId: string) => {
+    if (!novoTitulo || !novoValorPago || !novoValorTotal) {
+      setValidationMessage("Todos os campos são obrigatórios.");
+      setShowValidationAlert(true);
+      return; // Não continuar com a atualização
+    }
+
     const novoValorPagoNumber = isNaN(parseFloat(novoValorPago))
       ? 0
       : parseFloat(novoValorPago);
@@ -246,29 +269,38 @@ const ListaDeDividas: React.FC<ListaDeDividasProps> = ({
         dataVencimento: novaDataFim,
         status: isDividaPaga ? "Pago" : "Pendente",
       };
-      console.log(novosDados);
       if (novoValorPago >= novoValorTotal) {
         novosDados.status = "Pago";
       }
       await DividaDAL.alterarDivida(dividaId, novosDados);
-      alert("Divida alterada com sucesso!");
+      setShowSuccessAlert(true); // Mostrar alerta de sucesso
       setIsModalVisible(false);
       setIsEditable(false);
       limparEstados();
       setUpdateLista(!updateLista);
     } catch (err) {
       console.error(err);
+      setErrorMessage("Erro ao tentar alterar a dívida.");
+      setShowErrorAlert(true);
     }
   };
 
   const handleDeletarDivida = async (dividaId: string) => {
+    setShowDeleteConfirmAlert(true);
+  };
+
+  const confirmDeleteDivida = async () => {
     try {
-      await DividaDAL.deletarDivida(dividaId);
-      alert("Divida deletada com sucesso!");
+      await DividaDAL.deletarDivida(selectedItemId); // Use `selectedItemId` para deletar a dívida selecionada
+      setShowSuccessAlert(true); // Mostrar alerta de sucesso
       setIsModalVisible(false);
       setUpdateLista(!updateLista);
     } catch (err) {
       console.error(err);
+      setErrorMessage("Erro ao tentar deletar a dívida.");
+      setShowErrorAlert(true);
+    } finally {
+      setShowDeleteConfirmAlert(false); // Fechar o alerta de confirmação
     }
   };
 
@@ -403,6 +435,59 @@ const ListaDeDividas: React.FC<ListaDeDividasProps> = ({
           </View>
         </>
       )}
+      <AwesomeAlert
+        show={showValidationAlert}
+        showProgress={false}
+        title="Erro de Validação"
+        message={validationMessage}
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#EC0F0F"
+        onConfirmPressed={() => setShowValidationAlert(false)}
+      />
+      <AwesomeAlert
+        show={showDeleteConfirmAlert}
+        showProgress={false}
+        title="Confirmar Deleção"
+        message="Tem certeza de que deseja deletar esta dívida?"
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showCancelButton={true}
+        showConfirmButton={true}
+        cancelText="Cancelar"
+        confirmText="Deletar"
+        confirmButtonColor="#EC0F0F"
+        onCancelPressed={() => setShowDeleteConfirmAlert(false)}
+        onConfirmPressed={confirmDeleteDivida}
+      />
+
+      <AwesomeAlert
+        show={showErrorAlert}
+        showProgress={false}
+        title="Erro"
+        message={errorMessage}
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#EC0F0F"
+        onConfirmPressed={() => setShowErrorAlert(false)}
+      />
+
+      <AwesomeAlert
+        show={showSuccessAlert}
+        showProgress={false}
+        title="Sucesso"
+        message="Dívida deletada com sucesso!"
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={true}
+        confirmText="OK"
+        confirmButtonColor="#0FEC32"
+        onConfirmPressed={() => setShowSuccessAlert(false)}
+      />
     </View>
   );
   let dataMenorQueDataAtual = null;
@@ -516,8 +601,15 @@ const ListaDeDividas: React.FC<ListaDeDividasProps> = ({
                 : { borderTopRightRadius: 10, borderBottomRightRadius: 10 },
             ]}
           >
-            <Animated.View style={[styles.animatedButton, getStatusStyle(status)]}>
-              <Text style={{ color: switchDividaStatus === status ? "#ffffff" : "#b0b0b0", fontWeight: "bold" }}>
+            <Animated.View
+              style={[styles.animatedButton, getStatusStyle(status)]}
+            >
+              <Text
+                style={{
+                  color: switchDividaStatus === status ? "#ffffff" : "#b0b0b0",
+                  fontWeight: "bold",
+                }}
+              >
                 {status}
               </Text>
             </Animated.View>
@@ -847,7 +939,7 @@ const styles = StyleSheet.create({
   statusButton: {
     flex: 1,
     /* marginHorizontal: 5, */
-   /*  borderRadius: 10, */
+    /*  borderRadius: 10, */
     overflow: "hidden",
   },
   animatedButton: {
