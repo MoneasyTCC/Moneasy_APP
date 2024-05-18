@@ -24,10 +24,7 @@ import SeletorMesAno from "../../../Components/SeletorMesAno";
 import { DataContext } from "../../../Contexts/DataContext";
 import AwesomeAlert from "react-native-awesome-alerts"; // Certifique-se de importar AwesomeAlert
 
-type MetasScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "Metas"
->;
+type MetasScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Metas">;
 
 type Props = {
   navigation: MetasScreenNavigationProp;
@@ -88,13 +85,7 @@ export default function MetasScreen({ navigation }: Props) {
   };
 
   const handleMeta = async () => {
-    if (
-      !tituloMeta ||
-      !valorAtualMeta ||
-      !valorObjetivoMeta ||
-      !dataInicio ||
-      !dataFim
-    ) {
+    if (!tituloMeta || !valorAtualMeta || !valorObjetivoMeta || !dataInicio || !dataFim) {
       setValidationMessage("Todos os campos são obrigatórios.");
       setShowValidationAlert(true);
       return; // Não continuar com a inserção
@@ -103,9 +94,7 @@ export default function MetasScreen({ navigation }: Props) {
       const valorObjetivoFloat = isNaN(parseFloat(valorObjetivoMeta))
         ? 0
         : parseFloat(valorObjetivoMeta);
-      const valorAtualFloat = isNaN(parseFloat(valorAtualMeta))
-        ? 0
-        : parseFloat(valorAtualMeta);
+      const valorAtualFloat = isNaN(parseFloat(valorAtualMeta)) ? 0 : parseFloat(valorAtualMeta);
       const novosDados = {
         id: "",
         usuarioId: "",
@@ -125,6 +114,7 @@ export default function MetasScreen({ navigation }: Props) {
       await MetasDAL.adicionarMeta(novosDados);
       setUpdateLista(!updateLista);
       setIsModalVisible(false);
+      limparEstados();
       setShowSuccessAlert(true);
     } catch (err) {
       setErrorMessage("Erro ao adicionar meta");
@@ -133,13 +123,7 @@ export default function MetasScreen({ navigation }: Props) {
   };
 
   const handleDivida = async () => {
-    if (
-      !tituloDivida ||
-      !valorPagoDivida ||
-      !valorTotalDivida ||
-      !dataInicio ||
-      !dataFim
-    ) {
+    if (!tituloDivida || !valorPagoDivida || !valorTotalDivida || !dataInicio || !dataFim) {
       setValidationMessage("Todos os campos são obrigatórios.");
       setShowValidationAlert(true);
       return; // Não continuar com a inserção
@@ -148,9 +132,7 @@ export default function MetasScreen({ navigation }: Props) {
       const valorTotalFloat = isNaN(parseFloat(valorTotalDivida))
         ? 0
         : parseFloat(valorTotalDivida);
-      const valorPagoFloat = isNaN(parseFloat(valorPagoDivida))
-        ? 0
-        : parseFloat(valorPagoDivida);
+      const valorPagoFloat = isNaN(parseFloat(valorPagoDivida)) ? 0 : parseFloat(valorPagoDivida);
       const novosDados = {
         id: "",
         usuarioId: "",
@@ -164,6 +146,7 @@ export default function MetasScreen({ navigation }: Props) {
       await DividaDAL.adicionarDivida(novosDados);
       setUpdateLista(!updateLista);
       setIsModalVisible(false);
+      limparEstados();
       setShowSuccessAlert(true);
     } catch (err) {
       setErrorMessage("Erro ao adicionar dívida");
@@ -191,7 +174,10 @@ export default function MetasScreen({ navigation }: Props) {
     <View style={styles.container}>
       <Text style={styles.textMetas}>{isTelaDivida ? "Dívidas" : "Metas"}</Text>
       <View style={styles.menuHeader}>
-        <SeletorMesAno seletorAno={true} onYearChange={handleOnYearChange} />
+        <SeletorMesAno
+          seletorAno={true}
+          onYearChange={handleOnYearChange}
+        />
       </View>
       <View style={styles.menuBody}>
         <View style={styles.switchContainer}>
@@ -261,21 +247,21 @@ export default function MetasScreen({ navigation }: Props) {
           </TouchableOpacity>
         )}
       </View>
-      <Modal visible={isModalVisible} transparent={true} animationType="slide">
+      <Modal
+        visible={isModalVisible}
+        transparent={true}
+        animationType="slide"
+      >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <Text style={styles.modalTitle}>
-              {!isTelaDivida ? "Nova Meta" : "Nova Divida"}
-            </Text>
+            <Text style={styles.modalTitle}>{!isTelaDivida ? "Nova Meta" : "Nova Divida"}</Text>
             <TextInput
               style={styles.inputTitulo}
               placeholder="Titulo"
               placeholderTextColor={"#ffffff"}
               value={!isTelaDivida ? tituloMeta : tituloDivida}
               onChangeText={
-                !isTelaDivida
-                  ? (text) => setTituloMeta(text)
-                  : (text) => setTituloDivida(text)
+                !isTelaDivida ? (text) => setTituloMeta(text) : (text) => setTituloDivida(text)
               }
             />
             <View style={styles.inputValorDataGroup}>
@@ -317,16 +303,12 @@ export default function MetasScreen({ navigation }: Props) {
             </View>
             {isTelaDivida && (
               <>
-                <Text
-                  style={{ fontSize: 16, fontWeight: "bold", color: "#fff" }}
-                >
+                <Text style={{ fontSize: 16, fontWeight: "bold", color: "#fff" }}>
                   {!isDividaPendente ? "Pendente" : "Pago"}
                 </Text>
                 <Switch
                   value={isDividaPendente}
-                  onValueChange={() =>
-                    setIsDividaPendente((prevState) => !prevState)
-                  }
+                  onValueChange={() => setIsDividaPendente((prevState) => !prevState)}
                 ></Switch>
               </>
             )}
@@ -340,7 +322,9 @@ export default function MetasScreen({ navigation }: Props) {
 
               <TouchableOpacity
                 style={[styles.btn, styles.btnCancelar]}
-                onPress={() => setIsModalVisible(false)}
+                onPress={() => {
+                  setIsModalVisible(false), limparEstados();
+                }}
               >
                 <Text style={styles.labelModal}>Cancelar</Text>
               </TouchableOpacity>
@@ -352,11 +336,7 @@ export default function MetasScreen({ navigation }: Props) {
         show={showSuccessAlert}
         showProgress={false}
         title="Sucesso!"
-        message={
-          !isTelaDivida
-            ? "Meta adicionada com sucesso!"
-            : "Dívida adicionada com sucesso!"
-        }
+        message={!isTelaDivida ? "Meta adicionada com sucesso!" : "Dívida adicionada com sucesso!"}
         closeOnTouchOutside={true}
         closeOnHardwareBackPress={false}
         showConfirmButton={true}
