@@ -255,6 +255,7 @@ const Graficos: React.FC<GraficosProps> = ({
 
   const pieChart = (
     <View style={styles.chartContainer}>
+      <Text style={styles.texto}>Este gráfico exibirá a porcentagem de entradas e saídas no ano escolhido.</Text>
       <PieChart
         data={pieData}
         width={screenWidth - 40}
@@ -439,6 +440,12 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     padding: 10,
     alignItems: "center",
+  },
+  texto: {
+    color: "#FFFFFF",
+    textAlign: "center",
+    fontSize: 16,
+    marginVertical: 5,
   },
 });
 

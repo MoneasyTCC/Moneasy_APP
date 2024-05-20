@@ -20,7 +20,10 @@ export default function InicioScreen({ navigation }: Props) {
   return (
     <View style={styles.container}>
       <SvgXml xml={xmlImg} style={styles.icon}></SvgXml>
-      <View style={styles.menu}>
+      <Text style={styles.frase}>
+        Bem vindo ao Moneasy       
+         </Text>    
+          <View style={styles.menu}>
         <Text style={styles.frase}>
           Começe agora a definir seus objetivos do jeito mais facil
         </Text>
@@ -101,4 +104,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
     width: "70%",
   },
+
 });
