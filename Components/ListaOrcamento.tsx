@@ -213,9 +213,7 @@ const ListaDeOrcamentos: React.FC<ListaDeOrcamentosProps> = ({
     }
     const timestamp = new Date(seconds * 1000 + nanoseconds / 1000000);
     const formattedDate = timestamp;
-    setSelectedItemData(formattedDate);
-    console.log(itemId);
-    console.log(selectedItemData.getMonth());
+    setSelectedItemData(formattedDate); 
     setIsModalVisible(!isModalVisible);
   };
 

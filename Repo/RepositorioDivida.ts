@@ -34,8 +34,7 @@ export const DividaDAL = {
       await updateDoc(doc(db, "dividas", dividaId), {
         id: dividaId,
       });
-
-      console.log("Categoria adicionada com ID: ", dividaId);
+ 
       return dividaId;
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -116,8 +115,7 @@ export const DividaDAL = {
                       return false;
                     } else {
                       return dataDivida.getFullYear() === dateSelected.getFullYear(), divida.status === dividaStatus;
-                    }
-            console.log(divida.status);
+                    } 
         });
 
         return dividas;
@@ -133,8 +131,7 @@ export const DividaDAL = {
   // Função para deletar uma dívida
   deletarDivida: async (dividaId: string) => {
     try {
-      await deleteDoc(doc(db, "dividas", dividaId));
-      console.log("Dívida deletada com sucesso.");
+      await deleteDoc(doc(db, "dividas", dividaId)); 
     } catch (error: unknown) {
       if (error instanceof Error) {
         throw new Error(`Erro ao deletar dívida: ${error.message}`);
@@ -148,8 +145,7 @@ export const DividaDAL = {
   alterarDivida: async (dividaId: string, novosDados: Partial<Divida>) => {
     try {
       const dividaRef = doc(db, "dividas", dividaId);
-      await updateDoc(dividaRef, novosDados);
-      console.log("Dívida atualizada com sucesso.");
+      await updateDoc(dividaRef, novosDados); 
     } catch (error: unknown) {
       if (error instanceof Error) {
         throw new Error(`Erro ao atualizar dívida: ${error.message}`);

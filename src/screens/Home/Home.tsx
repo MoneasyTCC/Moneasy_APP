@@ -132,8 +132,7 @@ export default function HomeScreen({ navigation }: Props) {
   const handleTransacao = async () => {
     try {
       const valorFloat = isNaN(parseFloat(valor)) ? 0 : parseFloat(valor);
-      const dataTransacao = fData;
-      console.log(dataTransacao);
+      const dataTransacao = fData; 
       const novosDados: Transacao = {
         id: "",
         usuarioId: "",
@@ -169,8 +168,6 @@ export default function HomeScreen({ navigation }: Props) {
       let tempData = new Date(dataAtual);
       const dataFormatada =
         tempData.getDate() + "/" + (tempData.getMonth() + 1) + "/" + tempData.getFullYear();
-
-      console.log(dataFormatada);
       setShow(false);
     } else if (evento.type === "dismissed") {
       setShow(false);

@@ -31,13 +31,11 @@ export const createAccountWithEmail = async (email: string, password: string) =>
     const firebaseUser = userCredential.user;
     const userEmail = firebaseUser.email;
 
-    if (!userEmail) {
-         console.log("O email do usuário não está disponível.");
+    if (!userEmail) { 
 
       throw new Error("O email do usuário não está disponível.");
     }
-    if (!firebaseUser) {
-      console.log
+    if (!firebaseUser) { 
       throw new Error("Erro ao criar a conta do usuário.");
     }
 
@@ -51,8 +49,7 @@ export const createAccountWithEmail = async (email: string, password: string) =>
     await UsuariosDAL.adicionarUsuario(novoUsuario);
 
     return firebaseUser;
-  } catch (error) {
-    console.log("deu erroo")
+  } catch (error) { 
     throw error;
   }
 };

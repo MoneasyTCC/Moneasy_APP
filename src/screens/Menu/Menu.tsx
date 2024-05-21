@@ -149,7 +149,6 @@ export default function MenuScreen({ navigation }: Props) {
 
   const handleInteractionInListaDeOrcamentos = () => {
     attTotalERestanteDepoisDeAlterarOuDeletar(dataSelecionada);
-    //console.log("Interagiu com a lista de orçamentos");
   };
 
   const attTotalERestanteDepoisDeAlterarOuDeletar = async (date: Date) => {
