@@ -35,11 +35,7 @@ async function obterSaldoPorMes(dataSelecionada: Date) {
     const totalEntradas = entradas.reduce((total, transacao) => total + transacao.valor, 0);
     const totalSaidas = saidas.reduce((total, transacao) => total + transacao.valor, 0);
     const saldo = totalEntradas - totalSaidas;
-
-    // console.log("Total de entradas:", totalEntradas);
-    // console.log("Total de saidas:", totalSaidas);
-    // console.log("Saldo (Entradas - Saidas):", saldo);
-
+ 
     return { totalEntradas, totalSaidas, saldo };
   } catch (error) {
     console.error("Erro ao obter saldo: ", error);

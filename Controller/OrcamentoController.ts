@@ -25,14 +25,10 @@ async function obterTotalERestantePorMes(dataSelecionada: Date) {
     const valorAtualTotal = orcamentos.reduce(
       (total, orcamento) => total + orcamento.valorAtual,
       0
-    );
-
-    // console.log("valorDefinidoTotal: ", valorDefinidoTotal);
-    // console.log("valorAtualTotal: ", valorAtualTotal);
+    ); 
 
     return { valorDefinidoTotal, valorAtualTotal };
-  } catch (error) {
-    console.error("Erro ao obter saldo: ", error);
+  } catch (error) { 
     throw new Error("Erro ao obter saldo");
   }
 }

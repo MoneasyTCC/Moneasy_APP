@@ -35,8 +35,7 @@ export const TransacaoDAL = {
       await updateDoc(doc(db, "transacoes", transacaoId), {
         id: transacaoId,
       });
-
-      console.log("Transação adicionada com ID: ", transacaoId);
+ 
       return transacaoId;
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -51,13 +50,11 @@ export const TransacaoDAL = {
   buscarTransacoes: async () => {
     const usuarioIdatual = await getCurrentUserId();
     if (!usuarioIdatual) throw new Error("Usuário não autenticado.");
-
-    console.log(usuarioIdatual);
+ 
     try {
       const q = query(collection(db, "transacoes"), where("usuarioId", "==", usuarioIdatual));
       const querySnapshot = await getDocs(q);
-      const transacoes = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      // console.log(transacoes);
+      const transacoes = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })); 
       return transacoes;
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -88,9 +85,7 @@ export const TransacaoDAL = {
           dataTransacao.getFullYear() === dateSelected.getFullYear() &&
           dataTransacao.getMonth() === dateSelected.getMonth()
         );
-      });
-
-      // console.log(transacoes);
+      }); 
       return transacoes;
     } catch (error) {
       if (error instanceof Error) {
@@ -119,8 +114,7 @@ export const TransacaoDAL = {
         const dataTransacao = transacao.data.toDate();
         return dataTransacao.getFullYear() === dateSelected.getFullYear();
       });
-
-      //console.log(transacoes);
+ 
       return transacoes;
     } catch (error) {
       if (error instanceof Error) {
@@ -134,8 +128,7 @@ export const TransacaoDAL = {
   // Função para deletar uma transação
   deletarTransacao: async (transacaoId: string) => {
     try {
-      await deleteDoc(doc(db, "transacoes", transacaoId));
-      console.log("Transação deletada com sucesso.");
+      await deleteDoc(doc(db, "transacoes", transacaoId)); 
     } catch (error: unknown) {
       if (error instanceof Error) {
         throw new Error(`Erro ao deletar transação: ${error.message}`);
@@ -149,8 +142,7 @@ export const TransacaoDAL = {
   alterarTransacao: async (transacaoId: string, novosDados: Partial<Transacao>) => {
     try {
       const transacaoRef = doc(db, "transacoes", transacaoId);
-      await updateDoc(transacaoRef, novosDados);
-      console.log("Transação atualizada com sucesso.");
+      await updateDoc(transacaoRef, novosDados); 
     } catch (error: unknown) {
       if (error instanceof Error) {
         throw new Error(`Erro ao atualizar transação: ${error.message}`);

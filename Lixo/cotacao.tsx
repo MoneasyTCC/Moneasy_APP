@@ -19,8 +19,7 @@
 // const minutes = `0${date.getMinutes()}`.slice(-2); 
 // // const seconds = `0${date.getSeconds()}`.slice(-2);
 
-// const data_formatada = `${day}/${month}/${year} ${hours}:${minutes}`;
-// console.log(data_formatada);
+// const data_formatada = `${day}/${month}/${year} ${hours}:${minutes}`; 
 // return data_formatada
 //  }
 

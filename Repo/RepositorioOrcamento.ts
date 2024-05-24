@@ -20,8 +20,7 @@ export const OrcamentoDAL = {
       await updateDoc(doc(db, 'orcamento', orcamentoid), {
           id: orcamentoid,
       });
-
-      console.log("orcamento adicionada com ID: ", orcamentoid);
+ 
       return orcamentoid;
 
     } catch (error: unknown) {
@@ -70,8 +69,7 @@ export const OrcamentoDAL = {
     try {
       const q = query(collection(db, 'orcamento'), where("usuarioId", "==", usuarioId));
       const querySnapshot = await getDocs(q);
-      const orcamentos = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      console.log(orcamentos);
+      const orcamentos = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
       return orcamentos;
     }  catch (error: unknown) {
         if (error instanceof Error) {
@@ -85,8 +83,7 @@ export const OrcamentoDAL = {
 
   deletarOrcamento: async (orcamentoid: string) => {
     try {
-      await deleteDoc(doc(db, 'orcamento', orcamentoid));
-      console.log("orcamento deletada com sucesso.");
+      await deleteDoc(doc(db, 'orcamento', orcamentoid)); 
     }  catch (error: unknown) {
         if (error instanceof Error) {
           throw new Error(`Erro ao adicionar orcamento: ${error.message}`);
@@ -100,8 +97,7 @@ export const OrcamentoDAL = {
   alterarOrcamento: async (orcamentoid: string, novosDados: Partial<Orcamento>) => {
     try {
       const orcamentoRef = doc(db, 'orcamento', orcamentoid);
-      await updateDoc(orcamentoRef, novosDados);
-      console.log("orcamento atualizada com sucesso.");
+      await updateDoc(orcamentoRef, novosDados); 
     }  catch (error: unknown) {
         if (error instanceof Error) {
           throw new Error(`Erro ao adicionar orcamento: ${error.message}`);

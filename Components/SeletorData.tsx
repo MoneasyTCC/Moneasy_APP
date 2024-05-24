@@ -17,8 +17,7 @@ const SeletorData: React.FC<SeletorDataProps> = ({ onDateChange, dataMinima, dat
     if (evento.type === "set" && dataSelecionada) {
       setShow(false);
       const currentDate = dataSelecionada || date;
-      setDate(currentDate);
-      console.log(dataSelecionada.toLocaleDateString("pt-br"));
+      setDate(currentDate); 
       setDatePicked(true);
       onDateChange(currentDate);
     } else if (evento.type === "dismissed") {

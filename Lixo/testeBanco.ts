@@ -33,12 +33,12 @@ try {
     
     // Agora podemos adicionar a transação ao banco de dados
     const id = await TransacaoDAL.adicionarTransacao(novosDados);
-    console.log(`Transacao adicionada com sucesso. ID: ${id}`);
+    alert(`Transacao adicionada com sucesso. ID: ${id}`);
   } else {
-    console.log('Usuário não está autenticado.');
+    alert('Usuário não está autenticado.');
   }
 } catch (error) {
-  console.error('Erro ao alterar o orcamento:', error);
+  alert('Erro ao alterar o orcamento');
 }};
 // A função adicionarNovaMeta precisa ser assíncrona para usar await
 // Esta função deve ser assíncrona, pois depende de uma chamada assíncrona para getCurrentUserId
@@ -61,13 +61,12 @@ export const adicionarNovaMeta = async () => {
       };
 
       // Agora podemos adicionar a meta ao banco de dados
-      const id = await MetasDAL.adicionarMeta(novosDados);
-      console.log(`Meta adicionada com sucesso. ID: ${id}`);
+      const id = await MetasDAL.adicionarMeta(novosDados); 
     } else {
-      console.log('Usuário não está autenticado.');
+      alert('Usuário não está autenticado.');
     }
   } catch (error) {
-    console.error('Erro ao altertar a meta:', error);
+    alert('Erro ao altertar a meta');
   }
 };
 

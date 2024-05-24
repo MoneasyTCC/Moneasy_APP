@@ -12,15 +12,12 @@ export const UsuariosDAL = {
         email: novoUsuario.email
       });
       const usuarioId = docRef.id;
-
-      console.log("Usuário adicionado com ID: ", usuarioId);
+ 
       return usuarioId;
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.log(`Erro ao adicionar usuário: ${error.message}`)
+      if (error instanceof Error) { 
         throw new Error(`Erro ao adicionar usuário: ${error.message}`);
-      } else {
-        console.log("Erro ao adicionar usuário")
+      } else { 
         throw new Error('Ocorreu um erro ao adicionar usuário.');
       }
     }

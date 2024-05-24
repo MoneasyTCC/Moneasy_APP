@@ -33,8 +33,7 @@ export const MetasDAL = {
       await updateDoc(doc(db, "metas", metaId), {
         id: metaId,
       });
-
-      console.log("Meta adicionada com ID: ", metaId);
+ 
       return metaId;
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -120,8 +119,7 @@ export const MetasDAL = {
       for (const meta of metas) {
         const dataFim = meta.dataFimPrevista.toDate();
         if (dataFim < new Date() && meta.status !== "Pausado") {
-          await MetasDAL.alterarMeta(meta.id, { status: "Pausado" });
-          console.log("Meta Atrasada: ", meta.id);
+          await MetasDAL.alterarMeta(meta.id, { status: "Pausado" }); 
         }
       }
 
@@ -138,8 +136,7 @@ export const MetasDAL = {
   // Função para deletar uma meta
   deletarMeta: async (metaId: string) => {
     try {
-      await deleteDoc(doc(db, "metas", metaId));
-      console.log("Meta deletada com sucesso.");
+      await deleteDoc(doc(db, "metas", metaId)); 
     } catch (error: unknown) {
       if (error instanceof Error) {
         throw new Error(`Erro ao deletar meta: ${error.message}`);
@@ -153,8 +150,7 @@ export const MetasDAL = {
   alterarMeta: async (metaId: string, novosDados: Partial<Meta>) => {
     try {
       const metaRef = doc(db, "metas", metaId);
-      await updateDoc(metaRef, novosDados);
-      console.log("Meta atualizada com sucesso.");
+      await updateDoc(metaRef, novosDados); 
     } catch (error: unknown) {
       if (error instanceof Error) {
         throw new Error(`Erro ao atualizar meta: ${error.message}`);
