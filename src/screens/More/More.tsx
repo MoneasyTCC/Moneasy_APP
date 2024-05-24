@@ -48,13 +48,7 @@ export default function MoreScreen({ navigation }: Props) {
       </View>
       <View style={styles.menuBody}>
         {/* A implementar */}
-        <TouchableOpacity style={styles.menuItem} onPress={() => {}}>
-          <Image
-            source={require("../../../assets/more/settings.png")}
-            style={styles.icon}
-          />
-          <Text style={styles.menuItemText}>Configurações</Text>
-        </TouchableOpacity>
+      
         <TouchableOpacity style={styles.menuItem} onPress={toggleModal}>
           <Image
             source={require("../../../assets/more/csv.png")}
@@ -78,10 +72,10 @@ export default function MoreScreen({ navigation }: Props) {
               </Text>
               <View>
                 <Text style={styles.modalText}>
-                  - O arquivo precisa ser do formato CSV
+                  - O arquivo precisa estar no formato CSV
                 </Text>
                 <Text style={styles.modalText}>
-                  - Atualmente suportamos o extrato da Nubank
+                  - Atualmente suportamos o extrato da Nubank.
                 </Text>
                 <Text style={styles.modalText}>
                   - Nós não armazenamos o seu arquivo!

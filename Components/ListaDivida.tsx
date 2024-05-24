@@ -494,7 +494,7 @@ const ListaDeDividas: React.FC<ListaDeDividasProps> = ({
   if (!(selectedItemDataVencimento >= new Date())) {
     dataMenorQueDataAtual = (
       <>
-        <Text style={styles.text}>Atualize a data</Text>
+        <Text style={styles.text}>Altere a data final: </Text>
         <SeletorData
           onDateChange={handleOnChangeNovaDataFim}
           dataMinima={new Date()}
@@ -764,6 +764,7 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 16,
     fontWeight: "bold",
+    alignItems: "center",
   },
   textOpaco: {
     color: "#fff",
